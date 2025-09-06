@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RXIA • Busca com Citações</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#fff; --text:#1f2937; --muted:#f3f4f6; --bd:#e5e7eb; --brand:#64376e; --ok:#16a34a; --warn:#f59e0b; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans'; background:var(--bg); color:var(--text); }
+  .banner{ background:#fff8e6; border-bottom:1px solid #f5d399; padding:.6rem 1rem; color:#5b3d00; font-size:.9rem; }
+  header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--bd); padding:1rem; z-index:10; }
+  .container{ max-width:900px; margin:0 auto; padding:1.25rem; }
+  h1{ font-size:1.25rem; margin:0 0 .5rem; color:var(--brand); }
+  .bar{ display:flex; gap:.5rem; }
+  input[type="text"]{ flex:1; padding:.85rem 1rem; border:1px solid var(--bd); border-radius:.75rem; outline:0; }
+  button{ padding:.85rem 1.2rem; border:0; border-radius:.75rem; background:var(--brand); color:#fff; font-weight:600; cursor:pointer; }
+  button.secondary{ background:#111827; }
+  .pill{ display:inline-block; padding:.25rem .6rem; border-radius:999px; background:var(--muted); border:1px solid var(--bd); font-size:.75rem; margin-right:.25rem; }
+  .card{ background:#fff; border:1px solid var(--bd); border-radius:1rem; padding:1rem; margin:.75rem 0; box-shadow:0 4px 20px rgba(0,0,0,.04); }
+  .meta{ font-size:.85rem; color:#374151; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.5rem; }
+  .txt{ line-height:1.6; white-space:pre-wrap; }
+  .hi{ background:#fff3b0; }
+  .row{ display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+  .copy{ background:var(--ok); }
+  footer{ text-align:center; color:#6b7280; font-size:.8rem; padding:1rem 0 2rem; }
+  .small{ font-size:.8rem; color:#6b7280; }
+</style>
+</head>
+<body>
+<div class="banner">⚠️ <strong>RXIA</strong>: respostas apenas a partir dos documentos do índice. Não substitui avaliação médica. <span style="float:right">Versão: 2025-09-06</span></div>
+<header>
+  <div class="container">
+    <h1>RXIA • Busca com Citações (somente fontes internas)</h1>
+    <div class="bar">
+      <input id="q" type="text" placeholder="Ex.: conduta para BI-RADS 3, periodicidade da mamografia, ASC-US, etc.">
+      <button id="go">Buscar</button>
+      <button id="clear" class="secondary">Limpar</button>
+    </div>
+    <div class="small" style="margin-top:.5rem">O RXIA busca somente no arquivo <code>rxi_index.json</code>. Atualizado em 2025-09-06.</div>
+  </div>
+</header>
+<main class="container">
+  <div id="status" class="small">Carregando índice…</div>
+  <div id="results"></div>
+</main>
+<footer>
+  RXIA • MVP client-side (TF‑IDF em JavaScript). Trocar por LLM/RAG depois.
+</footer>
+<script>
+function tokenize(s){
+  return (s || "").toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9á-úç\s]/g,' ')
+    .split(/\s+/).filter(Boolean);
+}
+const state = { docs: [], df:{}, N:0 };
+
+async function loadIndex(){
+  try {
+    const res = await fetch('rxi_index.json?v=20250906');
+    const data = await res.json();
+    state.docs = data.documents || [];
+    state.N = state.docs.length;
+    state.docs.forEach((d)=>{
+      const terms = new Set(tokenize(d.text));
+      terms.forEach(t=>{ state.df[t] = (state.df[t] || 0) + 1; });
+    });
+    document.getElementById('status').textContent = `Índice carregado: ${state.N} trechos.`;
+  } catch(e) {
+    document.getElementById('status').textContent = 'Falha ao carregar o índice. Verifique se rxi_index.json está na raiz.';
+  }
+}
+
+function scoreDoc(doc, qTerms){
+  const toks = tokenize(doc.text);
+  const tf = {};
+  toks.forEach(t=> tf[t] = (tf[t]||0)+1);
+  let score = 0;
+  qTerms.forEach(q=>{
+    const tfq = tf[q] || 0;
+    const df = state.df[q] || 1;
+    const idf = Math.log((state.N+1) / df);
+    score += (tfq > 0 ? (1 + Math.log(tfq)) : 0) * idf;
+  });
+  return score;
+}
+
+function highlight(text, terms){
+  let out = text;
+  terms.forEach(t=>{
+    if(!t) return;
+    const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`\\b(${esc})\\b`, 'gi');
+    out = out.replace(re, '<span class="hi">$1</span>');
+  });
+  return out;
+}
+
+function search(){
+  const q = document.getElementById('q').value.trim();
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+  if(!q) return;
+  const qTerms = tokenize(q).filter(v=>v.length>1);
+  const scored = state.docs.map(d=>({d, s:scoreDoc(d, qTerms)}))
+    .filter(x=>x.s>0)
+    .sort((a,b)=>b.s-a.s)
+    .slice(0, 10);
+  if(scored.length===0){
+    resultsEl.innerHTML = '<div class="card">Nenhum resultado encontrado nos seus documentos. Verifique termos ou adicione mais fontes.</div>';
+    return;
+  }
+  scored.forEach(({d,s})=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const pages = d.page_start + (d.page_end!==d.page_start? '–'+d.page_end : '');
+    const meta = '<div class="meta"><span class="pill">'+d.title+'</span><span class="pill">p. '+pages+'</span><span class="pill">score '+s.toFixed(2)+'</span></div>';
+    const txt = highlight(d.text.slice(0, 1200), qTerms);
+    card.innerHTML = meta + '<div class="txt">'+txt+'</div>';
+    resultsEl.appendChild(card);
+  });
+}
+
+document.getElementById('go').addEventListener('click', search);
+document.getElementById('clear').addEventListener('click', ()=>{
+  document.getElementById('q').value = '';
+  document.getElementById('results').innerHTML = '';
+});
+document.getElementById('q').addEventListener('keydown', e=>{ if(e.key==='Enter') search(); });
+loadIndex();
+</script>
+</body>
+</html>
