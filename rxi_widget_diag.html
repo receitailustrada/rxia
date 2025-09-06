@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RXIA • DIAGNÓSTICO</title>
+<style>
+  :root{ --brand:#64376e; --ok:#16a34a; --err:#dc2626; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; background:#f4f6f8; color:#111; }
+  header{ background:#fff; border-bottom:1px solid #e5e7eb; padding:16px 20px; position:sticky; top:0; }
+  h1{ margin:0; font-size:18px; color:var(--brand); }
+  .wrap{ max-width:900px; margin:0 auto; padding:20px; }
+  .card{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin:12px 0; box-shadow:0 6px 20px rgba(0,0,0,.05); }
+  .ok{ color:var(--ok); font-weight:600; }
+  .err{ color:var(--err); font-weight:600; }
+  code{ background:#f3f4f6; padding:2px 6px; border-radius:6px; }
+</style>
+</head>
+<body>
+<header><h1>RXIA • Diagnóstico CSS & JS</h1></header>
+<div class="wrap">
+  <div class="card" id="css-status">✅ CSS carregou (se este cartão tem borda/sombra, o CSS está ok).</div>
+  <div class="card" id="js-status">⏳ Verificando JavaScript…</div>
+  <div class="card" id="fetch-status">⏳ Testando fetch do <code>rxi_index.json</code>…</div>
+  <div class="card"><strong>Como usar:</strong> envie este arquivo como <code>rxi_widget_diag.html</code> na raiz do repositório e abra:<br/>
+    <code>https://receitailustrada.github.io/rxia/rxi_widget_diag.html</code>
+  </div>
+</div>
+<script>
+// JS ok?
+document.getElementById('js-status').innerHTML = '✅ <span class="ok">JavaScript ativo</span> (se você vê esta mensagem, o JS está rodando).';
+
+// Teste de fetch
+(async function(){
+  const el = document.getElementById('fetch-status');
+  try{
+    const url = 'rxi_index.json?v=' + Date.now();
+    const res = await fetch(url);
+    if(!res.ok){
+      el.innerHTML = '❌ <span class="err">Falha no fetch</span> ('+res.status+' '+res.statusText+'). Verifique se <code>rxi_index.json</code> está na raiz.';
+      return;
+    }
+    const data = await res.json();
+    const n = (data && data.documents) ? data.documents.length : 0;
+    el.innerHTML = '✅ <span class="ok">Fetch OK</span> — documentos indexados: <strong>'+n+'</strong>.';
+  }catch(e){
+    el.innerHTML = '❌ <span class="err">Erro no fetch</span>: '+(e && e.message ? e.message : e);
+  }
+})();
+</script>
+</body>
+</html>
