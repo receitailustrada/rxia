@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RXIA • Chat com Citações</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#ffffff; --text:#1f2937; --muted:#f3f4f6; --bd:#e5e7eb; --brand:#64376e; --ok:#16a34a; --warn:#f59e0b; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial; background:var(--bg); color:var(--text); }
+    .banner{ background:#fff8e6; border-bottom:1px solid #f5d399; padding:.6rem 1rem; color:#5b3d00; font-size:.9rem; }
+    header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--bd); padding:1rem; z-index:10; }
+    .container{ max-width:920px; margin:0 auto; padding:1.25rem; }
+    h1{ font-size:1.25rem; margin:0 0 .5rem; color:var(--brand); }
+    .bar{ display:flex; gap:.5rem; }
+    input[type="text"]{ flex:1; padding:.9rem 1rem; border:1px solid var(--bd); border-radius:.75rem; outline:0; }
+    button{ padding:.9rem 1.1rem; border:0; border-radius:.75rem; background:var(--brand); color:#fff; font-weight:600; cursor:pointer; }
+    button.secondary{ background:#111827; }
+    .pill{ display:inline-block; padding:.25rem .6rem; border-radius:999px; background:var(--muted); border:1px solid var(--bd); font-size:.75rem; margin-right:.25rem; }
+    .card{ background:#fff; border:1px solid var(--bd); border-radius:1rem; padding:1rem; margin:.75rem 0; box-shadow:0 4px 20px rgba(0,0,0,.04); }
+    .meta{ font-size:.85rem; color:#374151; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.5rem; }
+    .txt{ line-height:1.6; white-space:pre-wrap; }
+    .ai{ border-left:6px solid var(--brand); }
+    .small{ font-size:.8rem; color:#6b7280; }
+    .hi{ background:#fff3b0; }
+    .row{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    .right{ margin-left:auto; }
+  </style>
+</head>
+<body>
+<div class="banner">
+  ⚠️ <strong>RXIA</strong>: responde apenas com base nos documentos do índice. Não substitui avaliação médica.
+  <span style="float:right">Beta (RAG)</span>
+</div>
+<header>
+  <div class="container">
+    <h1>RXIA • Chat com Citações</h1>
+    <div class="bar">
+      <input id="q" type="text" placeholder="Pergunte algo (ex.: 'conduta para BI-RADS 3?')">
+      <button id="ask">Responder com IA</button>
+      <button id="find" class="secondary">Mostrar trechos</button>
+      <button id="clear" class="secondary">Limpar</button>
+    </div>
+    <div class="small" style="margin-top:.5rem">
+      O RXIA busca no arquivo <code>rxi_index.json</code> (local) e envia só os <em>trechos</em> relevantes para o servidor de IA.
+    </div>
+  </div>
+</header>
+<main class="container">
+  <div id="status" class="small">Carregando índice…</div>
+  <div id="answer"></div>
+  <div id="results"></div>
+</main>
+<footer class="container small">
+  RXIA • MVP com geração de resposta + citações. Mantenha sua chave no servidor (nunca no front-end).
+</footer>
+
+<script>
+// ========= CONFIG =========
+// Cole aqui a URL do seu Apps Script publicado (Web App):
+const BACKEND_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
+
+// ========= CORE =========
+function tokenize(s){
+  return (s || "").toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9á-úç\s]/g,' ')
+    .split(/\s+/).filter(Boolean);
+}
+const state = { docs: [], df:{}, N:0 };
+
+async function loadIndex(){
+  const res = await fetch('rxi_index.json?v=' + Date.now());
+  const data = await res.json();
+  state.docs = data.documents || [];
+  state.N = state.docs.length;
+  const df = {};
+  state.docs.forEach(d=>{
+    const terms = new Set(tokenize(d.text));
+    terms.forEach(t=>{ df[t] = (df[t]||0)+1; });
+  });
+  state.df = df;
+  document.getElementById('status').textContent = `Índice carregado: ${state.N} trechos.`;
+}
+
+function scoreDoc(doc, qTerms){
+  const toks = tokenize(doc.text);
+  const tf = {};
+  toks.forEach(t=> tf[t] = (tf[t]||0)+1);
+  let score = 0;
+  qTerms.forEach(q=>{
+    const tfq = tf[q] || 0;
+    const df = state.df[q] || 1;
+    const idf = Math.log((state.N+1) / df);
+    score += (tfq > 0 ? (1 + Math.log(tfq)) : 0) * idf;
+  });
+  return score;
+}
+
+function topK(q, k=5){
+  const qTerms = tokenize(q).filter(v=>v.length>1);
+  const scored = state.docs.map(d=>({d, s:scoreDoc(d, qTerms)}))
+    .filter(x=>x.s>0)
+    .sort((a,b)=>b.s-a)slice(0, k);
+  return scored.map(x=>x.d);
+}
+
+function highlight(text, terms){
+  let out = text;
+  terms.forEach(t=>{
+    if(!t) return;
+    const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`\\b(${esc})\\b`, 'gi');
+    out = out.replace(re, '<span class="hi">$1</span>');
+  });
+  return out;
+}
+
+function showPassages(q){
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+  const qTerms = tokenize(q).filter(v=>v.length>1);
+  const docs = topK(q, 8);
+  if(docs.length===0){
+    resultsEl.innerHTML = '<div class="card">Nenhum resultado encontrado nos seus documentos.</div>';
+    return;
+  }
+  docs.forEach(d=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const pages = d.page_start + (d.page_end!==d.page_start? '–'+d.page_end : '');
+    const meta = '<div class="meta"><span class="pill">'+d.title+'</span><span class="pill">p. '+pages+'</span></div>';
+    const txt = highlight(d.text.slice(0, 1200), qTerms);
+    card.innerHTML = meta + '<div class="txt">'+txt+'</div>';
+    resultsEl.appendChild(card);
+  });
+}
+
+async function askLLM(q){
+  const ansEl = document.getElementById('answer');
+  ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
+  const docs = topK(q, 5).map(d=>({
+    citation: d.citation,
+    title: d.title,
+    page_start: d.page_start,
+    page_end: d.page_end,
+    text: d.text.length>1800 ? (d.text.slice(0, 1800)+'…') : d.text
+  }));
+
+  if(!BACKEND_URL || BACKEND_URL.startsWith("PASTE_")){
+    ansEl.innerHTML = '<div class="card ai">⚠️ Configure o BACKEND_URL dentro do arquivo (URL do Apps Script). Sem isso, não dá para gerar a resposta.</div>';
+    return;
+  }
+
+  try{
+    const res = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, contexts: docs })
+    });
+    if(!res.ok){
+      const t = await res.text();
+      throw new Error('HTTP '+res.status+': '+t);
+    }
+    const data = await res.json();
+    const text = (data && data.answer) ? data.answer : 'Sem resposta';
+    const cites = docs.map(d=>'• '+d.citation).join('<br>');
+    ansEl.innerHTML = '<div class="card ai"><div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">escopo fechado</span></div><div class="txt">'+text+'</div><div class="small" style="margin-top:.5rem"><strong>Fontes:</strong><br>'+cites+'</div></div>';
+  }catch(e){
+    ansEl.innerHTML = '<div class="card ai">❌ Erro ao consultar a IA: '+e.message+'</div>';
+  }
+}
+
+document.getElementById('ask').addEventListener('click', ()=>{
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  askLLM(q);
+});
+document.getElementById('find').addEventListener('click', ()=>{
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  showPassages(q);
+});
+document.getElementById('clear').addEventListener('click', ()=>{
+  document.getElementById('q').value = '';
+  document.getElementById('answer').innerHTML = '';
+  document.getElementById('results').innerHTML = '';
+});
+document.getElementById('q').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ document.getElementById('ask').click(); }
+});
+loadIndex();
+</script>
+</body>
+</html>
