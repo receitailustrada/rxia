@@ -59,7 +59,8 @@
 <script>
 // ========= CONFIG =========
 // Cole aqui a URL do seu Apps Script publicado (Web App):
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzSu2BB0SzfXUqPW-kgTO_YFNyI3e7gA3RceoWKqRvn5-TSfuUlcgmr2-bFjZ339-in/exec";
+const BACKEND_URL = "const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzSu2BB0SzfXUqPW-kgTO_YFNyI3e7gA3RceoWKqRvn5-TSfuUlcgmr2-bFjZ339-in/exec";
+";
 
 // ========= CORE =========
 function tokenize(s){
@@ -102,7 +103,8 @@ function topK(q, k=5){
   const qTerms = tokenize(q).filter(v=>v.length>1);
   const scored = state.docs.map(d=>({d, s:scoreDoc(d, qTerms)}))
     .filter(x=>x.s>0)
-    .sort((a,b)=>b.s-a)slice(0, k);
+    .sort((a,b)=> b.s - a.s)
+    .slice(0, k);
   return scored.map(x=>x.d);
 }
 
@@ -194,4 +196,3 @@ loadIndex();
 </script>
 </body>
 </html>
-
