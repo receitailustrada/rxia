@@ -1,470 +1,356 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light" translate="no">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="google" content="notranslate"/>
-  <title>RXIA • Busca com Citações</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>RXIA • Widget de Busca</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#fff; --text:#1f2937; --muted:#f3f4f6; --bd:#e5e7eb;
-      --brand:#006fff; --brand-2:#0a7cff; --brand-3:#0057d6;
-      --ok:#16a34a; --warn:#f59e0b;
+      --roxo:#64376e; --lilas:#9169a5;
+      --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e7e2ec; --ok:#16a34a;
+      --warn:#f59e0b; --err:#dc2626;
+      --shadow:0 6px 20px rgba(100,55,110,.10);
+      --radius:14px;
     }
-    *{ box-sizing:border-box; }
-    body{ margin:0; font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial; background:var(--bg); color:var(--text); }
-    .banner{ background:#eef6ff; border-bottom:1px solid #d6e9ff; padding:.6rem 1rem; color:#083c7a; font-size:.9rem; }
-    header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--bd); padding:1rem; z-index:10; }
-    .container{ max-width:980px; margin:0 auto; padding:1.25rem; }
-    h1{ font-size:1.25rem; margin:0 0 .5rem; color:var(--brand); }
-    .bar{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
-
-    /* Busca maior */
-    input[type="text"]{
-      flex:1 0 680px; min-width:320px;
-      padding:1.05rem 1.2rem;
-      border:1px solid var(--bd);
-      border-radius:.75rem;
-      outline:0;
-      font-size:1.2rem; line-height:1.3;
-      transition:border-color .15s, box-shadow .15s;
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:980px;margin:32px auto;padding:0 16px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--roxo),var(--lilas));box-shadow:var(--shadow)}
+    h1{font-size:1.25rem;margin:0}
+    .card{background:#fff;border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .search{padding:16px}
+    .row{display:flex;gap:10px;align-items:center}
+    input[type="search"]{
+      flex:1;padding:14px 14px;border:1px solid var(--bd);border-radius:12px;font-size:1rem;outline:none;
+      background:#fff;
     }
-    input[type="text"]:focus{ border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,111,255,.15); }
-
-    /* Botão principal – gradiente #006fff */
-    button.primary{
-      padding:.95rem 1.1rem; border:0; border-radius:.75rem; color:#fff; font-weight:600; cursor:pointer;
-      background:linear-gradient(135deg, var(--brand-2) 0%, var(--brand) 55%, var(--brand-3) 100%);
-      box-shadow:0 6px 16px rgba(0,111,255,.25);
-      transition:transform .12s, box-shadow .12s, filter .12s;
+    button{
+      padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:600;
+      background:var(--roxo);color:#fff;box-shadow:var(--shadow)
     }
-    button.primary:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,111,255,.28); filter:brightness(1.02); }
-    button.primary:active{ transform:translateY(0); box-shadow:0 5px 14px rgba(0,111,255,.22); filter:brightness(.98); }
-    button.primary:focus-visible{ outline:0; box-shadow:0 0 0 3px rgba(0,111,255,.18), 0 6px 16px rgba(0,111,255,.25); }
-
-    button.secondary{
-      background:#111827; color:#fff; border:0; border-radius:.75rem;
-      padding:.95rem 1.1rem; box-shadow:0 6px 16px rgba(0,0,0,.18);
-      font-weight:600; cursor:pointer; transition:transform .12s, box-shadow .12s;
-    }
-    button.secondary:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(0,0,0,.22); }
-    button.secondary:active{ transform:translateY(0); box-shadow:0 5px 14px rgba(0,0,0,.18); }
-
-    select{ padding:.9rem .9rem; border:1px solid var(--bd); border-radius:.75rem; background:#fff; }
-    .pill{ display:inline-block; padding:.25rem .6rem; border-radius:999px; background:var(--muted); border:1px solid var(--bd); font-size:.75rem; margin-right:.25rem; }
-    .card{ background:#fff; border:1px solid var(--bd); border-radius:1rem; padding:1rem; margin:.75rem 0; box-shadow:0 4px 20px rgba(0,0,0,.04); }
-    .meta{ font-size:.85rem; color:#374151; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.5rem; }
-    .txt{ line-height:1.6; white-space:pre-wrap; }
-    .ai{ border-left:6px solid var(--brand); }
-    .small{ font-size:.8rem; color:#6b7280; }
-    .hi{ background:#fff3b0; }
-    .row{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
-    .right{ margin-left:auto; }
-
-    /* Sugestões (antes era .chips) */
-    .sugs{ margin-top:.75rem; display:flex; flex-wrap:wrap; gap:.5rem; }
-    .sug{
-      appearance:none; border:1px solid var(--bd); background:var(--muted)!important; color:var(--text)!important;
-      padding:.55rem .8rem; border-radius:999px; font-size:.9rem; cursor:pointer; box-shadow:none!important; text-shadow:none!important;
-    }
-    .sug:hover{ border-color:var(--brand); box-shadow:0 0 0 3px rgba(0,111,255,.10)!important; }
-
-    .hide{ display:none; }
-    a{ color:var(--brand); }
+    button.secondary{background:#fff;color:var(--roxo);border:1px solid var(--bd)}
+    .status{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:.95rem}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .dot.loading{background:var(--warn)}
+    .dot.ok{background:var(--ok)}
+    .dot.err{background:var(--err)}
+    .meta{color:#555}
+    .results{margin-top:16px;padding:10px 0}
+    .item{padding:14px 16px;border-top:1px dashed var(--bd)}
+    .item:first-child{border-top:0}
+    .title{font-weight:600;margin:0 0 6px 0}
+    .cite{font-size:.9rem;color:#555;margin-bottom:6px}
+    .snippet{font-size:.98rem;line-height:1.45}
+    mark{background:#ffef9f;padding:0 2px;border-radius:2px}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--muted);border:1px solid var(--bd);font-size:.8rem;color:#555;margin-right:6px}
+    details.diag{margin-top:16px;padding:12px 16px;border-top:1px solid var(--bd);font-size:.92rem;color:#444}
+    .alert{padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:#fff8f0}
+    .alert.err{background:#fff1f1;border-color:#ffd0d0}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f5f5f5;border:1px solid #e5e5e5;border-radius:6px;padding:2px 6px}
+    footer{margin:22px 0 36px 0;color:#666;font-size:.9rem}
+    a{color:var(--roxo);text-decoration:none}
   </style>
 </head>
 <body>
-  <div class="banner">⚠️ <strong>RXIA</strong>: responde apenas com base nos documentos do índice. Não substitui avaliação médica.
-    <span style="float:right">Beta (RAG)</span>
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>RXIA • Widget de Busca</h1>
+        <div class="meta">Pesquisa local em documentos (índice JSON).</div>
+      </div>
+    </header>
+
+    <div class="card search">
+      <div class="row">
+        <input id="q" type="search" placeholder="Digite termos (ex.: 'INCA mama citologia')" autocomplete="off" />
+        <button id="btn">Buscar</button>
+        <button id="btnClear" class="secondary" title="Limpar">Limpar</button>
+      </div>
+      <div class="status" id="status">
+        <span class="dot loading" id="dot"></span>
+        <span id="msg">Carregando índice…</span>
+      </div>
+
+      <div class="results" id="results" hidden></div>
+
+      <details class="diag">
+        <summary>Diagnóstico técnico</summary>
+        <div id="diagBox" class="alert" style="margin-top:10px">
+          Aguardando carregamento…
+        </div>
+        <div style="margin-top:10px">
+          <span class="pill" id="pCount">docs: –</span>
+          <span class="pill" id="pFields">campos ok: –</span>
+          <span class="pill" id="pMissing">faltantes: –</span>
+          <span class="pill" id="pIndexUrl">índice: –</span>
+        </div>
+      </details>
+    </div>
+
+    <footer>
+      Dica: você pode forçar um índice alternativo via URL, exemplo:
+      <span class="kbd">?index=rxi_index.cleaned.pruned.json</span> •
+      Para bust de cache, use <span class="kbd">?v=1</span>.
+    </footer>
   </div>
 
-  <header>
-    <div class="container">
-      <h1>RXIA • Busca com Citações (somente fontes internas)</h1>
-      <div class="bar">
-        <input id="q" type="text" placeholder="Pergunte algo (ex.: 'conduta para BI-RADS 3?')">
-        <button id="ask" class="primary">Responder com IA</button>
-        <button id="find" class="secondary">Mostrar trechos</button>
-        <button id="clear" class="secondary">Limpar</button>
-
-        <!-- seletor de base (some se houver só 1) -->
-        <select id="ds" title="Selecionar base do índice">
-          <option value="completo">Base: Completo</option>
-        </select>
-      </div>
-
-      <!-- sugestões -->
-      <div class="sugs" id="suggestions"></div>
-
-      <div class="small" style="margin-top:.5rem">
-        <span id="dsLabel">Carregando…</span>
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-    <div id="status" class="small">Carregando índice…</div>
-    <div id="answer"></div>
-    <div id="results"></div>
-  </main>
-
-  <footer class="container small">
-    RXIA • MVP client-side (ranqueamento TF-IDF) + servidor Apps Script. Chave segura no backend.
-  </footer>
-
   <script>
-  /* ========== CONFIG ========== */
-  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzLTth8e3PEetxnW0ZaBaCD5GShWkMrqGqSu9RDkBXUIUrQ-f12UZaSMInD6PM3yOdr/exec";
-  const APP_TOKEN   = "rxia_9ZP2-7kQvY";
+  // ====== util ======
+  const $ = (sel) => document.querySelector(sel);
+  const getParam = (k) => new URLSearchParams(location.search).get(k);
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-  // Somente a base 'completo'
-  const DATASETS = {
-    completo: "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index.cleaned.pruned.json"
-  };
+  // ====== config ======
+  const DEFAULT_INDEX = 'rxi_index.json';
+  const indexOverride = getParam('index');
+  const v = getParam('v') || '1';
+  const INDEX_URL = `./${indexOverride || DEFAULT_INDEX}?v=${encodeURIComponent(v)}`;
 
-  // Sugestões
-  const SUGGESTIONS = [
-    { label: "Conduta BI-RADS 3", q: "conduta mamografia BI-RADS 3" },
-    { label: "ASC-US (rastreamento)", q: "ASC-US rastreamento conduta" },
-    { label: "Nódulo <30a", q: "nódulo mamário palpável <30 anos abordagem" },
-    { label: "Mastalgia", q: "mastalgia avaliação e manejo" },
-    { label: "Intervalo Papanicolau", q: "intervalo rastreamento câncer do colo do útero" },
-    { label: "Varicocele", q: "varicocele critérios encaminhamento andrologia" },
-    { label: "Infertilidade (exames)", q: "infertilidade masculina exames iniciais encaminhar" },
-    { label: "Pólipo de vesícula", q: "pólipo de vesícula critérios de encaminhamento" }
-  ];
+  // ====== state ======
+  let RECORDS = [];   // normalizados
+  let FASTTEXT = [];  // cache texto minificado
+  let READY = false;
 
-  const DEFAULT_ACTION = (BACKEND_URL && !BACKEND_URL.startsWith("PASTE_")) ? 'ai' : 'passages';
+  // ====== UI ======
+  const dot = $('#dot');
+  const msg = $('#msg');
+  const results = $('#results');
+  const diagBox = $('#diagBox');
+  const pCount = $('#pCount');
+  const pFields = $('#pFields');
+  const pMissing = $('#pMissing');
+  const pIndexUrl = $('#pIndexUrl');
 
-  /* ========== BUSCA (normalização + sinônimos) ========== */
-  function normStr(s){ return (s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
-
-  function normalizeClinicalPatterns(s){
-    if(!s) return s;
-    return s
-      .replace(/bi[\s\-]?rads?\s*0/gi,'birads0')
-      .replace(/bi[\s\-]?rads?\s*1/gi,'birads1')
-      .replace(/bi[\s\-]?rads?\s*2/gi,'birads2')
-      .replace(/bi[\s\-]?rads?\s*3/gi,'birads3')
-      .replace(/bi[\s\-]?rads?\s*4/gi,'birads4')
-      .replace(/bi[\s\-]?rads?\s*5/gi,'birads5')
-      .replace(/bi[\s\-]?rads?\s*6/gi,'birads6')
-      .replace(/\b(usg|ultra[\s\-]?som|ultra[\s\-]?son|ultrasson(?:o|ografia)?|ecografia)\b/gi,'ultrassom')
-      .replace(/\bpapanicolaou\b/gi,'papanicolau')
-      .replace(/\bves[ií]cula\b/gi,'vesicula')
-      .replace(/\bcolecisto\b/gi,'vesicula');
+  function setStatus(kind, text){
+    dot.className = 'dot ' + (kind || 'loading');
+    msg.textContent = text || '';
   }
 
-  function tokenize(s){
-    s = normalizeClinicalPatterns(s || "");
-    return s.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-z0-9á-úç\s]/g,' ')
-      .split(/\s+/).filter(Boolean);
+  function setDiag(html){
+    diagBox.innerHTML = html;
   }
 
-  function normalizeTerm(t){
-    return (t||"").toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-z0-9]/g,'');
-  }
-
-  const SYN_GROUPS = [
-    ['ultrassom','ecografia','ultrassonografia','usg','us'],
-    ['mamografia','mammografia','mamo'],
-    ['vesicula','colecisto'],
-    ['polipo','polipos'],
-    ['papanicolau','papanicolaou','citologia','colpocitologia'],
-    ['ascus','asc-us']
-  ];
-  const SYNONYMS = (()=> {
-    const map = {};
-    const add = (a,b)=>{ (map[a]=map[a]||new Set()).add(b); };
-    SYN_GROUPS.forEach(g=>{
-      const n = g.map(normalizeTerm);
-      n.forEach((t,i)=> n.forEach((s,j)=>{ if(i!==j) add(t,s); }));
-    });
-    const out={}; Object.keys(map).forEach(k=> out[k]=Array.from(map[k]));
-    return out;
-  })();
-  function expandTerms(arr){
-    const set = new Set(arr);
-    arr.forEach(t=>{
-      const k = normalizeTerm(t);
-      (SYNONYMS[k]||[]).forEach(s=> set.add(s));
-    });
-    return Array.from(set);
-  }
-
-  const STOP_ANCHORS = new Set([
-    'conduta','condutas','protocolo','protocolos','recomendacao','recomendacoes',
-    'exame','exames','resultado','resultados','paciente','adulto','pediatrico',
-    'pediatrica','sus','aps','ab','municipal','estaduais','nacional','diagnostico',
-    'tratamento','manejo','fluxograma','criterios','encaminhamento','encaminhar'
-  ]);
-
-  function makeAnchors(baseTerms){
-    const a = [];
-    baseTerms.forEach(t=>{
-      const n = normalizeTerm(t);
-      if(!n || n.length<=2 || STOP_ANCHORS.has(n)) return;
-      a.push(n);
-    });
-    const set = new Set(a);
-    const hasBirads = a.some(x=> x.startsWith('birads'));
-    const hasMama   = a.includes('mamografia') || a.includes('mama') || a.includes('mastologia');
-    const hasVes    = a.includes('vesicula') || a.includes('colecisto') || a.includes('polipo');
-    if (hasBirads || hasMama){
-      ['birads0','birads1','birads2','birads3','birads4','birads5','birads6','mamografia','mama','mastologia','ultrassom'].forEach(x=>set.add(x));
-    }
-    if (hasVes){
-      ['vesicula','biliar','colecistectomia','colecisto','polipo','polipos'].forEach(x=>set.add(x));
-    }
-    return Array.from(set);
-  }
-
-  const state = { docs: [], df:{}, N:0, currentDS: "completo" };
-
-  function setDSLabel(){
-    const map = {completo:"Base: Completo"};
-    document.getElementById('dsLabel').textContent =
-      (map[state.currentDS] || "Base") + " • arquivo: " + (DATASETS[state.currentDS] || "?");
-  }
-
-  async function loadIndex(url){
-    const statusEl = document.getElementById('status');
-    try{
-      statusEl.textContent = 'Carregando índice…';
-      const res = await fetch(url + '?v=' + Date.now());
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const data = await res.json();
-      state.docs = (data && data.documents) ? data.documents : [];
-      state.N = state.docs.length;
-      const df = {};
-      state.docs.forEach(d=>{
-        const terms = new Set(tokenize(d.text));
-        terms.forEach(t=>{ df[t] = (df[t]||0)+1; });
-      });
-      state.df = df;
-      statusEl.textContent = `Índice carregado: ${state.N} trechos.`;
-    }catch(e){
-      statusEl.textContent = 'Falha ao carregar o índice ('+e.message+'). Verifique o link/arquivo.';
-    }
-  }
-
-  function scoreDoc(doc, qTerms, primeSet, anchors){
-    const titleN = normStr(doc.title||'');
-    const srcN   = normStr(doc.source_file||'');
-    const docTokenSet = new Set(tokenize(doc.text));
-
-    const hasAnchor = anchors.some(a => docTokenSet.has(a) || titleN.includes(a) || srcN.includes(a));
-    if (!hasAnchor) return 0;
-
-    const tf = {};
-    tokenize(doc.text).forEach(t=> tf[t] = (tf[t]||0)+1);
-
-    let score = 0;
-    qTerms.forEach(q=>{
-      const tfq = tf[q] || 0;
-      const df = state.df[q] || 1;
-      const idf = Math.log((state.N+1) / df);
-      const weight = primeSet.has(q) ? 1.25 : 1.0;
-      score += (tfq > 0 ? (1 + Math.log(tfq)) : 0) * idf * weight;
-    });
-
-    primeSet.forEach(t => { if (t && titleN.includes(t)) score += 0.3; });
-
-    const mammoQuery = anchors.some(a => a.startsWith('birads') || a==='mamografia' || a==='mama' || a==='ultrassom');
-    if (mammoQuery){
-      if (/(mama|mastologia|mamografia|exame\-mamografia|mamas)/.test(titleN+' '+srcN)) score += 1.0;
-      if (/(colo do utero|cervic|citopatolog)/.test(titleN+' '+srcN)) score -= 0.8;
-    }
-    return score;
-  }
-
-  function topK(q, k=12){
-    const baseTerms = tokenize(q).filter(v=>v.length>1);
-    const qTerms = expandTerms(baseTerms);
-    const primeSet = new Set(baseTerms.map(normalizeTerm));
-    const anchors = makeAnchors(baseTerms);
-
-    const scored = state.docs.map(d=>({ d, s:scoreDoc(d, qTerms, primeSet, anchors) }))
-      .filter(x=>x.s>0)
-      .sort((a,b)=>b.s-a.s)
-      .slice(0, k);
-
-    return scored.map(x=>x.d);
+  function esc(s){
+    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   }
 
   function highlight(text, terms){
-    let out = text;
+    if(!terms.length) return esc(text);
+    // limita texto a ~300 chars ao redor do primeiro termo
+    const lower = text.toLowerCase();
+    let pos = -1;
+    for(const t of terms){
+      const p = lower.indexOf(t);
+      if(p >= 0 && (pos < 0 || p < pos)) pos = p;
+    }
+    let snippet = text;
+    if(pos >= 0 && text.length > 300){
+      const start = Math.max(0, pos - 120);
+      const end   = Math.min(text.length, pos + 180);
+      snippet = (start>0?'…':'') + text.slice(start, end) + (end<text.length?'…':'');
+    } else if (text.length > 300){
+      snippet = text.slice(0, 300) + '…';
+    }
+    // destaque
+    let out = esc(snippet);
     terms.forEach(t=>{
       if(!t) return;
-      const esc = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(`\\b(${esc})\\b`, 'gi');
-      out = out.replace(re, '<span class="hi">$1</span>');
+      const rx = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+      out = out.replace(rx,'<mark>$1</mark>');
     });
     return out;
   }
 
-  function showPassages(q){
-    const resultsEl = document.getElementById('results');
-    resultsEl.innerHTML = '';
-    const qTerms = expandTerms(tokenize(q).filter(v=>v.length>1));
-    const docs = topK(q, 8);
-    if(docs.length===0){
-      resultsEl.innerHTML = '<div class="card">Nenhum resultado encontrado nos seus documentos.</div>';
-      return;
-    }
-    docs.forEach(d=>{
-      const card = document.createElement('div');
-      card.className = 'card';
-      const pages = d.page_start + (d.page_end!==d.page_start? '–'+d.page_end : '');
-      const meta = `<div class="meta">
-        <span class="pill">${d.title}</span>
-        <span class="pill">p. ${pages}</span>
-        <span class="pill">src: ${d.source_file || '—'}</span>
-      </div>`;
-      const txt = highlight(d.text.slice(0, 1500), qTerms);
-      card.innerHTML = meta + `<div class="txt">${txt}</div>`;
-      resultsEl.appendChild(card);
-    });
+  // ====== normalizador ======
+  function normalize(item){
+    return {
+      id: item.id ?? item.doc_id ?? crypto.randomUUID(),
+      title: item.title ?? item.document_title ?? '',
+      year: item.year ?? item.date_year ?? '',
+      page_start: item.page_start ?? item.page ?? item.start ?? '',
+      page_end: item.page_end ?? item.end ?? '',
+      citation: item.citation ?? item.source ?? '',
+      text: item.text ?? item.content ?? item.body ?? '',
+      source_file: item.source_file ?? item.file ?? ''
+    };
   }
 
-  /* ========== IA ========== */
-  async function askLLM(q){
-    const ansEl = document.getElementById('answer');
-    ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
+  function toArray(raw){
+    if(Array.isArray(raw)) return raw;
+    if(raw && Array.isArray(raw.chunks)) return raw.chunks;
+    if(raw && Array.isArray(raw.items)) return raw.items;
+    return [];
+  }
 
-    const docs = topK(q, 10).map(d=>({
-      citation: d.citation,
-      title: d.title,
-      page_start: d.page_start,
-      page_end: d.page_end,
-      text: d.text.length>2400 ? (d.text.slice(0, 2400)+'…') : d.text
-    }));
+  // ====== busca (scoring simples) ======
+  function tokenize(q){
+    return q.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  }
 
-    if (docs.length === 0) {
-      ansEl.innerHTML = `<div class="card ai">
-        <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
-        <div class="txt">Não encontrei trechos relevantes nesta base. Tente outra base no seletor “Base” ou refine os termos.</div>
-      </div>`;
+  function scoreRecord(rec, terms, i){
+    if(!FASTTEXT[i]) FASTTEXT[i] = (rec.title + ' ' + rec.citation + ' ' + rec.text).toLowerCase();
+    const blob = FASTTEXT[i];
+
+    // pontuação: +3 por termo no título, +2 na citação, +1 no texto; bônus por frequência
+    let s = 0;
+    const titleL = rec.title.toLowerCase();
+    const citeL  = rec.citation.toLowerCase();
+    for(const t of terms){
+      if(!t) continue;
+      if(titleL.includes(t)) s += 3;
+      if(citeL.includes(t))  s += 2;
+      // contagem no texto (limitada)
+      const m = blob.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'));
+      if(m) s += Math.min(5, m.length); // até +5 por termo por frequência
+    }
+    return s;
+  }
+
+  function doSearch(q){
+    const terms = tokenize(q);
+    if(!terms.length){
+      results.innerHTML = '';
+      results.hidden = false;
+      return;
+    }
+    const scored = RECORDS.map((rec,i)=>({rec, i, s:scoreRecord(rec,terms,i)}))
+                          .filter(o=>o.s>0)
+                          .sort((a,b)=>b.s-a.s)
+                          .slice(0,120);
+
+    if(!scored.length){
+      results.innerHTML = `<div class="alert">Nenhum resultado para <b>${esc(q)}</b>. Tente outros termos.</div>`;
+      results.hidden = false;
       return;
     }
 
-    if(!BACKEND_URL || BACKEND_URL.startsWith("PASTE_")){
-      ansEl.innerHTML = '<div class="card ai">⚠️ Configure o BACKEND_URL (URL do Apps Script) dentro do arquivo para gerar resposta.</div>';
-      return;
-    }
+    results.innerHTML = scored.map(({rec})=>{
+      const file = rec.source_file ? ` • <span class="meta">${esc(rec.source_file)}</span>` : '';
+      const cite = rec.citation ? esc(rec.citation) : '';
+      const snippet = highlight(rec.text || '', terms);
+      return `
+        <div class="item">
+          <div class="title">${esc(rec.title || 'Sem título')}</div>
+          <div class="cite">${cite}${file}</div>
+          <div class="snippet">${snippet}</div>
+        </div>
+      `;
+    }).join('');
+    results.hidden = false;
+  }
 
+  // ====== eventos ======
+  $('#btn').addEventListener('click', ()=>{
+    doSearch($('#q').value);
+  });
+  $('#btnClear').addEventListener('click', ()=>{
+    $('#q').value=''; results.innerHTML=''; results.hidden=false; $('#q').focus();
+  });
+  $('#q').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ doSearch(e.target.value); }
+  });
+
+  // ====== boot ======
+  (async function init(){
     try{
-      const res = await fetch(BACKEND_URL, {
-        method: 'POST',
-        body: JSON.stringify({ question: q, contexts: docs, token: APP_TOKEN })
-      });
+      setStatus('loading','Carregando índice…');
+      setDiag(`<div>Baixando <b>${esc(INDEX_URL)}</b> (sem cache)…</div>`);
+      pIndexUrl.textContent = `índice: ${INDEX_URL}`;
 
-      let data = null, raw = '';
-      if (res.ok) {
-        data = await res.json();
-        raw = (data && typeof data.answer === 'string') ? data.answer.trim() : '';
-      }
+      const resp = await fetch(INDEX_URL, { cache:'no-store' });
+      if(!resp.ok) throw new Error(`Falha ao carregar índice: ${resp.status} ${resp.statusText}`);
 
-      if (!res.ok || !raw) {
-        const cites = docs.map(d=>'• '+d.citation).join('<br>');
-        ansEl.innerHTML = `<div class="card ai">
-          <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
-          <div class="txt">
-            Não encontrei uma resposta direta nos trechos enviados para esta pergunta.
-            <br>Veja abaixo os <em>trechos mais próximos</em> e tente refinar a busca com termos relacionados
-            (ex.: <strong>“BI-RADS 3 seguimento 6 meses”</strong>, <strong>“lesão provavelmente benigna acompanhamento”</strong>).
+      const rawText = await resp.text();
+
+      // Diagnóstico de JSON inválido (mensagem mais clara)
+      let data;
+      try{
+        data = JSON.parse(rawText);
+      } catch(parseErr){
+        setStatus('err','Erro: JSON inválido');
+        setDiag(`
+          <div class="alert err">
+            <b>JSON inválido</b>: ${esc(parseErr.message)}.<br>
+            Verifique vírgulas a mais ao fim de arrays/objetos, aspas e colchetes.
           </div>
-          <div class="small" style="margin-top:.5rem"><strong>Fontes sugeridas:</strong><br>${cites}</div>
-        </div>`;
-        showPassages(q);
+          <details style="margin-top:8px"><summary>Prévia do conteúdo recebido</summary>
+            <pre style="white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;">${esc(rawText.slice(0,1500))}${rawText.length>1500?'…':''}</pre>
+          </details>
+        `);
         return;
       }
 
-      const cites = docs.map(d=>'• '+d.citation).join('<br>');
-      ansEl.innerHTML = `<div class="card ai">
-          <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
-          <div class="txt">${raw}</div>
-          <div class="small" style="margin-top:.5rem"><strong>Fontes:</strong><br>${cites}</div>
-        </div>`;
-    }catch(e){
-      ansEl.innerHTML = '<div class="card ai">❌ Erro ao consultar a IA: '+e.message+'</div>';
-    }
-  }
+      const arr = toArray(data).map(normalize);
 
-  /* ========== UI ========== */
-  document.getElementById('ask').addEventListener('click', ()=>{
-    const q = document.getElementById('q').value.trim();
-    if(!q) return;
-    document.getElementById('answer').innerHTML = '';
-    document.getElementById('results').innerHTML = '';
-    askLLM(q);
-  });
-  document.getElementById('find').addEventListener('click', ()=>{
-    const q = document.getElementById('q').value.trim();
-    if(!q) return;
-    document.getElementById('answer').innerHTML = '';
-    document.getElementById('results').innerHTML = '';
-    showPassages(q);
-  });
-  document.getElementById('clear').addEventListener('click', ()=>{
-    document.getElementById('q').value = '';
-    document.getElementById('answer').innerHTML = '';
-    document.getElementById('results').innerHTML = '';
-  });
-  document.getElementById('q').addEventListener('keydown', e=>{
-    if(e.key==='Enter'){ document.getElementById('ask').click(); }
-  });
+      // Métrica de campos faltantes
+      const required = ['title','citation','text'];
+      let missing = 0;
+      arr.forEach(r => required.forEach(k => { if(!r[k]) missing++; }));
 
-  function renderSuggestions(){
-    const box = document.getElementById('suggestions');
-    if(!box) return;
-    box.innerHTML = '';
-    SUGGESTIONS.forEach(s=>{
-      const b = document.createElement('button');
-      b.className = 'sug'; b.type='button'; b.textContent = s.label;
-      b.addEventListener('click', ()=>{
-        const qEl = document.getElementById('q'); qEl.value = s.q;
-        (DEFAULT_ACTION === 'ai' ? askLLM : showPassages)(s.q);
-      });
-      box.appendChild(b);
-    });
-  }
-
-  async function loadForSelection(){
-    const sel = document.getElementById('ds');
-    const val = sel.value || 'completo';
-    state.currentDS = val;
-    setDSLabel();
-    await loadIndex(DATASETS[val]);
-  }
-
-  // bootstrap
-  (function(){
-    // esconde seletor se só existir 1 base
-    if (Object.keys(DATASETS).length === 1) {
-      document.getElementById('ds').classList.add('hide');
-    }
-    renderSuggestions();
-    const p = new URLSearchParams(location.search);
-    const ds = p.get('ds');
-    if(ds && DATASETS[ds]){ document.getElementById('ds').value = ds; state.currentDS = ds; }
-    setDSLabel();
-    loadForSelection().then(()=>{
-      const q = p.get('q'); const a = p.get('a') || (DEFAULT_ACTION);
-      if(q){
-        document.getElementById('q').value = q;
-        (a==='passages' ? showPassages : askLLM)(q);
+      // Fail-fast se vazio
+      if(!arr.length){
+        setStatus('err','Índice vazio ou shape incompatível');
+        setDiag(`
+          <div class="alert err">
+            O índice foi carregado, mas não há itens (ou as chaves não batem).<br>
+            Esperado: array em raiz <span class="kbd">[]</span> ou campos <span class="kbd">chunks</span>/<span class="kbd">items</span>.
+          </div>
+          <div style="margin-top:8px">Verifique o nome e o formato do arquivo publicado.</div>
+        `);
+        return;
       }
-    });
+
+      RECORDS = arr;
+      READY = true;
+
+      // Cache texto para busca (lazy, mas já prepara primeiras 200)
+      FASTTEXT = new Array(arr.length);
+      for(let i=0;i<Math.min(200, arr.length);i++){
+        FASTTEXT[i] = (arr[i].title + ' ' + arr[i].citation + ' ' + arr[i].text).toLowerCase();
+      }
+
+      pCount.textContent   = `docs: ${arr.length}`;
+      pFields.textContent  = `campos ok: ${((arr.length*required.length - missing))}/${(arr.length*required.length)}`;
+      pMissing.textContent = `faltantes: ${missing}`;
+
+      setDiag(`
+        <div class="alert">
+          Índice carregado com sucesso.<br>
+          Itens: <b>${arr.length}</b> • Campos requeridos por item: <b>${required.join(', ')}</b>.
+        </div>
+        <div style="margin-top:8px">
+          Se algum item estiver sem <span class="kbd">text</span> (ou usar <span class="kbd">content/body</span>),
+          o normalizador já faz o mapeamento automático.
+        </div>
+      `);
+      setStatus('ok','Pronto. Digite e pressione Enter.');
+
+      // Auto-buscar se houver ?q=
+      const q0 = getParam('q');
+      if(q0){
+        $('#q').value = q0;
+        await sleep(50);
+        doSearch(q0);
+      }
+
+    } catch (err){
+      setStatus('err','Falha ao carregar índice');
+      setDiag(`
+        <div class="alert err">
+          <b>Erro no carregamento:</b> ${esc(err.message)}<br>
+          Possíveis causas: caminho/nome incorreto, arquivo ausente, CORS do GitHub Pages (raro em fetch local), ou rede.
+        </div>
+        <div style="margin-top:8px">
+          Confira se <span class="kbd">${esc(INDEX_URL)}</span> existe no mesmo diretório deste arquivo.
+        </div>
+      `);
+    } finally {
+      results.hidden = false;
+    }
   })();
   </script>
 </body>
 </html>
-
-
-
