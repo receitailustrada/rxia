@@ -4,24 +4,72 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RXIA • Redirecionando…</title>
+
+  <!-- Redirecionamento automático para o widget -->
   <meta http-equiv="refresh" content="0; url=rxi_widget.html?v=1">
-  <script>location.replace('rxi_widget.html?v=1');</script>
+  <script>
+    // Fallback rápido caso o meta refresh não funcione
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { location.replace('rxi_widget.html?v=1'); }, 60);
+    });
+  </script>
+
   <style>
-    :root{ --brand:#006fff; }
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh;color:#111;background:#fff}
-    .card{border:1px solid #eee;border-radius:14px;padding:24px 28px;box-shadow:0 8px 30px rgba(0,0,0,.06);max-width:560px;text-align:center}
-    h1{margin:0 0 8px;font-size:1.4rem;color:var(--brand)}
-    p{margin:.25rem 0}
-    a{color:var(--brand);text-decoration:none}
-    a:hover{text-decoration:underline}
-    .muted{color:#666;font-size:.92rem}
+    :root{
+      --brand:#006fff;      /* cor principal */
+      --brand-2:#0a7cff;    /* mais clara p/ gradiente */
+      --brand-3:#0057d6;    /* mais escura p/ gradiente */
+      --text:#111;
+      --bd:#eee;
+      --bg:#fff;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,Arial,sans-serif;
+      color:var(--text); background:var(--bg);
+    }
+    .card{
+      border:1px solid var(--bd);
+      border-radius:16px;
+      padding:26px 30px;
+      box-shadow:0 8px 30px rgba(0,0,0,.06);
+      max-width:580px; width:92%;
+      text-align:center;
+    }
+    h1{ margin:0 0 10px; font-size:1.5rem; color:var(--brand); }
+    p{ margin:.35rem 0; }
+    .muted{ color:#666; font-size:.95rem; }
+
+    /* Botão gradiente #006fff */
+    .btn{
+      display:inline-block;
+      margin-top:12px;
+      padding:0.95rem 1.25rem;
+      border:0; border-radius:12px;
+      color:#fff; font-weight:600; text-decoration:none;
+      background:linear-gradient(135deg, var(--brand-2) 0%, var(--brand) 55%, var(--brand-3) 100%);
+      box-shadow:0 6px 16px rgba(0,111,255,.25);
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow:0 10px 24px rgba(0,111,255,.28);
+      filter:brightness(1.02);
+    }
+    .btn:active{
+      transform: translateY(0);
+      box-shadow:0 5px 14px rgba(0,111,255,.22);
+      filter:brightness(.98);
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>RXIA</h1>
     <p>Redirecionando para o widget…</p>
-    <p class="muted">Se não redirecionar automaticamente, <a href="rxi_widget.html?v=1">clique aqui</a>.</p>
+    <a class="btn" href="rxi_widget.html?v=1">Abrir RXIA agora</a>
+    <p class="muted">Se não redirecionar automaticamente, clique no botão acima.</p>
   </div>
 </body>
 </html>
