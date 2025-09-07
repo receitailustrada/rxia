@@ -155,7 +155,7 @@
 <script>
 // ======= CONFIG =======
 // Cole aqui a URL do seu Apps Script (Web App) — termina com /exec:
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwO6JWEbHguLBAPcIrxTG7h3y7EKGyDIr8XQvmIknZNml4mo8KiMYltW-36ylH7HAa1/exec";
+const BACKEND_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
 
 // URLs das bases (raw GitHub). Ajuste conforme os arquivos que você publicou.
 const DATASETS = {
@@ -292,9 +292,9 @@ async function askLLM(q){
   }
 
   try{
+    // >>> Passo 1 aplicado: sem headers para evitar preflight CORS <<<
     const res = await fetch(BACKEND_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q, contexts: docs })
     });
     if(!res.ok){
