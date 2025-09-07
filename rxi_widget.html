@@ -1,356 +1,230 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>RXIA • Widget de Busca</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --roxo:#64376e; --lilas:#9169a5;
-      --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e7e2ec; --ok:#16a34a;
-      --warn:#f59e0b; --err:#dc2626;
-      --shadow:0 6px 20px rgba(100,55,110,.10);
-      --radius:14px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .wrap{max-width:980px;margin:32px auto;padding:0 16px}
-    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--roxo),var(--lilas));box-shadow:var(--shadow)}
-    h1{font-size:1.25rem;margin:0}
-    .card{background:#fff;border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .search{padding:16px}
-    .row{display:flex;gap:10px;align-items:center}
-    input[type="search"]{
-      flex:1;padding:14px 14px;border:1px solid var(--bd);border-radius:12px;font-size:1rem;outline:none;
-      background:#fff;
-    }
-    button{
-      padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:600;
-      background:var(--roxo);color:#fff;box-shadow:var(--shadow)
-    }
-    button.secondary{background:#fff;color:var(--roxo);border:1px solid var(--bd)}
-    .status{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:.95rem}
-    .dot{width:10px;height:10px;border-radius:50%}
-    .dot.loading{background:var(--warn)}
-    .dot.ok{background:var(--ok)}
-    .dot.err{background:var(--err)}
-    .meta{color:#555}
-    .results{margin-top:16px;padding:10px 0}
-    .item{padding:14px 16px;border-top:1px dashed var(--bd)}
-    .item:first-child{border-top:0}
-    .title{font-weight:600;margin:0 0 6px 0}
-    .cite{font-size:.9rem;color:#555;margin-bottom:6px}
-    .snippet{font-size:.98rem;line-height:1.45}
-    mark{background:#ffef9f;padding:0 2px;border-radius:2px}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--muted);border:1px solid var(--bd);font-size:.8rem;color:#555;margin-right:6px}
-    details.diag{margin-top:16px;padding:12px 16px;border-top:1px solid var(--bd);font-size:.92rem;color:#444}
-    .alert{padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:#fff8f0}
-    .alert.err{background:#fff1f1;border-color:#ffd0d0}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f5f5f5;border:1px solid #e5e5e5;border-radius:6px;padding:2px 6px}
-    footer{margin:22px 0 36px 0;color:#666;font-size:.9rem}
-    a{color:var(--roxo);text-decoration:none}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RXI • Widget de Busca (Resgate)</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --roxo:#64376e; --lilas:#9169a5; --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e8e2ec; --ok:#16a34a; --warn:#f59e0b; --err:#dc2626;
+    --shadow:0 6px 20px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Montserrat,system-ui,sans-serif}
+  .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+  h1{font-size:22px;margin:0 0 12px}
+  .card{background:#fff;border:1px solid var(--bd);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:12px 0}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  input[type="search"]{flex:1;min-width:240px;padding:12px 14px;border:1px solid var(--bd);border-radius:12px;outline:none}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--muted);padding:8px 12px;border-radius:999px;font-size:12px}
+  .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--roxo);color:#fff;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .stat{font-size:12px;color:#555}
+  .result{padding:12px 0;border-top:1px dashed var(--bd)}
+  mark{background: #fff3b0}
+  .err{color:var(--err);white-space:pre-wrap}
+  .meta{font-size:12px;color:#555;margin:6px 0}
+  .badge{display:inline-block;font-size:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:999px;margin-left:6px}
+  a{color:var(--roxo);text-decoration:none}
+  .small{font-size:12px;color:#666}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo" aria-hidden="true"></div>
-      <div>
-        <h1>RXIA • Widget de Busca</h1>
-        <div class="meta">Pesquisa local em documentos (índice JSON).</div>
-      </div>
-    </header>
+<div class="wrap">
+  <h1>RXI • Widget de Busca (Resgate)</h1>
 
-    <div class="card search">
-      <div class="row">
-        <input id="q" type="search" placeholder="Digite termos (ex.: 'INCA mama citologia')" autocomplete="off" />
-        <button id="btn">Buscar</button>
-        <button id="btnClear" class="secondary" title="Limpar">Limpar</button>
-      </div>
-      <div class="status" id="status">
-        <span class="dot loading" id="dot"></span>
-        <span id="msg">Carregando índice…</span>
-      </div>
-
-      <div class="results" id="results" hidden></div>
-
-      <details class="diag">
-        <summary>Diagnóstico técnico</summary>
-        <div id="diagBox" class="alert" style="margin-top:10px">
-          Aguardando carregamento…
-        </div>
-        <div style="margin-top:10px">
-          <span class="pill" id="pCount">docs: –</span>
-          <span class="pill" id="pFields">campos ok: –</span>
-          <span class="pill" id="pMissing">faltantes: –</span>
-          <span class="pill" id="pIndexUrl">índice: –</span>
-        </div>
-      </details>
+  <div class="card">
+    <div class="row">
+      <input id="q" type="search" placeholder="Digite para buscar nos textos (acentos ignorados)..." autocomplete="off"/>
+      <button id="clear" class="btn" type="button">Limpar</button>
     </div>
-
-    <footer>
-      Dica: você pode forçar um índice alternativo via URL, exemplo:
-      <span class="kbd">?index=rxi_index.cleaned.pruned.json</span> •
-      Para bust de cache, use <span class="kbd">?v=1</span>.
-    </footer>
+    <div class="row" style="margin-top:8px">
+      <span class="pill">Índice: <code id="idxName">?</code></span>
+      <span class="pill">Itens: <b id="count">–</b></span>
+      <span class="pill">Tempo: <b id="took">–</b></span>
+      <span class="stat" id="status"></span>
+    </div>
+    <div id="error" class="err" style="margin-top:8px"></div>
   </div>
 
-  <script>
-  // ====== util ======
-  const $ = (sel) => document.querySelector(sel);
-  const getParam = (k) => new URLSearchParams(location.search).get(k);
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  <div id="results" class="card" style="display:none">
+    <div class="small" id="hint"></div>
+    <div id="list"></div>
+  </div>
+</div>
 
-  // ====== config ======
-  const DEFAULT_INDEX = 'rxi_index.json';
-  const indexOverride = getParam('index');
-  const v = getParam('v') || '1';
-  const INDEX_URL = `./${indexOverride || DEFAULT_INDEX}?v=${encodeURIComponent(v)}`;
+<script>
+(function(){
+  const $ = (sel)=>document.querySelector(sel);
+  const url = new URL(location.href);
+  const indexParam = url.searchParams.get('index') || 'rxi_index.cleaned.pruned.json';
+  const vParam = url.searchParams.get('v') || Date.now();
+  const indexUrl = indexParam + '?v=' + encodeURIComponent(vParam);
+  $('#idxName').textContent = indexParam;
 
-  // ====== state ======
-  let RECORDS = [];   // normalizados
-  let FASTTEXT = [];  // cache texto minificado
-  let READY = false;
+  const state = { data:[], ready:false };
 
-  // ====== UI ======
-  const dot = $('#dot');
-  const msg = $('#msg');
-  const results = $('#results');
-  const diagBox = $('#diagBox');
-  const pCount = $('#pCount');
-  const pFields = $('#pFields');
-  const pMissing = $('#pMissing');
-  const pIndexUrl = $('#pIndexUrl');
-
-  function setStatus(kind, text){
-    dot.className = 'dot ' + (kind || 'loading');
-    msg.textContent = text || '';
-  }
-
-  function setDiag(html){
-    diagBox.innerHTML = html;
-  }
-
-  function esc(s){
-    return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  }
-
-  function highlight(text, terms){
-    if(!terms.length) return esc(text);
-    // limita texto a ~300 chars ao redor do primeiro termo
-    const lower = text.toLowerCase();
-    let pos = -1;
-    for(const t of terms){
-      const p = lower.indexOf(t);
-      if(p >= 0 && (pos < 0 || p < pos)) pos = p;
-    }
-    let snippet = text;
-    if(pos >= 0 && text.length > 300){
-      const start = Math.max(0, pos - 120);
-      const end   = Math.min(text.length, pos + 180);
-      snippet = (start>0?'…':'') + text.slice(start, end) + (end<text.length?'…':'');
-    } else if (text.length > 300){
-      snippet = text.slice(0, 300) + '…';
-    }
-    // destaque
-    let out = esc(snippet);
-    terms.forEach(t=>{
-      if(!t) return;
-      const rx = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
-      out = out.replace(rx,'<mark>$1</mark>');
+  const t0 = performance.now();
+  fetch(indexUrl, { cache:'no-store' })
+    .then(async (res)=>{
+      if(!res.ok) throw new Error('HTTP ' + res.status + ' ao buscar ' + indexParam);
+      let text = await res.text();
+      // Remove BOM e caracteres invisíveis problemáticos
+      text = text.replace(/^\uFEFF/, '').replace(/[\u0000-\u001F\u007F]/g, (m)=>{
+        // preserva \n, \r, \t
+        return (/[\n\r\t]/.test(m)) ? m : '';
+      });
+      try{
+        const json = JSON.parse(text);
+        // Suporta array direto ou objeto com "chunks"
+        state.data = Array.isArray(json) ? json : (Array.isArray(json.chunks) ? json.chunks : []);
+        if(!Array.isArray(state.data)) throw new Error('Formato inesperado. Esperava um array ou objeto {chunks:[...]}.');
+        // Validação leve de esquema
+        const required = ['title','text'];
+        const miss = sampleMissing(state.data, required, 5);
+        if(miss.length){
+          $('#status').textContent = 'Aviso: itens com campos ausentes ('+miss.join(', ')+')';
+        }else{
+          $('#status').textContent = 'Índice carregado com sucesso.';
+        }
+        $('#count').textContent = state.data.length.toLocaleString('pt-BR');
+        $('#took').textContent = (performance.now()-t0).toFixed(0)+' ms';
+        state.ready = true;
+      }catch(e){
+        throw new Error('JSON inválido: '+e.message.slice(0,300));
+      }
+    })
+    .catch(err=>{
+      $('#error').textContent = [
+        'Falha ao carregar o índice.',
+        'URL: ' + indexUrl,
+        'Motivo: ' + err.message,
+        '',
+        'Dicas:',
+        '• Confirme se o arquivo existe exatamente com este nome e caminho (case-sensitive).',
+        '• Hospede o JSON no MESMO domínio/pasta do widget para evitar CORS.',
+        '• Valide o JSON (sem vírgulas sobrando, aspas coerentes, sem comentários).',
+        '• Use ?v=algumaCoisa para forçar recarregar após cada push no GitHub Pages.'
+      ].join('\n');
     });
+
+  function sampleMissing(arr, required, max){
+    const names = new Set();
+    for(let i=0;i<arr.length && names.size<max;i++){
+      const it = arr[i] || {};
+      required.forEach(k=>{ if(!(k in it)) names.add(k); });
+    }
+    return [...names];
+  }
+
+  // Busca com normalização (acentos, caixa)
+  const norm = (s)=> (s||'')
+    .toString()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}+/gu,'')
+    .toLowerCase();
+
+  let lastQuery = '';
+  let timer = null;
+
+  $('#q').addEventListener('input', ()=>{
+    clearTimeout(timer);
+    timer = setTimeout(runSearch, 120);
+  });
+
+  $('#clear').addEventListener('click', ()=>{
+    $('#q').value='';
+    runSearch();
+    $('#q').focus();
+  });
+
+  function runSearch(){
+    const q = norm($('#q').value.trim());
+    if(!state.ready){
+      $('#hint').textContent = 'Carregando índice...';
+      $('#results').style.display='block';
+      return;
+    }
+    const t1 = performance.now();
+    const list = $('#list'); list.innerHTML='';
+    if(!q){
+      $('#hint').textContent = 'Digite algo para buscar nos textos.';
+      $('#results').style.display='block';
+      return;
+    }
+    const keys = ['title','citation','text','year','page_start','page_end','source_file','id'];
+    const hits = [];
+    for(const it of state.data){
+      const hayTitle = norm(it.title);
+      const hayText  = norm(it.text);
+      if(hayTitle.includes(q) || hayText.includes(q)){
+        hits.push(it);
+        if(hits.length>400) break; // guarda o front de travar
+      }
+    }
+    const took = (performance.now()-t1).toFixed(0);
+    $('#hint').textContent = `Mostrando ${hits.length.toLocaleString('pt-BR')} resultado(s) • ${took} ms`;
+
+    if(hits.length===0){
+      $('#results').style.display='block';
+      return;
+    }
+
+    // Render
+    const frag = document.createDocumentFragment();
+    for(const it of hits){
+      const el = document.createElement('div');
+      el.className = 'result';
+      const title = (it.title||'Sem título');
+      const citation = it.citation ? ` — <span class="small">${escapeHTML(it.citation)}</span>` : '';
+      const meta = [
+        it.year ? `Ano: ${it.year}`: null,
+        (it.page_start!=null && it.page_end!=null) ? `pp. ${it.page_start}–${it.page_end}`: null,
+        it.source_file ? `Fonte: ${it.source_file}`: null
+      ].filter(Boolean).join(' • ');
+
+      el.innerHTML = `
+        <div><b>${highlight(title, q)}</b>${citation}</div>
+        ${meta ? `<div class="meta">${escapeHTML(meta)}</div>` : ''}
+        <div class="small">${highlight((it.text||'').slice(0,600), q)}${(it.text||'').length>600?'...':''}</div>
+      `;
+      frag.appendChild(el);
+    }
+    list.appendChild(frag);
+    $('#results').style.display='block';
+  }
+
+  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  function highlight(s, q){
+    if(!q) return escapeHTML(s||'');
+    // normaliza ambas e marca apenas os trechos que casam (ingênuo mas eficaz)
+    const raw = s||'';
+    const idxs = [];
+    const src = norm(raw);
+    let pos = 0;
+    while(true){
+      const i = src.indexOf(q, pos);
+      if(i<0) break;
+      idxs.push([i, i+q.length]);
+      pos = i+q.length;
+      if(idxs.length>50) break;
+    }
+    if(!idxs.length) return escapeHTML(raw);
+    // reconstrói com <mark> usando índices do texto original (aproximação)
+    let out='', last=0;
+    for(const [a,b] of idxs){
+      out += escapeHTML(raw.slice(last,a)) + '<mark>' + escapeHTML(raw.slice(a,b)) + '</mark>';
+      last = b;
+    }
+    out += escapeHTML(raw.slice(last));
     return out;
   }
 
-  // ====== normalizador ======
-  function normalize(item){
-    return {
-      id: item.id ?? item.doc_id ?? crypto.randomUUID(),
-      title: item.title ?? item.document_title ?? '',
-      year: item.year ?? item.date_year ?? '',
-      page_start: item.page_start ?? item.page ?? item.start ?? '',
-      page_end: item.page_end ?? item.end ?? '',
-      citation: item.citation ?? item.source ?? '',
-      text: item.text ?? item.content ?? item.body ?? '',
-      source_file: item.source_file ?? item.file ?? ''
-    };
-  }
-
-  function toArray(raw){
-    if(Array.isArray(raw)) return raw;
-    if(raw && Array.isArray(raw.chunks)) return raw.chunks;
-    if(raw && Array.isArray(raw.items)) return raw.items;
-    return [];
-  }
-
-  // ====== busca (scoring simples) ======
-  function tokenize(q){
-    return q.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  }
-
-  function scoreRecord(rec, terms, i){
-    if(!FASTTEXT[i]) FASTTEXT[i] = (rec.title + ' ' + rec.citation + ' ' + rec.text).toLowerCase();
-    const blob = FASTTEXT[i];
-
-    // pontuação: +3 por termo no título, +2 na citação, +1 no texto; bônus por frequência
-    let s = 0;
-    const titleL = rec.title.toLowerCase();
-    const citeL  = rec.citation.toLowerCase();
-    for(const t of terms){
-      if(!t) continue;
-      if(titleL.includes(t)) s += 3;
-      if(citeL.includes(t))  s += 2;
-      // contagem no texto (limitada)
-      const m = blob.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'));
-      if(m) s += Math.min(5, m.length); // até +5 por termo por frequência
-    }
-    return s;
-  }
-
-  function doSearch(q){
-    const terms = tokenize(q);
-    if(!terms.length){
-      results.innerHTML = '';
-      results.hidden = false;
-      return;
-    }
-    const scored = RECORDS.map((rec,i)=>({rec, i, s:scoreRecord(rec,terms,i)}))
-                          .filter(o=>o.s>0)
-                          .sort((a,b)=>b.s-a.s)
-                          .slice(0,120);
-
-    if(!scored.length){
-      results.innerHTML = `<div class="alert">Nenhum resultado para <b>${esc(q)}</b>. Tente outros termos.</div>`;
-      results.hidden = false;
-      return;
-    }
-
-    results.innerHTML = scored.map(({rec})=>{
-      const file = rec.source_file ? ` • <span class="meta">${esc(rec.source_file)}</span>` : '';
-      const cite = rec.citation ? esc(rec.citation) : '';
-      const snippet = highlight(rec.text || '', terms);
-      return `
-        <div class="item">
-          <div class="title">${esc(rec.title || 'Sem título')}</div>
-          <div class="cite">${cite}${file}</div>
-          <div class="snippet">${snippet}</div>
-        </div>
-      `;
-    }).join('');
-    results.hidden = false;
-  }
-
-  // ====== eventos ======
-  $('#btn').addEventListener('click', ()=>{
-    doSearch($('#q').value);
+  // Pressione Enter para focar nos resultados
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ runSearch(); }
   });
-  $('#btnClear').addEventListener('click', ()=>{
-    $('#q').value=''; results.innerHTML=''; results.hidden=false; $('#q').focus();
-  });
-  $('#q').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter'){ doSearch(e.target.value); }
-  });
-
-  // ====== boot ======
-  (async function init(){
-    try{
-      setStatus('loading','Carregando índice…');
-      setDiag(`<div>Baixando <b>${esc(INDEX_URL)}</b> (sem cache)…</div>`);
-      pIndexUrl.textContent = `índice: ${INDEX_URL}`;
-
-      const resp = await fetch(INDEX_URL, { cache:'no-store' });
-      if(!resp.ok) throw new Error(`Falha ao carregar índice: ${resp.status} ${resp.statusText}`);
-
-      const rawText = await resp.text();
-
-      // Diagnóstico de JSON inválido (mensagem mais clara)
-      let data;
-      try{
-        data = JSON.parse(rawText);
-      } catch(parseErr){
-        setStatus('err','Erro: JSON inválido');
-        setDiag(`
-          <div class="alert err">
-            <b>JSON inválido</b>: ${esc(parseErr.message)}.<br>
-            Verifique vírgulas a mais ao fim de arrays/objetos, aspas e colchetes.
-          </div>
-          <details style="margin-top:8px"><summary>Prévia do conteúdo recebido</summary>
-            <pre style="white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;">${esc(rawText.slice(0,1500))}${rawText.length>1500?'…':''}</pre>
-          </details>
-        `);
-        return;
-      }
-
-      const arr = toArray(data).map(normalize);
-
-      // Métrica de campos faltantes
-      const required = ['title','citation','text'];
-      let missing = 0;
-      arr.forEach(r => required.forEach(k => { if(!r[k]) missing++; }));
-
-      // Fail-fast se vazio
-      if(!arr.length){
-        setStatus('err','Índice vazio ou shape incompatível');
-        setDiag(`
-          <div class="alert err">
-            O índice foi carregado, mas não há itens (ou as chaves não batem).<br>
-            Esperado: array em raiz <span class="kbd">[]</span> ou campos <span class="kbd">chunks</span>/<span class="kbd">items</span>.
-          </div>
-          <div style="margin-top:8px">Verifique o nome e o formato do arquivo publicado.</div>
-        `);
-        return;
-      }
-
-      RECORDS = arr;
-      READY = true;
-
-      // Cache texto para busca (lazy, mas já prepara primeiras 200)
-      FASTTEXT = new Array(arr.length);
-      for(let i=0;i<Math.min(200, arr.length);i++){
-        FASTTEXT[i] = (arr[i].title + ' ' + arr[i].citation + ' ' + arr[i].text).toLowerCase();
-      }
-
-      pCount.textContent   = `docs: ${arr.length}`;
-      pFields.textContent  = `campos ok: ${((arr.length*required.length - missing))}/${(arr.length*required.length)}`;
-      pMissing.textContent = `faltantes: ${missing}`;
-
-      setDiag(`
-        <div class="alert">
-          Índice carregado com sucesso.<br>
-          Itens: <b>${arr.length}</b> • Campos requeridos por item: <b>${required.join(', ')}</b>.
-        </div>
-        <div style="margin-top:8px">
-          Se algum item estiver sem <span class="kbd">text</span> (ou usar <span class="kbd">content/body</span>),
-          o normalizador já faz o mapeamento automático.
-        </div>
-      `);
-      setStatus('ok','Pronto. Digite e pressione Enter.');
-
-      // Auto-buscar se houver ?q=
-      const q0 = getParam('q');
-      if(q0){
-        $('#q').value = q0;
-        await sleep(50);
-        doSearch(q0);
-      }
-
-    } catch (err){
-      setStatus('err','Falha ao carregar índice');
-      setDiag(`
-        <div class="alert err">
-          <b>Erro no carregamento:</b> ${esc(err.message)}<br>
-          Possíveis causas: caminho/nome incorreto, arquivo ausente, CORS do GitHub Pages (raro em fetch local), ou rede.
-        </div>
-        <div style="margin-top:8px">
-          Confira se <span class="kbd">${esc(INDEX_URL)}</span> existe no mesmo diretório deste arquivo.
-        </div>
-      `);
-    } finally {
-      results.hidden = false;
-    }
-  })();
-  </script>
+})();
+</script>
 </body>
 </html>
