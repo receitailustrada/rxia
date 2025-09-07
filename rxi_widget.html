@@ -149,6 +149,8 @@ const SUGGESTIONS = [
 const DEFAULT_ACTION = (BACKEND_URL && !BACKEND_URL.startsWith("PASTE_")) ? 'ai' : 'passages';
 
 /* ========== BUSCA (normalização clínica + sinônimos com peso) ========== */
+function normStr(s){ return (s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
 // Normaliza padrões: "BI-RADS 3" -> "birads3", "ultrassonografia" -> "ultrassom", "colecisto" -> "vesicula", etc.
 function normalizeClinicalPatterns(s){
   if(!s) return s;
@@ -177,7 +179,7 @@ function normalizeTerm(t){
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]/g,'');
 }
-// grupos de sinônimos (uma palavra cada)
+// sinônimos (uma palavra cada)
 const SYN_GROUPS = [
   ['ultrassom','ecografia','ultrassonografia','usg','us'],
   ['mamografia','mammografia','mamo'],
@@ -186,7 +188,6 @@ const SYN_GROUPS = [
   ['papanicolau','papanicolaou','citologia','colpocitologia'],
   ['ascus','asc-us']
 ];
-// constrói mapa bidirecional
 const SYNONYMS = (()=> {
   const map = {};
   const add = (a,b)=>{ (map[a]=map[a]||new Set()).add(b); };
@@ -203,6 +204,35 @@ function expandTerms(arr){
     const k = normalizeTerm(t);
     (SYNONYMS[k]||[]).forEach(s=> set.add(s));
   });
+  return Array.from(set);
+}
+
+// termos muito genéricos (não usar como âncora)
+const STOP_ANCHORS = new Set([
+  'conduta','condutas','protocolo','protocolos','recomendacao','recomendacoes',
+  'exame','exames','resultado','resultados','paciente','adulto','pediatrico',
+  'pediatrica','sus','aps','ab','municipal','estaduais','nacional','diagnostico',
+  'tratamento','manejo','fluxograma','criterios','encaminhamento','encaminhar'
+]);
+
+function makeAnchors(baseTerms){
+  const a = [];
+  baseTerms.forEach(t=>{
+    const n = normalizeTerm(t);
+    if(!n || n.length<=2 || STOP_ANCHORS.has(n)) return;
+    a.push(n);
+  });
+  // heurísticas por tema:
+  const set = new Set(a);
+  const hasBirads = a.some(x=> x.startsWith('birads'));
+  const hasMama   = a.includes('mamografia') || a.includes('mama') || a.includes('mastologia');
+  const hasVes    = a.includes('vesicula') || a.includes('colecisto') || a.includes('polipo');
+  if (hasBirads || hasMama){
+    ['birads0','birads1','birads2','birads3','birads4','birads5','birads6','mamografia','mama','mastologia','ultrassom'].forEach(x=>set.add(x));
+  }
+  if (hasVes){
+    ['vesicula','biliar','colecistectomia','colecisto','polipo','polipos'].forEach(x=>set.add(x));
+  }
   return Array.from(set);
 }
 
@@ -235,23 +265,37 @@ async function loadIndex(url){
   }
 }
 
-function scoreDoc(doc, qTerms, primeSet){
-  const toks = tokenize(doc.text);
+function scoreDoc(doc, qTerms, primeSet, anchors){
+  const titleN = normStr(doc.title||'');
+  const srcN   = normStr(doc.source_file||'');
+  const docTokenSet = new Set(tokenize(doc.text));
+
+  // precisa ter ao menos UMA âncora no texto/título/arquivo
+  const hasAnchor = anchors.some(a => docTokenSet.has(a) || titleN.includes(a) || srcN.includes(a));
+  if (!hasAnchor) return 0;
+
+  // TF-IDF
   const tf = {};
-  toks.forEach(t=> tf[t] = (tf[t]||0)+1);
+  tokenize(doc.text).forEach(t=> tf[t] = (tf[t]||0)+1);
 
   let score = 0;
   qTerms.forEach(q=>{
     const tfq = tf[q] || 0;
     const df = state.df[q] || 1;
     const idf = Math.log((state.N+1) / df);
-    const weight = primeSet.has(q) ? 1.25 : 1.0; // termo digitado vale mais que sinônimo
+    const weight = primeSet.has(q) ? 1.25 : 1.0; // termo digitado vale mais
     score += (tfq > 0 ? (1 + Math.log(tfq)) : 0) * idf * weight;
   });
 
-  // bônus leve se o título contiver termo principal
-  const title = (doc.title||'').toLowerCase();
-  primeSet.forEach(t => { if (t && title.includes(t)) score += 0.3; });
+  // bônus leve por título relevante
+  primeSet.forEach(t => { if (t && titleN.includes(t)) score += 0.3; });
+
+  // heurística de domínio (mamografia/mama)
+  const mammoQuery = anchors.some(a => a.startsWith('birads') || a==='mamografia' || a==='mama' || a==='ultrassom');
+  if (mammoQuery){
+    if (/(mama|mastologia|mamografia|exame\-mamografia|mamas)/.test(titleN+' '+srcN)) score += 1.0;
+    if (/(colo do utero|cervic|citopatolog)/.test(titleN+' '+srcN)) score -= 0.8; // desprioriza colo do útero para consultas de mama
+  }
 
   return score;
 }
@@ -260,8 +304,9 @@ function topK(q, k=12){
   const baseTerms = tokenize(q).filter(v=>v.length>1);
   const qTerms = expandTerms(baseTerms);
   const primeSet = new Set(baseTerms.map(normalizeTerm));
+  const anchors = makeAnchors(baseTerms);
 
-  const scored = state.docs.map(d=>({ d, s:scoreDoc(d, qTerms, primeSet) }))
+  const scored = state.docs.map(d=>({ d, s:scoreDoc(d, qTerms, primeSet, anchors) }))
     .filter(x=>x.s>0)
     .sort((a,b)=>b.s-a.s)
     .slice(0, k);
@@ -309,8 +354,8 @@ async function askLLM(q){
   const ansEl = document.getElementById('answer');
   ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
 
-  // top-8 trechos com até ~2400 chars cada
-  const docs = topK(q, 8).map(d=>({
+  // top-10 trechos com até ~2400 chars cada
+  const docs = topK(q, 10).map(d=>({
     citation: d.citation,
     title: d.title,
     page_start: d.page_start,
@@ -332,7 +377,6 @@ async function askLLM(q){
   }
 
   try{
-    // Envia token do app e evita preflight (sem headers custom)
     const res = await fetch(BACKEND_URL, {
       method: 'POST',
       body: JSON.stringify({ question: q, contexts: docs, token: APP_TOKEN })
