@@ -8,68 +8,134 @@
 <style>
   :root{ --bg:#fff; --text:#1f2937; --muted:#f3f4f6; --bd:#e5e7eb; --brand:#64376e; --ok:#16a34a; --warn:#f59e0b; }
   *{ box-sizing:border-box; }
-  body{ margin:0; font-family:Montserrat, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans'; background:var(--bg); color:var(--text); }
+  body{ margin:0; font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial; background:var(--bg); color:var(--text); }
   .banner{ background:#fff8e6; border-bottom:1px solid #f5d399; padding:.6rem 1rem; color:#5b3d00; font-size:.9rem; }
   header{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--bd); padding:1rem; z-index:10; }
-  .container{ max-width:900px; margin:0 auto; padding:1.25rem; }
+  .container{ max-width:980px; margin:0 auto; padding:1.25rem; }
   h1{ font-size:1.25rem; margin:0 0 .5rem; color:var(--brand); }
-  .bar{ display:flex; gap:.5rem; }
-  input[type="text"]{ flex:1; padding:.85rem 1rem; border:1px solid var(--bd); border-radius:.75rem; outline:0; }
-  button{ padding:.85rem 1.2rem; border:0; border-radius:.75rem; background:var(--brand); color:#fff; font-weight:600; cursor:pointer; }
+  .bar{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+  input[type="text"]{ flex:1; padding:.9rem 1rem; border:1px solid var(--bd); border-radius:.75rem; outline:0; min-width:260px; }
+  button{ padding:.9rem 1.1rem; border:0; border-radius:.75rem; background:var(--brand); color:#fff; font-weight:600; cursor:pointer; }
   button.secondary{ background:#111827; }
+  select{ padding:.85rem .9rem; border:1px solid var(--bd); border-radius:.75rem; background:#fff; }
   .pill{ display:inline-block; padding:.25rem .6rem; border-radius:999px; background:var(--muted); border:1px solid var(--bd); font-size:.75rem; margin-right:.25rem; }
   .card{ background:#fff; border:1px solid var(--bd); border-radius:1rem; padding:1rem; margin:.75rem 0; box-shadow:0 4px 20px rgba(0,0,0,.04); }
   .meta{ font-size:.85rem; color:#374151; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.5rem; }
   .txt{ line-height:1.6; white-space:pre-wrap; }
-  .hi{ background:#fff3b0; }
-  .row{ display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
-  .copy{ background:var(--ok); }
-  footer{ text-align:center; color:#6b7280; font-size:.8rem; padding:1rem 0 2rem; }
+  .ai{ border-left:6px solid var(--brand); }
   .small{ font-size:.8rem; color:#6b7280; }
+  .hi{ background:#fff3b0; }
+  .row{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+  .right{ margin-left:auto; }
+
+  /* chips */
+  .chips{margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem}
+  .chip{appearance:none;border:1px solid var(--bd);background:var(--muted);
+        padding:.55rem .8rem;border-radius:999px;font-size:.9rem;cursor:pointer}
+  .chip:hover{filter:brightness(.97)}
 </style>
 </head>
 <body>
-<div class="banner">⚠️ <strong>RXIA</strong>: respostas apenas a partir dos documentos do índice. Não substitui avaliação médica. <span style="float:right">Versão: 2025-09-06</span></div>
+<div class="banner">⚠️ <strong>RXIA</strong>: responde apenas com base nos documentos do índice. Não substitui avaliação médica.
+  <span style="float:right">Beta (RAG)</span>
+</div>
+
 <header>
   <div class="container">
     <h1>RXIA • Busca com Citações (somente fontes internas)</h1>
     <div class="bar">
-      <input id="q" type="text" placeholder="Ex.: conduta para BI-RADS 3, periodicidade da mamografia, ASC-US, etc.">
-      <button id="go">Buscar</button>
+      <input id="q" type="text" placeholder="Pergunte algo (ex.: 'conduta para BI-RADS 3?')">
+      <button id="ask">Responder com IA</button>
+      <button id="find" class="secondary">Mostrar trechos</button>
       <button id="clear" class="secondary">Limpar</button>
+
+      <!-- seletor de base -->
+      <select id="ds" title="Selecionar base do índice">
+        <option value="completo">Base: Completo</option>
+        <option value="focado">Base: Focado</option>
+        <option value="curado">Base: Curado</option>
+      </select>
     </div>
-    <div class="small" style="margin-top:.5rem">O RXIA busca somente no arquivo <code>rxi_index.json</code>. Atualizado em 2025-09-06.</div>
+
+    <!-- chips de sugestão -->
+    <div class="chips" id="suggestions"></div>
+
+    <div class="small" style="margin-top:.5rem">
+      <span id="dsLabel">Carregando…</span>
+    </div>
   </div>
 </header>
+
 <main class="container">
   <div id="status" class="small">Carregando índice…</div>
+  <div id="answer"></div>
   <div id="results"></div>
 </main>
-<footer>
-  RXIA • MVP client-side (TF‑IDF em JavaScript). Trocar por LLM/RAG depois.
+
+<footer class="container small">
+  RXIA • MVP client-side (ranqueamento TF-IDF em JavaScript) + servidor Apps Script para IA. Chave segura no backend.
 </footer>
+
 <script>
+// ======= CONFIG =======
+// Cole aqui a URL do seu Apps Script (Web App). NÃO é a chave, é a URL /exec:
+const BACKEND_URL = "PASTE_YOUR_APPS_SCRIPT_WEBAPP_URL_HERE";
+// Ex.: const BACKEND_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+
+// URLs das bases (raw GitHub). Você pode manter só as que estiverem publicadas.
+const DATASETS = {
+  completo: "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index.json",
+  focado:   "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index_focus.json",
+  curado:   "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index_curated_focus.json"
+};
+
+// Sugestões (label para o botão, q = texto que vai para a caixa de busca)
+const SUGGESTIONS = [
+  { label: "Conduta BI-RADS 3", q: "conduta mamografia BI-RADS 3" },
+  { label: "ASC-US (rastreamento)", q: "ASC-US rastreamento conduta" },
+  { label: "Nódulo <30a", q: "nódulo mamário palpável <30 anos abordagem" },
+  { label: "Mastalgia", q: "mastalgia avaliação e manejo" },
+  { label: "Intervalo Papanicolau", q: "intervalo rastreamento câncer do colo do útero" },
+  { label: "Varicocele", q: "varicocele critérios encaminhamento andrologia" },
+  { label: "Infertilidade (exames)", q: "infertilidade masculina exames iniciais encaminhar" },
+  { label: "Asma adulto", q: "asma adulto manejo APS critérios de encaminhamento" },
+  { label: "Pólipo de vesícula", q: "pólipo de vesícula critérios de encaminhamento" }
+];
+
+// ======= CORE =======
 function tokenize(s){
   return (s || "").toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9á-úç\s]/g,' ')
     .split(/\s+/).filter(Boolean);
 }
-const state = { docs: [], df:{}, N:0 };
 
-async function loadIndex(){
-  try {
-    const res = await fetch('rxi_index.json?v=20250906');
+const state = { docs: [], df:{}, N:0, currentDS: "completo" };
+
+function setDSLabel(){
+  const map = {completo:"Base: Completo", focado:"Base: Focado", curado:"Base: Curado"};
+  document.getElementById('dsLabel').textContent =
+    (map[state.currentDS] || "Base") + " • arquivo: " + (DATASETS[state.currentDS] || "?");
+}
+
+async function loadIndex(url){
+  const statusEl = document.getElementById('status');
+  try{
+    statusEl.textContent = 'Carregando índice…';
+    const res = await fetch(url + '?v=' + Date.now());
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
-    state.docs = data.documents || [];
+    state.docs = (data && data.documents) ? data.documents : [];
     state.N = state.docs.length;
-    state.docs.forEach((d)=>{
+    const df = {};
+    state.docs.forEach(d=>{
       const terms = new Set(tokenize(d.text));
-      terms.forEach(t=>{ state.df[t] = (state.df[t] || 0) + 1; });
+      terms.forEach(t=>{ df[t] = (df[t]||0)+1; });
     });
-    document.getElementById('status').textContent = `Índice carregado: ${state.N} trechos.`;
-  } catch(e) {
-    document.getElementById('status').textContent = 'Falha ao carregar o índice. Verifique se rxi_index.json está na raiz.';
+    state.df = df;
+    statusEl.textContent = `Índice carregado: ${state.N} trechos.`;
+  }catch(e){
+    statusEl.textContent = 'Falha ao carregar o índice ('+e.message+'). Verifique o link/arquivo.';
   }
 }
 
@@ -87,6 +153,15 @@ function scoreDoc(doc, qTerms){
   return score;
 }
 
+function topK(q, k=5){
+  const qTerms = tokenize(q).filter(v=>v.length>1);
+  const scored = state.docs.map(d=>({d, s:scoreDoc(d, qTerms)}))
+    .filter(x=>x.s>0)
+    .sort((a,b)=>b.s-a.s)
+    .slice(0, k);
+  return scored.map(x=>x.d);
+}
+
 function highlight(text, terms){
   let out = text;
   terms.forEach(t=>{
@@ -98,38 +173,134 @@ function highlight(text, terms){
   return out;
 }
 
-function search(){
-  const q = document.getElementById('q').value.trim();
+function showPassages(q){
   const resultsEl = document.getElementById('results');
   resultsEl.innerHTML = '';
-  if(!q) return;
   const qTerms = tokenize(q).filter(v=>v.length>1);
-  const scored = state.docs.map(d=>({d, s:scoreDoc(d, qTerms)}))
-    .filter(x=>x.s>0)
-    .sort((a,b)=>b.s-a.s)
-    .slice(0, 10);
-  if(scored.length===0){
-    resultsEl.innerHTML = '<div class="card">Nenhum resultado encontrado nos seus documentos. Verifique termos ou adicione mais fontes.</div>';
+  const docs = topK(q, 8);
+  if(docs.length===0){
+    resultsEl.innerHTML = '<div class="card">Nenhum resultado encontrado nos seus documentos.</div>';
     return;
   }
-  scored.forEach(({d,s})=>{
+  docs.forEach(d=>{
     const card = document.createElement('div');
     card.className = 'card';
     const pages = d.page_start + (d.page_end!==d.page_start? '–'+d.page_end : '');
-    const meta = '<div class="meta"><span class="pill">'+d.title+'</span><span class="pill">p. '+pages+'</span><span class="pill">score '+s.toFixed(2)+'</span></div>';
-    const txt = highlight(d.text.slice(0, 1200), qTerms);
-    card.innerHTML = meta + '<div class="txt">'+txt+'</div>';
+    const meta = `<div class="meta">
+      <span class="pill">${d.title}</span>
+      <span class="pill">p. ${pages}</span>
+      <span class="pill">src: ${d.source_file || '—'}</span>
+    </div>`;
+    const txt = highlight(d.text.slice(0, 1500), qTerms);
+    card.innerHTML = meta + `<div class="txt">${txt}</div>`;
     resultsEl.appendChild(card);
   });
 }
 
-document.getElementById('go').addEventListener('click', search);
+async function askLLM(q){
+  const ansEl = document.getElementById('answer');
+  ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
+  const docs = topK(q, 5).map(d=>({
+    citation: d.citation,
+    title: d.title,
+    page_start: d.page_start,
+    page_end: d.page_end,
+    text: d.text.length>1800 ? (d.text.slice(0, 1800)+'…') : d.text
+  }));
+
+  if(!BACKEND_URL || BACKEND_URL.startsWith("PASTE_")){
+    ansEl.innerHTML = '<div class="card ai">⚠️ Configure o BACKEND_URL (URL do Apps Script) dentro do arquivo para gerar resposta.</div>';
+    return;
+  }
+
+  try{
+    const res = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, contexts: docs })
+    });
+    if(!res.ok){
+      const t = await res.text();
+      throw new Error('HTTP '+res.status+': '+t);
+    }
+    const data = await res.json();
+    const text = (data && data.answer) ? data.answer : 'Sem resposta';
+    const cites = docs.map(d=>'• '+d.citation).join('<br>');
+    ansEl.innerHTML = `<div class="card ai">
+        <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
+        <div class="txt">${text}</div>
+        <div class="small" style="margin-top:.5rem"><strong>Fontes:</strong><br>${cites}</div>
+      </div>`;
+  }catch(e){
+    ansEl.innerHTML = '<div class="card ai">❌ Erro ao consultar a IA: '+e.message+'</div>';
+  }
+}
+
+// ======= UI wiring =======
+document.getElementById('ask').addEventListener('click', ()=>{
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  document.getElementById('answer').innerHTML = '';
+  document.getElementById('results').innerHTML = '';
+  askLLM(q);
+});
+document.getElementById('find').addEventListener('click', ()=>{
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  document.getElementById('answer').innerHTML = '';
+  document.getElementById('results').innerHTML = '';
+  showPassages(q);
+});
 document.getElementById('clear').addEventListener('click', ()=>{
   document.getElementById('q').value = '';
+  document.getElementById('answer').innerHTML = '';
   document.getElementById('results').innerHTML = '';
 });
-document.getElementById('q').addEventListener('keydown', e=>{ if(e.key==='Enter') search(); });
-loadIndex();
+document.getElementById('q').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ document.getElementById('ask').click(); }
+});
+
+// render chips
+function renderSuggestions(){
+  const box = document.getElementById('suggestions');
+  if(!box) return;
+  box.innerHTML = '';
+  SUGGESTIONS.forEach(s=>{
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type='button'; b.textContent = s.label;
+    b.addEventListener('click', ()=>{
+      const qEl = document.getElementById('q'); qEl.value = s.q;
+      askLLM(s.q);
+    });
+    box.appendChild(b);
+  });
+}
+
+// dataset select
+async function loadForSelection(){
+  const sel = document.getElementById('ds');
+  const val = sel.value || 'completo';
+  state.currentDS = val;
+  setDSLabel();
+  await loadIndex(DATASETS[val]);
+}
+document.getElementById('ds').addEventListener('change', loadForSelection);
+
+// query params (?q=...&a=ai|passages&ds=curado)
+(function bootstrap(){
+  renderSuggestions();
+  const p = new URLSearchParams(location.search);
+  const ds = p.get('ds');
+  if(ds && DATASETS[ds]){ document.getElementById('ds').value = ds; state.currentDS = ds; }
+  setDSLabel();
+  loadForSelection().then(()=>{
+    const q = p.get('q'); const a = p.get('a') || 'ai';
+    if(q){
+      document.getElementById('q').value = q;
+      (a==='passages' ? showPassages : askLLM)(q);
+    }
+  });
+})();
 </script>
 </body>
 </html>
