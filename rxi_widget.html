@@ -148,25 +148,53 @@ const SUGGESTIONS = [
 
 const DEFAULT_ACTION = (BACKEND_URL && !BACKEND_URL.startsWith("PASTE_")) ? 'ai' : 'passages';
 
-/* ========== BUSCA (normalização clínica + sinônimos com peso) ========== */
-function normStr(s){ return (s||"").toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+/* ========== HELPERS DE NORMALIZAÇÃO ========== */
+function normStr(s){
+  return (s||"")
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
 
-// Normaliza padrões: "BI-RADS 3" -> "birads3", "ultrassonografia" -> "ultrassom", "colecisto" -> "vesicula", etc.
+/* Normaliza padrões clínicos:
+   - Dashes/hífens incomuns → '-'
+   - BI-RADS com algarismos romanos → birads3/4/5/6
+   - BI-RADS com dígitos → birads0..6
+   - Sinônimos comuns: ultrassonografia→ultrassom, colecisto→vesicula, etc.
+*/
 function normalizeClinicalPatterns(s){
   if(!s) return s;
-  return s
-    .replace(/bi[\s\-]?rads?\s*0/gi,'birads0')
-    .replace(/bi[\s\-]?rads?\s*1/gi,'birads1')
-    .replace(/bi[\s\-]?rads?\s*2/gi,'birads2')
-    .replace(/bi[\s\-]?rads?\s*3/gi,'birads3')
-    .replace(/bi[\s\-]?rads?\s*4/gi,'birads4')
-    .replace(/bi[\s\-]?rads?\s*5/gi,'birads5')
-    .replace(/bi[\s\-]?rads?\s*6/gi,'birads6')
-    .replace(/\b(usg|ultra[\s\-]?som|ultra[\s\-]?son|ultrasson(?:o|ografia)?|ecografia)\b/gi,'ultrassom')
+
+  // Unifica hífens/dashes para '-'
+  s = s.replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-');
+
+  // BI-RADS com romanos
+  s = s
+    .replace(/bi\s*-?\s*rads?\s*vi\b/gi, 'birads6')
+    .replace(/bi\s*-?\s*rads?\s*v\b/gi,  'birads5')
+    .replace(/bi\s*-?\s*rads?\s*iv\b/gi, 'birads4')
+    .replace(/bi\s*-?\s*rads?\s*iii\b/gi,'birads3');
+
+  // BI-RADS com dígitos
+  s = s
+    .replace(/bi\s*-?\s*rads?\s*0\b/gi,'birads0')
+    .replace(/bi\s*-?\s*rads?\s*1\b/gi,'birads1')
+    .replace(/bi\s*-?\s*rads?\s*2\b/gi,'birads2')
+    .replace(/bi\s*-?\s*rads?\s*3\b/gi,'birads3')
+    .replace(/bi\s*-?\s*rads?\s*4\b/gi,'birads4')
+    .replace(/bi\s*-?\s*rads?\s*5\b/gi,'birads5')
+    .replace(/bi\s*-?\s*rads?\s*6\b/gi,'birads6');
+
+  // Outros termos
+  s = s
+    .replace(/\b(usg|ultra\s*-?\s*som|ultra\s*-?\s*son|ultrasson(?:o|ografia)?|ecografia)\b/gi,'ultrassom')
     .replace(/\bpapanicolaou\b/gi,'papanicolau')
     .replace(/\bves[ií]cula\b/gi,'vesicula')
     .replace(/\bcolecisto\b/gi,'vesicula');
+
+  return s;
 }
+
+/* ========== TOKENIZAÇÃO + SINÔNIMOS ========== */
 function tokenize(s){
   s = normalizeClinicalPatterns(s || "");
   return s.toLowerCase()
@@ -188,7 +216,7 @@ const SYN_GROUPS = [
   ['papanicolau','papanicolaou','citologia','colpocitologia'],
   ['ascus','asc-us']
 ];
-const SYNONYMS = (()=> {
+const SYNONYMS = (()=>{
   const map = {};
   const add = (a,b)=>{ (map[a]=map[a]||new Set()).add(b); };
   SYN_GROUPS.forEach(g=>{
@@ -207,7 +235,7 @@ function expandTerms(arr){
   return Array.from(set);
 }
 
-// termos muito genéricos (não usar como âncora)
+/* Âncoras: termos que precisam aparecer no doc/título/arquivo */
 const STOP_ANCHORS = new Set([
   'conduta','condutas','protocolo','protocolos','recomendacao','recomendacoes',
   'exame','exames','resultado','resultados','paciente','adulto','pediatrico',
@@ -236,6 +264,7 @@ function makeAnchors(baseTerms){
   return Array.from(set);
 }
 
+/* ========== ESTADO ========== */
 const state = { docs: [], df:{}, N:0, currentDS: "completo" };
 
 function setDSLabel(){
@@ -244,6 +273,7 @@ function setDSLabel(){
     (map[state.currentDS] || "Base") + " • arquivo: " + (DATASETS[state.currentDS] || "?");
 }
 
+/* ========== CARREGAMENTO DO ÍNDICE ========== */
 async function loadIndex(url){
   const statusEl = document.getElementById('status');
   try{
@@ -265,36 +295,55 @@ async function loadIndex(url){
   }
 }
 
+/* ========== RANQUEAMENTO ========== */
 function scoreDoc(doc, qTerms, primeSet, anchors){
   const titleN = normStr(doc.title||'');
   const srcN   = normStr(doc.source_file||'');
-  const docTokenSet = new Set(tokenize(doc.text));
+  const docTokens = tokenize(doc.text);
+  const docTokenSet = new Set(docTokens);
 
-  // precisa ter ao menos UMA âncora no texto/título/arquivo
+  // Precisa conter ao menos uma âncora no texto, título ou nome do arquivo
   const hasAnchor = anchors.some(a => docTokenSet.has(a) || titleN.includes(a) || srcN.includes(a));
   if (!hasAnchor) return 0;
 
-  // TF-IDF
+  // TF-IDF com peso maior para termos digitados (primeSet)
   const tf = {};
-  tokenize(doc.text).forEach(t=> tf[t] = (tf[t]||0)+1);
+  docTokens.forEach(t=> tf[t] = (tf[t]||0)+1);
 
   let score = 0;
   qTerms.forEach(q=>{
     const tfq = tf[q] || 0;
     const df = state.df[q] || 1;
     const idf = Math.log((state.N+1) / df);
-    const weight = primeSet.has(q) ? 1.25 : 1.0; // termo digitado vale mais
-    score += (tfq > 0 ? (1 + Math.log(tfq)) : 0) * idf * weight;
+    const weight = primeSet.has(q) ? 1.25 : 1.0;
+    if (tfq > 0) score += (1 + Math.log(tfq)) * idf * weight;
   });
 
-  // bônus leve por título relevante
-  primeSet.forEach(t => { if (t && titleN.includes(t)) score += 0.3; });
+  // Bônus leve se o título contém um termo principal
+  primeSet.forEach(t => { if (t && titleN.includes(t)) score += 0.35; });
 
-  // heurística de domínio (mamografia/mama)
-  const mammoQuery = anchors.some(a => a.startsWith('birads') || a==='mamografia' || a==='mama' || a==='ultrassom');
-  if (mammoQuery){
-    if (/(mama|mastologia|mamografia|exame\-mamografia|mamas)/.test(titleN+' '+srcN)) score += 1.0;
-    if (/(colo do utero|cervic|citopatolog)/.test(titleN+' '+srcN)) score -= 0.8; // desprioriza colo do útero para consultas de mama
+  // Heurística para consultas de mama/BI-RADS
+  const isMammoQuery = anchors.some(a =>
+    a.startsWith('birads') || a==='mamografia' || a==='mama' || a==='mastologia' || a==='ultrassom'
+  );
+  if (isMammoQuery){
+    const key = `${titleN} ${srcN}`;
+    // Prioriza mastologia/mamografia/US de mamas
+    if (/(mama|mastolog|mamograf|exame-?mamografia|ultrassom.*mama|us.*mama|bi-?rads|birads)/.test(key)) {
+      score += 1.4;
+    }
+    // Desprioriza material genérico de rastreamento/INCA
+    if (/(detec[aç]ao precoce|rastreamento|inca)/.test(key)) {
+      score -= 1.0;
+    }
+    // Bônus se o arquivo for típico de mastologia
+    if (/protocolo.*mastolog|encaminhamento.*mastolog|exame-?mamografia|us.*mamas/.test(srcN)){
+      score += 0.6;
+    }
+    // Penaliza itens de "colo do útero" numa busca de mama
+    if (/(colo do utero|cervic|citopatolog)/.test(key)) {
+      score -= 0.8;
+    }
   }
 
   return score;
@@ -302,9 +351,9 @@ function scoreDoc(doc, qTerms, primeSet, anchors){
 
 function topK(q, k=12){
   const baseTerms = tokenize(q).filter(v=>v.length>1);
-  const qTerms = expandTerms(baseTerms);
-  const primeSet = new Set(baseTerms.map(normalizeTerm));
-  const anchors = makeAnchors(baseTerms);
+  const qTerms    = expandTerms(baseTerms);
+  const primeSet  = new Set(baseTerms.map(normalizeTerm));
+  const anchors   = makeAnchors(baseTerms);
 
   const scored = state.docs.map(d=>({ d, s:scoreDoc(d, qTerms, primeSet, anchors) }))
     .filter(x=>x.s>0)
@@ -314,6 +363,7 @@ function topK(q, k=12){
   return scored.map(x=>x.d);
 }
 
+/* ========== RENDER ========== */
 function highlight(text, terms){
   let out = text;
   terms.forEach(t=>{
@@ -354,8 +404,8 @@ async function askLLM(q){
   const ansEl = document.getElementById('answer');
   ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
 
-  // top-10 trechos com até ~2400 chars cada
-  const docs = topK(q, 10).map(d=>({
+  // top-12 trechos com até ~2400 chars cada
+  const docs = topK(q, 12).map(d=>({
     citation: d.citation,
     title: d.title,
     page_start: d.page_start,
