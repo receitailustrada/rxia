@@ -55,12 +55,10 @@
 <footer class="container small">
   RXIA • MVP com geração de resposta + citações. Mantenha sua chave no servidor (nunca no front-end).
 </footer>
-
 <script>
 // ========= CONFIG =========
-// Cole aqui a URL do seu Apps Script publicado (Web App):
-const BACKEND_URL = "const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzSu2BB0SzfXUqPW-kgTO_YFNyI3e7gA3RceoWKqRvn5-TSfuUlcgmr2-bFjZ339-in/exec";
-";
+// Cole AQUI a URL do seu Apps Script (termina com /exec) — entre ASPAS!
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzSu2BB0SzfXUqPW-kgTO_YFNyI3e7gA3RceoWKqRvn5-TSfuUlcgmr2-bFjZ339-in/exec";
 
 // ========= CORE =========
 function tokenize(s){
@@ -150,8 +148,8 @@ async function askLLM(q){
     text: d.text.length>1800 ? (d.text.slice(0, 1800)+'…') : d.text
   }));
 
-  if(!BACKEND_URL || BACKEND_URL.startsWith("PASTE_")){
-    ansEl.innerHTML = '<div class="card ai">⚠️ Configure o BACKEND_URL dentro do arquivo (URL do Apps Script). Sem isso, não dá para gerar a resposta.</div>';
+  if(!BACKEND_URL){
+    ansEl.innerHTML = '<div class="card ai">⚠️ BACKEND_URL não configurado.</div>';
     return;
   }
 
@@ -196,3 +194,4 @@ loadIndex();
 </script>
 </body>
 </html>
+
