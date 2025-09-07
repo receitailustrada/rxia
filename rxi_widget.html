@@ -26,7 +26,7 @@
   h1{ font-size:1.25rem; margin:0 0 .5rem; color:var(--brand); }
   .bar{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
 
-  /* Campo de pesquisa aumentado */
+  /* Campo de pesquisa aumentado (preservado do seu ajuste) */
   input[type="text"]{
     flex:1 0 680px; min-width:320px;
     padding:1.05rem 1.2rem;
@@ -154,10 +154,12 @@
 
 <script>
 // ======= CONFIG =======
-// Cole aqui a URL do seu Apps Script (Web App) — termina com /exec:
+// URL do seu Apps Script (Web App) — termina com /exec:
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxWSxns05VbUf5677Wx3faATxdoLK9JCxmMnaMdPbdmutPdfhose81OUlIeY70ZL6ee/exec";
+// Token do app — deve ser o MESMO valor do APP_SECRET nas Propriedades do script
 const APP_TOKEN   = "rxia_9ZP2-7kQvY";
-// URLs das bases (raw GitHub). Ajuste conforme os arquivos que você publicou.
+
+// URLs das bases (raw GitHub)
 const DATASETS = {
   completo: "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index.json",
   focado:   "https://raw.githubusercontent.com/receitailustrada/rxia/main/rxi_index_focus.json",
@@ -278,6 +280,8 @@ function showPassages(q){
 async function askLLM(q){
   const ansEl = document.getElementById('answer');
   ansEl.innerHTML = '<div class="card ai">Gerando resposta…</div>';
+
+  // top-5 trechos que iremos mandar para o backend
   const docs = topK(q, 5).map(d=>({
     citation: d.citation,
     title: d.title,
@@ -286,27 +290,54 @@ async function askLLM(q){
     text: d.text.length>1800 ? (d.text.slice(0, 1800)+'…') : d.text
   }));
 
+  // Se não houver trechos, oriente o usuário e pare
+  if (docs.length === 0) {
+    ansEl.innerHTML = `<div class="card ai">
+      <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
+      <div class="txt">Não encontrei trechos relevantes nesta base. Tente outra base no seletor “Base” ou refine os termos.</div>
+    </div>`;
+    return;
+  }
+
   if(!BACKEND_URL || BACKEND_URL.startsWith("PASTE_")){
     ansEl.innerHTML = '<div class="card ai">⚠️ Configure o BACKEND_URL (URL do Apps Script) dentro do arquivo para gerar resposta.</div>';
     return;
   }
 
   try{
-    // >>> Passo 1 aplicado: sem headers para evitar preflight CORS <<<
+    // IMPORTANTE: envia o token (APP_TOKEN) e não usa headers p/ evitar preflight CORS
     const res = await fetch(BACKEND_URL, {
       method: 'POST',
-      body: JSON.stringify({ question: q, contexts: docs })
+      body: JSON.stringify({ question: q, contexts: docs, token: APP_TOKEN })
     });
-    if(!res.ok){
-      const t = await res.text();
-      throw new Error('HTTP '+res.status+': '+t);
+
+    let data = null, raw = '';
+    if (res.ok) {
+      data = await res.json();
+      raw = (data && typeof data.answer === 'string') ? data.answer.trim() : '';
     }
-    const data = await res.json();
-    const text = (data && data.answer) ? data.answer : 'Sem resposta';
+
+    // Fallback robusto: se vier vazio, avisa + mostra trechos
+    if (!res.ok || !raw) {
+      const cites = docs.map(d=>'• '+d.citation).join('<br>');
+      ansEl.innerHTML = `<div class="card ai">
+        <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
+        <div class="txt">
+          Não encontrei uma resposta direta nos trechos enviados para esta pergunta.
+          <br>Veja abaixo os <em>trechos mais próximos</em> e tente refinar a busca com termos relacionados
+          (ex.: <strong>“pólipo vesícula biliar indicação colecistectomia”</strong>, <strong>“pólipo ≥ 10 mm”</strong>).
+        </div>
+        <div class="small" style="margin-top:.5rem"><strong>Fontes sugeridas:</strong><br>${cites}</div>
+      </div>`;
+      showPassages(q);
+      return;
+    }
+
+    // Resposta normal
     const cites = docs.map(d=>'• '+d.citation).join('<br>');
     ansEl.innerHTML = `<div class="card ai">
         <div class="meta"><span class="pill">Resposta (IA)</span><span class="pill right">${state.currentDS}</span></div>
-        <div class="txt">${text}</div>
+        <div class="txt">${raw}</div>
         <div class="small" style="margin-top:.5rem"><strong>Fontes:</strong><br>${cites}</div>
       </div>`;
   }catch(e){
@@ -382,3 +413,4 @@ document.getElementById('ds').addEventListener('change', loadForSelection);
 </script>
 </body>
 </html>
+
