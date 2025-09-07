@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RXI • Widget de Busca (Resgate)</title>
+<title>RXI • Widget de Busca (Resgate v1.1)</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --roxo:#64376e; --lilas:#9169a5; --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e8e2ec; --ok:#16a34a; --warn:#f59e0b; --err:#dc2626;
-    --shadow:0 6px 20px rgba(0,0,0,.06);
+    --roxo:#64376e; --lilas:#9169a5; --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e8e2ec;
+    --ok:#16a34a; --warn:#f59e0b; --err:#dc2626; --shadow:0 6px 20px rgba(0,0,0,.06);
   }
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Montserrat,system-ui,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Montserrat,system-ui,sans-serif}
   .wrap{max-width:980px;margin:24px auto;padding:0 16px}
   h1{font-size:22px;margin:0 0 12px}
   .card{background:#fff;border:1px solid var(--bd);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:12px 0}
@@ -21,7 +22,7 @@
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .stat{font-size:12px;color:#555}
   .result{padding:12px 0;border-top:1px dashed var(--bd)}
-  mark{background: #fff3b0}
+  mark{background:#fff3b0}
   .err{color:var(--err);white-space:pre-wrap}
   .meta{font-size:12px;color:#555;margin:6px 0}
   .badge{display:inline-block;font-size:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:999px;margin-left:6px}
@@ -31,7 +32,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>RXI • Widget de Busca (Resgate)</h1>
+  <h1>RXI • Widget de Busca (Resgate v1.1)</h1>
 
   <div class="card">
     <div class="row">
@@ -69,30 +70,34 @@
     .then(async (res)=>{
       if(!res.ok) throw new Error('HTTP ' + res.status + ' ao buscar ' + indexParam);
       let text = await res.text();
-      // Remove BOM e caracteres invisíveis problemáticos
-      text = text.replace(/^\uFEFF/, '').replace(/[\u0000-\u001F\u007F]/g, (m)=>{
-        // preserva \n, \r, \t
-        return (/[\n\r\t]/.test(m)) ? m : '';
-      });
+      // Remove BOM e caracteres de controle invisíveis (preserva \n \r \t)
+      text = text.replace(/^\uFEFF/, '').replace(/[\u0000-\u001F\u007F]/g, (m)=>(/[\n\r\t]/.test(m)?m:''));
+      let json;
       try{
-        const json = JSON.parse(text);
-        // Suporta array direto ou objeto com "chunks"
-        state.data = Array.isArray(json) ? json : (Array.isArray(json.chunks) ? json.chunks : []);
-        if(!Array.isArray(state.data)) throw new Error('Formato inesperado. Esperava um array ou objeto {chunks:[...]}.');
-        // Validação leve de esquema
-        const required = ['title','text'];
-        const miss = sampleMissing(state.data, required, 5);
-        if(miss.length){
-          $('#status').textContent = 'Aviso: itens com campos ausentes ('+miss.join(', ')+')';
-        }else{
-          $('#status').textContent = 'Índice carregado com sucesso.';
-        }
-        $('#count').textContent = state.data.length.toLocaleString('pt-BR');
-        $('#took').textContent = (performance.now()-t0).toFixed(0)+' ms';
-        state.ready = true;
+        json = JSON.parse(text);
       }catch(e){
         throw new Error('JSON inválido: '+e.message.slice(0,300));
       }
+
+      // 👉 Aceita: array raiz, {chunks:[...]}, {documents:[...]}
+      const arr = Array.isArray(json) ? json
+        : (Array.isArray(json.chunks) ? json.chunks
+        : (Array.isArray(json.documents) ? json.documents : null));
+      if(!Array.isArray(arr)) throw new Error('Formato inesperado. Use um array, {chunks:[...]} ou {documents:[...]}');
+
+      state.data = arr;
+
+      // Validação leve
+      const required = ['title','text'];
+      const miss = sampleMissing(state.data, required, 5);
+      if(miss.length){
+        $('#status').textContent = 'Aviso: itens com campos ausentes ('+miss.join(', ')+')';
+      }else{
+        $('#status').textContent = 'Índice carregado com sucesso.';
+      }
+      $('#count').textContent = state.data.length.toLocaleString('pt-BR');
+      $('#took').textContent = (performance.now()-t0).toFixed(0)+' ms';
+      state.ready = true;
     })
     .catch(err=>{
       $('#error').textContent = [
@@ -102,9 +107,9 @@
         '',
         'Dicas:',
         '• Confirme se o arquivo existe exatamente com este nome e caminho (case-sensitive).',
-        '• Hospede o JSON no MESMO domínio/pasta do widget para evitar CORS.',
+        '• Hospede o JSON no MESMO domínio/pasta do widget (evita CORS).',
         '• Valide o JSON (sem vírgulas sobrando, aspas coerentes, sem comentários).',
-        '• Use ?v=algumaCoisa para forçar recarregar após cada push no GitHub Pages.'
+        '• Use ?v=algo para forçar recarregar após cada push no GitHub Pages.'
       ].join('\n');
     });
 
@@ -118,25 +123,12 @@
   }
 
   // Busca com normalização (acentos, caixa)
-  const norm = (s)=> (s||'')
-    .toString()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}+/gu,'')
-    .toLowerCase();
+  const norm = (s)=> (s||'').toString().normalize('NFD').replace(/\p{Diacritic}+/gu,'').toLowerCase();
+  let timer=null;
 
-  let lastQuery = '';
-  let timer = null;
-
-  $('#q').addEventListener('input', ()=>{
-    clearTimeout(timer);
-    timer = setTimeout(runSearch, 120);
-  });
-
-  $('#clear').addEventListener('click', ()=>{
-    $('#q').value='';
-    runSearch();
-    $('#q').focus();
-  });
+  $('#q').addEventListener('input', ()=>{ clearTimeout(timer); timer=setTimeout(runSearch,120); });
+  $('#clear').addEventListener('click', ()=>{ $('#q').value=''; runSearch(); $('#q').focus(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ runSearch(); } });
 
   function runSearch(){
     const q = norm($('#q').value.trim());
@@ -152,41 +144,46 @@
       $('#results').style.display='block';
       return;
     }
-    const keys = ['title','citation','text','year','page_start','page_end','source_file','id'];
+
     const hits = [];
     for(const it of state.data){
-      const hayTitle = norm(it.title);
-      const hayText  = norm(it.text);
-      if(hayTitle.includes(q) || hayText.includes(q)){
+      if((norm(it.title).includes(q)) || (norm(it.text).includes(q))){
         hits.push(it);
-        if(hits.length>400) break; // guarda o front de travar
+        if(hits.length>500) break; // protecao
       }
     }
     const took = (performance.now()-t1).toFixed(0);
     $('#hint').textContent = `Mostrando ${hits.length.toLocaleString('pt-BR')} resultado(s) • ${took} ms`;
 
-    if(hits.length===0){
-      $('#results').style.display='block';
-      return;
-    }
+    if(hits.length===0){ $('#results').style.display='block'; return; }
 
-    // Render
+    // Render com suporte a href e id
     const frag = document.createDocumentFragment();
     for(const it of hits){
       const el = document.createElement('div');
       el.className = 'result';
-      const title = (it.title||'Sem título');
+
+      const title = (it.title || 'Sem título');
       const citation = it.citation ? ` — <span class="small">${escapeHTML(it.citation)}</span>` : '';
-      const meta = [
-        it.year ? `Ano: ${it.year}`: null,
-        (it.page_start!=null && it.page_end!=null) ? `pp. ${it.page_start}–${it.page_end}`: null,
-        it.source_file ? `Fonte: ${it.source_file}`: null
-      ].filter(Boolean).join(' • ');
+
+      const metaParts = [
+        it.year!=null ? `Ano: ${escapeHTML(String(it.year))}` : null,
+        (it.page_start!=null && it.page_end!=null) ? `pp. ${escapeHTML(String(it.page_start))}–${escapeHTML(String(it.page_end))}` : null,
+        it.source_file ? `Fonte: ${escapeHTML(it.source_file)}` : null,
+      ].filter(Boolean);
+
+      if(it.href){
+        metaParts.push(`<a class="badge" href="${escapeHTML(it.href)}" target="_blank" rel="noopener">Abrir</a>`);
+      }
+      const meta = metaParts.join(' • ');
 
       el.innerHTML = `
-        <div><b>${highlight(title, q)}</b>${citation}</div>
-        ${meta ? `<div class="meta">${escapeHTML(meta)}</div>` : ''}
-        <div class="small">${highlight((it.text||'').slice(0,600), q)}${(it.text||'').length>600?'...':''}</div>
+        <div>
+          <b>${highlight(title, q)}</b>${citation}
+          ${it.id ? `<span class="badge">ID: ${escapeHTML(String(it.id))}</span>` : ''}
+        </div>
+        ${meta ? `<div class="meta">${meta}</div>` : ''}
+        <div class="small">${highlight((it.text||'').slice(0,1000), q)}${(it.text||'').length>1000?'...':''}</div>
       `;
       frag.appendChild(el);
     }
@@ -197,10 +194,9 @@
   function escapeHTML(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
   function highlight(s, q){
     if(!q) return escapeHTML(s||'');
-    // normaliza ambas e marca apenas os trechos que casam (ingênuo mas eficaz)
     const raw = s||'';
     const idxs = [];
-    const src = norm(raw);
+    const src = (raw).normalize('NFD').replace(/\p{Diacritic}+/gu,'').toLowerCase();
     let pos = 0;
     while(true){
       const i = src.indexOf(q, pos);
@@ -210,7 +206,6 @@
       if(idxs.length>50) break;
     }
     if(!idxs.length) return escapeHTML(raw);
-    // reconstrói com <mark> usando índices do texto original (aproximação)
     let out='', last=0;
     for(const [a,b] of idxs){
       out += escapeHTML(raw.slice(last,a)) + '<mark>' + escapeHTML(raw.slice(a,b)) + '</mark>';
@@ -219,11 +214,6 @@
     out += escapeHTML(raw.slice(last));
     return out;
   }
-
-  // Pressione Enter para focar nos resultados
-  document.addEventListener('keydown', (e)=>{
-    if(e.key==='Enter'){ runSearch(); }
-  });
 })();
 </script>
 </body>
