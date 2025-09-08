@@ -116,7 +116,7 @@
       <button class="btn" id="btnAsk" title="Perguntar">Perguntar</button>
       <button class="btn secondary" id="btnTrechos" title="Ver trechos usados">Ver trechos</button>
       <button class="btn ghost" id="btnCopy" title="Copiar última resposta">Copiar</button>
-      <button class="btn ghost" id="btnUp" title="Subir para o topo">↑</button>
+      <button class="btn ghost" id="btnUp" title="Subir para o topo">Subir</button>
     </div>
   </div>
 
@@ -392,7 +392,7 @@
         const snip = (c.text||'').split(/(?<=\.)\s+/).slice(0,2).join(' ');
         return `• ${highlight(snip, rawTerms)}`;
       }).join('\n');
-      thinking.innerHTML = `<b>Resumo automático (fallback sem IA)</b>\n${bullets}\n<div class="small" style="margin-top:8px">Fontes (contexto): ${
+      thinking.innerHTML = `<b>Protocolos oficiais (IA direcionada)</b>\n${bullets}\n<div class="small" style="margin-top:8px">Fontes (contexto): ${
         contexts.slice(0,5).map(s=>{
           const t = [s.title, s.citation].filter(Boolean).join(' — ');
           return `<span class="pill">${esc(t||'Fonte')}</span>`;
@@ -403,5 +403,6 @@
   </script>
 </body>
 </html>
+
 
 
