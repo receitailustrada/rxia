@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>RXIA Assist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#006FFF;           /* sua cor padrão */
+      --accent:#5aa7ff;
+      --bg1:#f2eef9; --bg2:#dff0ff; --bg3:#ffe0ec;
+      --text:#1f2937; --muted:#6b7280; --pill:#f6f3f8; --bd:#e7e2ec;
+      --ok:#16a34a; --warn:#f59e0b; --err:#dc2626;
+      --shadow:0 10px 30px rgba(0,0,0,.08); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 520px at 65% 15%, var(--bg3), transparent 60%),
+        radial-gradient(1100px 560px at 35% 10%, var(--bg2), transparent 60%),
+        radial-gradient(1200px 700px at 15% 80%, var(--bg1), #fff 70%);
+    }
+    .topbar{
+      position:fixed; inset:16px 16px auto 16px; display:flex; align-items:center; gap:12px; z-index:2;
+    }
+    .brand{display:flex;align-items:center;gap:10px; background:#fff; border:1px solid var(--bd);
+      padding:8px 12px; border-radius:12px; box-shadow:var(--shadow)}
+    .brand-logo{width:22px; height:22px; border-radius:6px; object-fit:contain}
+    .brand-name{font-weight:700}
+    .badge{display:inline-flex; align-items:center; gap:6px; font-size:.82rem; color:#0f172a;
+      background:#fff; border:1px solid var(--bd); padding:6px 8px; border-radius:999px; box-shadow:var(--shadow)}
+    .dot{width:8px;height:8px;border-radius:50%}
+    .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
+    .container{
+      max-width:1200px; margin:0 auto; padding:88px 16px 140px;
+      min-height:100%;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .hello{
+      margin-top:8vh; text-align:center; line-height:1.2; color:#111;
+      transition:opacity .25s ease;
+    }
+    .hello h1{font-size:min(8vw,48px); margin:0 0 8px 0; font-weight:800}
+    .hello p{margin:0; color:var(--muted)}
+    .chat{
+      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      width:min(980px, calc(100% - 24px));
+      background:#fff; border:1px solid var(--bd); border-radius:22px; box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .messages{
+      max-height:52vh; overflow:auto; padding:18px 18px 2px; scrollbar-width:thin;
+    }
+    .msg{display:flex; gap:10px; margin:12px 6px}
+    .msg .bubble{
+      max-width:78%; padding:12px 14px; border-radius:16px; border:1px solid var(--bd); background:#fff;
+      box-shadow:0 2px 10px rgba(17,17,17,.04);
+      white-space:pre-wrap; line-height:1.5;
+    }
+    .msg.user{justify-content:flex-end}
+    .msg.user .bubble{background:#eef5ff; border-color:#d9eaff}
+    .msg.assist .bubble{background:#fafbff}
+    .bubble h3{margin:0 0 8px 0; font-size:1rem}
+    .small{font-size:.88rem; color:var(--muted)}
+    .pill{display:inline-block; padding:4px 8px; border-radius:999px; background:var(--pill);
+      border:1px solid var(--bd); margin:0 6px 6px 0; font-size:.8rem; color:#555}
+    .toolbar{display:flex; gap:8px; padding:14px; border-top:1px solid var(--bd); align-items:center}
+    .in{
+      flex:1; display:flex; align-items:center; gap:10px; border:1px solid var(--bd);
+      background:#fff; border-radius:14px; padding:8px 10px;
+    }
+    input[type="text"]{flex:1; border:0; outline:0; font-size:1rem; padding:8px}
+    .btn{
+      padding:10px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700; box-shadow:var(--shadow);
+      background:var(--brand); color:#fff;
+    }
+    .btn.secondary{background:#fff; color:var(--brand); border:1px solid var(--bd)}
+    .btn.ghost{background:#fff; color:#111; border:1px solid var(--bd)}
+    .btn:active{transform:translateY(1px)}
+    .toast{position:fixed; left:50%; bottom:88px; transform:translateX(-50%); background:#111; color:#fff;
+      padding:8px 12px; border-radius:999px; font-size:.88rem; opacity:0; transition:opacity .25s ease; pointer-events:none}
+    .toast.show{opacity:1}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f5f5f5;border:1px solid #e5e5e5;border-radius:6px;padding:2px 6px}
+    mark{background:#ffef9f; padding:0 2px; border-radius:2px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <img class="brand-logo" alt="RXIA" src="https://raw.githubusercontent.com/receitailustrada/rxi-imagens/refs/heads/main/logo-rxi-transparente.png">
+      <div class="brand-name">RXIA Assist</div>
+      <div class="badge" title="Status do índice">
+        <span class="dot" id="brandDot"></span>
+        <span id="brandInfo">Inicializando…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hello" id="hello">
+      <h1>Olá!</h1>
+      <p>Faça sua pergunta clínica. Respondo com base nos protocolos do <b>MS</b> e <b>TelessaúdeRS</b>.</p>
+    </div>
+  </div>
+
+  <div class="chat" role="region" aria-label="Chat RXIA">
+    <div class="messages" id="messages"></div>
+    <div class="toolbar">
+      <div class="in">
+        <input id="q" type="text" placeholder="Como posso te ajudar?" autocomplete="off"/>
+      </div>
+      <button class="btn" id="btnAsk" title="Perguntar">Perguntar</button>
+      <button class="btn secondary" id="btnTrechos" title="Ver trechos usados">Ver trechos</button>
+      <button class="btn ghost" id="btnCopy" title="Copiar última resposta">Copiar</button>
+      <button class="btn ghost" id="btnUp" title="Subir para o topo">Subir</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copiado!</div>
+
+  <script>
+  // ===================== CONFIG =====================
+  const BACKEND_URL   = "https://script.google.com/macros/s/AKfycbwTbfTOwVDo0ebJqtbA9UeHvdTXSxFwzwzuuH6Hp6tUT9aSe5HKFzBkOEJYLM6w0cYw/exec";
+  const APP_TOKEN     = "rxia_9ZP2-7kQvY";
+  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.curated.json"; // troque se quiser outro
+  const MAX_CONTEXTS  = 6;
+  const MAX_CHARS_PER_CTX = 700;
+  // ==================================================
+
+  // Utils
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const qs = new URLSearchParams(location.search);
+  const getParam = k => qs.get(k);
+  const now = () => performance.now();
+  const showToast = (t='Copiado!')=>{
+    const el = $('#toast'); el.textContent=t; el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 1200);
+  };
+
+  function norm(s){
+    return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function tokenize(q){ return String(q||'').trim().split(/\s+/).filter(Boolean); }
+  function expandTerms(baseTerms){
+    const out = new Set(baseTerms.map(norm));
+    const qn = norm(baseTerms.join(' '));
+    const isBiradsCtx = /\bbi[-\s]?rads?\b/.test(qn) || qn.includes('birads') ||
+                        qn.includes('mama') || qn.includes('mamografia') ||
+                        qn.includes('mastologia') || qn.includes('subcategoria');
+    if (isBiradsCtx) {
+      if (/\b4\b/.test(qn) || qn.includes('4a') || qn.includes('4b') || qn.includes('4c')){
+        out.add('4a'); out.add('4b'); out.add('4c'); out.add('subcategoria'); out.add('subcategorias');
+      }
+      if (/\b3\b/.test(qn)) { out.add('seguimento'); out.add('6'); out.add('meses'); }
+    }
+    return Array.from(out);
+  }
+
+  // Estado
+  let RECORDS = [];
+  let FASTTEXT = [];
+  let FASTTEXT_NORM = [];
+  let READY = false;
+  let LAST_CONTEXTS = []; // p/ “Ver trechos”
+
+  // Mensagens
+  const messages = $('#messages');
+  const hello = $('#hello');
+  function addMsg(role, html){
+    hello.style.opacity = '0';
+    const el = document.createElement('div');
+    el.className = 'msg ' + (role === 'user' ? 'user' : 'assist');
+    el.innerHTML = `<div class="bubble">${html}</div>`;
+    messages.appendChild(el);
+    messages.scrollTop = messages.scrollHeight;
+    return el.querySelector('.bubble');
+  }
+  function lastAssistBubble(){
+    const nodes = Array.from(messages.querySelectorAll('.msg.assist .bubble'));
+    return nodes.length ? nodes[nodes.length-1] : null;
+  }
+
+  // Índice
+  const indexOverride = getParam('index');
+  const v = getParam('v') || '1';
+  const INDEX_URL = `./${indexOverride || DEFAULT_INDEX}?v=${encodeURIComponent(v)}`;
+
+  (async function init(){
+    const t0 = now();
+    try{
+      const r = await fetch(INDEX_URL, { cache:'no-store' });
+      if(!r.ok) throw new Error(`Falha ao carregar índice: ${r.status}`);
+      const raw = await r.text();
+      let data; try{ data = JSON.parse(raw); }catch(_){ throw new Error('JSON inválido no índice'); }
+      const arr = toArray(data);
+      if(!arr.length) throw new Error('Índice vazio/shape incompatível');
+
+      RECORDS = arr.map(normalize);
+      READY = true;
+      FASTTEXT = new Array(RECORDS.length);
+      FASTTEXT_NORM = new Array(RECORDS.length);
+      for(let i=0;i<Math.min(300, RECORDS.length);i++){
+        const blob = (RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text);
+        FASTTEXT[i] = blob.toLowerCase();
+        FASTTEXT_NORM[i] = norm(blob);
+      }
+      const t1 = Math.round(now() - t0);
+      $('#brandDot').classList.add('ok');
+      $('#brandInfo').textContent = `Índice pronto • ${RECORDS.length} itens • ${t1} ms`;
+    }catch(e){
+      $('#brandDot').classList.add('err');
+      $('#brandInfo').textContent = esc(e.message);
+    }
+  })();
+
+  function toArray(raw){
+    if(Array.isArray(raw)) return raw;
+    if(raw && Array.isArray(raw.chunks)) return raw.chunks;
+    if(raw && Array.isArray(raw.items)) return raw.items;
+    if(raw && Array.isArray(raw.documents)) return raw.documents;
+    return [];
+  }
+  function normalize(item){
+    return {
+      id: item.id ?? item.doc_id ?? crypto.randomUUID(),
+      title: item.title ?? item.document_title ?? '',
+      year: item.year ?? item.date_year ?? '',
+      page_start: item.page_start ?? item.page ?? item.start ?? '',
+      page_end: item.page_end ?? item.end ?? '',
+      citation: item.citation ?? item.source ?? '',
+      text: item.text ?? item.content ?? item.body ?? '',
+      source_file: item.source_file ?? item.file ?? ''
+    };
+  }
+
+  function domainPool(q){
+    const qL = String(q||'').toLowerCase();
+    if (/\bbi[-\s]?rads?\b/.test(qL) || /mama|mamografia|mastologia/.test(qL)) {
+      const pool = RECORDS.filter(r=>{
+        const t = (r.title + ' ' + r.citation + ' ' + r.text).toLowerCase();
+        return t.includes('bi-rads') || t.includes('birads') || t.includes('mama') || t.includes('mamografia') || t.includes('mastologia');
+      });
+      if (pool.length) return pool;
+    }
+    return RECORDS;
+  }
+
+  function scoreRecord(rec, terms, i){
+    if(!FASTTEXT_NORM[i]) FASTTEXT_NORM[i] = norm(rec.title + ' ' + rec.citation + ' ' + rec.text);
+    const blob = FASTTEXT_NORM[i];
+    let s = 0;
+    const titleN = norm(rec.title);
+    const citeN  = norm(rec.citation);
+    for(const t of terms){
+      if(!t) continue;
+      if(titleN.includes(t)) s += 3;
+      if(citeN.includes(t))  s += 2;
+      const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
+      const m = blob.match(rx);
+      if(m) s += Math.min(5, m.length);
+    }
+    return s;
+  }
+
+  function highlight(text, terms){
+    if(!terms.length) return esc(text);
+    const lower = text.toLowerCase();
+    let pos=-1;
+    for(const t of terms){ const p = lower.indexOf(String(t).toLowerCase()); if(p>=0 && (pos<0 || p<pos)) pos=p; }
+    let snippet = text;
+    if(pos>=0 && text.length>360){
+      const start = Math.max(0, pos-140);
+      const end   = Math.min(text.length, pos+220);
+      snippet = (start>0?'…':'') + text.slice(start,end) + (end<text.length?'…':'');
+    } else if(text.length>360){
+      snippet = text.slice(0,360) + '…';
+    }
+    let out = esc(snippet);
+    terms.forEach(t=>{
+      const rx = new RegExp(`(${String(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+      out = out.replace(rx,'<mark>$1</mark>');
+    });
+    return out;
+  }
+
+  // Interação
+  $('#btnAsk').addEventListener('click', ()=>submit());
+  $('#q').addEventListener('keydown', e=>{ if(e.key==='Enter'){ submit(); }});
+  $('#btnTrechos').addEventListener('click', ()=>{
+    if(!LAST_CONTEXTS.length){
+      addMsg('assist', `<div class="small">Nenhum trecho ainda. Faça uma pergunta 😉</div>`);
+      return;
+    }
+    const rawTerms = tokenize($('#q').value);
+    const html = LAST_CONTEXTS.map((c,i)=>`
+      <div class="trecho" style="border-top:1px dashed var(--bd); padding-top:8px; margin-top:8px">
+        <div class="small"><b>${i+1})</b> ${esc(c.title)} — ${esc(c.citation)}</div>
+        <div>${highlight(c.text||'', rawTerms)}</div>
+        <div class="small" style="margin-top:4px">${esc(c.source_file||'')}</div>
+      </div>
+    `).join('');
+    addMsg('assist', `<h3>Trechos usados</h3>${html}`);
+  });
+  $('#btnCopy').addEventListener('click', async ()=>{
+    const bubble = lastAssistBubble();
+    if(!bubble){ showToast('Sem resposta para copiar'); return; }
+    try{
+      await navigator.clipboard.writeText(bubble.innerText.trim());
+      showToast('Copiado!');
+    }catch(_){ showToast('Não foi possível copiar'); }
+  });
+  $('#btnUp').addEventListener('click', ()=>{
+    messages.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  async function submit(){
+    const q = $('#q').value.trim();
+    if(!q){ $('#q').focus(); return; }
+    if(!READY){ addMsg('assist','<div class="small">Aguarde o índice carregar…</div>'); return; }
+
+    addMsg('user', esc(q));
+    const thinking = addMsg('assist', `<div class="small">Pensando…</div>`);
+
+    // Recuperar top-K
+    const terms = expandTerms(tokenize(q));
+    const pool = domainPool(q);
+    const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+                       .filter(o=>o.s>0)
+                       .sort((a,b)=>b.s-a.s)
+                       .slice(0, MAX_CONTEXTS);
+    if(!scored.length){
+      thinking.innerHTML = `<div class="small">Nenhuma base encontrada para responder. Tente reformular sua pergunta.</div>`;
+      return;
+    }
+
+    const contexts = scored.map(({rec})=>{
+      const txt = (rec.text || '').slice(0, MAX_CHARS_PER_CTX);
+      return {
+        title: rec.title || '',
+        citation: rec.citation || '',
+        text: txt,
+        source_file: rec.source_file || '',
+        page_start: rec.page_start || '',
+        page_end: rec.page_end || ''
+      };
+    });
+    LAST_CONTEXTS = contexts.slice();
+
+    try{
+      const r = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
+      });
+
+      if(!r.ok){
+        thinking.innerHTML = `<div class="small">Falha no backend (${r.status} ${r.statusText}).</div>`;
+        return;
+      }
+
+      // aceita {answer, sources}, {result}, ou texto
+      let outText='', outSources=[];
+      const ct = (r.headers.get('content-type')||'').toLowerCase();
+      if(ct.includes('application/json')){
+        const data = await r.json();
+        outText = data.answer || data.result || data.text || JSON.stringify(data);
+        outSources = data.sources || data.citations || [];
+      }else{
+        outText = await r.text();
+      }
+
+      const pills = (outSources && outSources.length)
+        ? 'Fontes: ' + outSources.map(s=>{
+            const t = [s.title, s.citation].filter(Boolean).join(' — ');
+            return `<span class="pill">${esc(t||'Fonte')}</span>`;
+          }).join(' ')
+        : 'Fontes (contexto): ' + contexts.slice(0,5).map(s=>{
+            const t = [s.title, s.citation].filter(Boolean).join(' — ');
+            return `<span class="pill">${esc(t||'Fonte')}</span>`;
+          }).join(' ');
+
+      thinking.innerHTML = `${esc((outText||'').trim() || 'Sem conteúdo retornado.')}\n<div class="small" style="margin-top:8px">${pills}</div>`;
+    }catch(e){
+      // Fallback local (sem IA)
+      const rawTerms = tokenize(q);
+      const bullets = contexts.slice(0,4).map(c=>{
+        const snip = (c.text||'').split(/(?<=\.)\s+/).slice(0,2).join(' ');
+        return `• ${highlight(snip, rawTerms)}`;
+      }).join('\n');
+      thinking.innerHTML = `<b>Resumo automático (fallback sem IA)</b>\n${bullets}\n<div class="small" style="margin-top:8px">Fontes (contexto): ${
+        contexts.slice(0,5).map(s=>{
+          const t = [s.title, s.citation].filter(Boolean).join(' — ');
+          return `<span class="pill">${esc(t||'Fonte')}</span>`;
+        }).join(' ')
+      }</div>`;
+    }
+  }
+  </script>
+</body>
+</html>
