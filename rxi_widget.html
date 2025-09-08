@@ -105,8 +105,8 @@
   const BACKEND_URL  = "https://script.google.com/macros/s/AKfycbzLTth8e3PEetxnW0ZaBaCD5GShWkMrqGqSu9RDkBXUIUrQ-f12UZaSMInD6PM3yOdr/exec"; // ← COLE AQUI SEU GAS Web App
   const APP_TOKEN    = "rxia_9ZP2-7kQvY";                                        // ← deve bater com APP_SECRET nas Propriedades do Script
   const DEFAULT_INDEX = "rxi_index.cleaned.pruned.json";                         // ← nome do seu índice padrão
-  const MAX_CONTEXTS = 12;  // quantos trechos enviamos para o backend (RAG)
-  const MAX_CHARS_PER_CTX = 1200; // recorte por trecho para não estourar payload
+  const MAX_CONTEXTS = 6;  // quantos trechos enviamos para o backend (RAG)
+  const MAX_CHARS_PER_CTX = 700; // recorte por trecho para não estourar payload
   // ================================================================
 
   // Util
@@ -378,6 +378,7 @@
   </script>
 </body>
 </html>
+
 
 
 
