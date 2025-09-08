@@ -1,220 +1,380 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>RXI • Widget de Busca (Resgate v1.1)</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --roxo:#64376e; --lilas:#9169a5; --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e8e2ec;
-    --ok:#16a34a; --warn:#f59e0b; --err:#dc2626; --shadow:0 6px 20px rgba(0,0,0,.06);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 Montserrat,system-ui,sans-serif}
-  .wrap{max-width:980px;margin:24px auto;padding:0 16px}
-  h1{font-size:22px;margin:0 0 12px}
-  .card{background:#fff;border:1px solid var(--bd);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:12px 0}
-  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-  input[type="search"]{flex:1;min-width:240px;padding:12px 14px;border:1px solid var(--bd);border-radius:12px;outline:none}
-  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--muted);padding:8px 12px;border-radius:999px;font-size:12px}
-  .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--roxo);color:#fff;cursor:pointer}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .stat{font-size:12px;color:#555}
-  .result{padding:12px 0;border-top:1px dashed var(--bd)}
-  mark{background:#fff3b0}
-  .err{color:var(--err);white-space:pre-wrap}
-  .meta{font-size:12px;color:#555;margin:6px 0}
-  .badge{display:inline-block;font-size:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:999px;margin-left:6px}
-  a{color:var(--roxo);text-decoration:none}
-  .small{font-size:12px;color:#666}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>RXIA • Busca com Citações</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --roxo:#64376e; --lilas:#9169a5; --bg:#fff; --text:#222; --muted:#f6f3f8; --bd:#e7e2ec;
+      --ok:#16a34a; --warn:#f59e0b; --err:#dc2626; --shadow:0 6px 20px rgba(100,55,110,.10); --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:var(--roxo);text-decoration:none}
+    .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
+    header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--roxo),var(--lilas));box-shadow:var(--shadow)}
+    h1{font-size:1.25rem;margin:0}
+    .meta{color:#666}
+    .card{background:#fff;border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .search{padding:16px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input[type="search"]{
+      flex:1;min-width:260px;padding:14px;border:1px solid var(--bd);border-radius:12px;font-size:1rem;outline:none;background:#fff
+    }
+    button{
+      padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700;box-shadow:var(--shadow)
+    }
+    .btn-ia{background:var(--roxo);color:#fff}
+    .btn-list{background:#fff;color:var(--roxo);border:1px solid var(--bd)}
+    .btn-clear{background:#fff;color:#444;border:1px solid var(--bd)}
+    .status{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:.95rem}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .loading{background:var(--warn)} .ok{background:var(--ok)} .err{background:var(--err)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--muted);border:1px solid var(--bd);font-size:.8rem;color:#555;margin:0 6px 6px 0}
+    .results{margin-top:16px;padding:10px 0}
+    .item{padding:14px 16px;border-top:1px dashed var(--bd)}
+    .item:first-child{border-top:0}
+    .title{font-weight:700;margin:0 0 6px 0}
+    .cite{font-size:.9rem;color:#555;margin-bottom:6px}
+    .snippet{font-size:.98rem;line-height:1.45}
+    mark{background:#ffef9f;padding:0 2px;border-radius:2px}
+    .answer{padding:16px;border-top:1px solid var(--bd);background:#faf8fc;border-radius:12px;margin-top:12px}
+    .answer h3{margin:0 0 10px 0;font-size:1rem}
+    .alert{padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:#fff8f0}
+    .alert.err{background:#fff1f1;border-color:#ffd0d0}
+    .small{font-size:.9rem;color:#555}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f5f5f5;border:1px solid #e5e5e5;border-radius:6px;padding:2px 6px}
+    details.diag{margin-top:16px;padding:12px 16px;border-top:1px solid var(--bd);font-size:.92rem;color:#444}
+    .copy{float:right;background:#fff;border:1px solid var(--bd);color:#333}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>RXI • Widget de Busca (Resgate v1.1)</h1>
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>RXIA • Busca com Citações</h1>
+        <div class="meta">Digite sua pergunta e escolha “Responder com IA” ou “Mostrar trechos”.</div>
+      </div>
+    </header>
 
-  <div class="card">
-    <div class="row">
-      <input id="q" type="search" placeholder="Digite para buscar nos textos (acentos ignorados)..." autocomplete="off"/>
-      <button id="clear" class="btn" type="button">Limpar</button>
-    </div>
-    <div class="row" style="margin-top:8px">
-      <span class="pill">Índice: <code id="idxName">?</code></span>
-      <span class="pill">Itens: <b id="count">–</b></span>
-      <span class="pill">Tempo: <b id="took">–</b></span>
-      <span class="stat" id="status"></span>
-    </div>
-    <div id="error" class="err" style="margin-top:8px"></div>
-  </div>
+    <div class="card search">
+      <div class="row">
+        <input id="q" type="search" placeholder="Ex.: conduta para BI-RADS 4, manejo de O-RADS 2, etc." autocomplete="off"/>
+        <button id="btnIA" class="btn-ia">Responder com IA</button>
+        <button id="btnList" class="btn-list">Mostrar trechos</button>
+        <button id="btnClear" class="btn-clear" title="Limpar">Limpar</button>
+      </div>
+      <div class="status">
+        <span id="dot" class="dot loading"></span>
+        <span id="msg">Carregando índice…</span>
+        <span id="stats" class="small" style="margin-left:auto"></span>
+      </div>
 
-  <div id="results" class="card" style="display:none">
-    <div class="small" id="hint"></div>
-    <div id="list"></div>
-  </div>
-</div>
+      <div class="results" id="results" hidden></div>
+      <div class="answer" id="answer" hidden>
+        <button id="btnCopy" class="copy">Copiar</button>
+        <h3>Resposta (IA)</h3>
+        <div id="answerText" style="white-space:pre-wrap;line-height:1.5"></div>
+        <div class="small" id="answerSources" style="margin-top:10px"></div>
+      </div>
 
-<script>
-(function(){
-  const $ = (sel)=>document.querySelector(sel);
-  const url = new URL(location.href);
-  const indexParam = url.searchParams.get('index') || 'rxi_index.cleaned.pruned.json';
-  const vParam = url.searchParams.get('v') || Date.now();
-  const indexUrl = indexParam + '?v=' + encodeURIComponent(vParam);
-  $('#idxName').textContent = indexParam;
-
-  const state = { data:[], ready:false };
-
-  const t0 = performance.now();
-  fetch(indexUrl, { cache:'no-store' })
-    .then(async (res)=>{
-      if(!res.ok) throw new Error('HTTP ' + res.status + ' ao buscar ' + indexParam);
-      let text = await res.text();
-      // Remove BOM e caracteres de controle invisíveis (preserva \n \r \t)
-      text = text.replace(/^\uFEFF/, '').replace(/[\u0000-\u001F\u007F]/g, (m)=>(/[\n\r\t]/.test(m)?m:''));
-      let json;
-      try{
-        json = JSON.parse(text);
-      }catch(e){
-        throw new Error('JSON inválido: '+e.message.slice(0,300));
-      }
-
-      // 👉 Aceita: array raiz, {chunks:[...]}, {documents:[...]}
-      const arr = Array.isArray(json) ? json
-        : (Array.isArray(json.chunks) ? json.chunks
-        : (Array.isArray(json.documents) ? json.documents : null));
-      if(!Array.isArray(arr)) throw new Error('Formato inesperado. Use um array, {chunks:[...]} ou {documents:[...]}');
-
-      state.data = arr;
-
-      // Validação leve
-      const required = ['title','text'];
-      const miss = sampleMissing(state.data, required, 5);
-      if(miss.length){
-        $('#status').textContent = 'Aviso: itens com campos ausentes ('+miss.join(', ')+')';
-      }else{
-        $('#status').textContent = 'Índice carregado com sucesso.';
-      }
-      $('#count').textContent = state.data.length.toLocaleString('pt-BR');
-      $('#took').textContent = (performance.now()-t0).toFixed(0)+' ms';
-      state.ready = true;
-    })
-    .catch(err=>{
-      $('#error').textContent = [
-        'Falha ao carregar o índice.',
-        'URL: ' + indexUrl,
-        'Motivo: ' + err.message,
-        '',
-        'Dicas:',
-        '• Confirme se o arquivo existe exatamente com este nome e caminho (case-sensitive).',
-        '• Hospede o JSON no MESMO domínio/pasta do widget (evita CORS).',
-        '• Valide o JSON (sem vírgulas sobrando, aspas coerentes, sem comentários).',
-        '• Use ?v=algo para forçar recarregar após cada push no GitHub Pages.'
-      ].join('\n');
-    });
-
-  function sampleMissing(arr, required, max){
-    const names = new Set();
-    for(let i=0;i<arr.length && names.size<max;i++){
-      const it = arr[i] || {};
-      required.forEach(k=>{ if(!(k in it)) names.add(k); });
-    }
-    return [...names];
-  }
-
-  // Busca com normalização (acentos, caixa)
-  const norm = (s)=> (s||'').toString().normalize('NFD').replace(/\p{Diacritic}+/gu,'').toLowerCase();
-  let timer=null;
-
-  $('#q').addEventListener('input', ()=>{ clearTimeout(timer); timer=setTimeout(runSearch,120); });
-  $('#clear').addEventListener('click', ()=>{ $('#q').value=''; runSearch(); $('#q').focus(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ runSearch(); } });
-
-  function runSearch(){
-    const q = norm($('#q').value.trim());
-    if(!state.ready){
-      $('#hint').textContent = 'Carregando índice...';
-      $('#results').style.display='block';
-      return;
-    }
-    const t1 = performance.now();
-    const list = $('#list'); list.innerHTML='';
-    if(!q){
-      $('#hint').textContent = 'Digite algo para buscar nos textos.';
-      $('#results').style.display='block';
-      return;
-    }
-
-    const hits = [];
-    for(const it of state.data){
-      if((norm(it.title).includes(q)) || (norm(it.text).includes(q))){
-        hits.push(it);
-        if(hits.length>500) break; // protecao
-      }
-    }
-    const took = (performance.now()-t1).toFixed(0);
-    $('#hint').textContent = `Mostrando ${hits.length.toLocaleString('pt-BR')} resultado(s) • ${took} ms`;
-
-    if(hits.length===0){ $('#results').style.display='block'; return; }
-
-    // Render com suporte a href e id
-    const frag = document.createDocumentFragment();
-    for(const it of hits){
-      const el = document.createElement('div');
-      el.className = 'result';
-
-      const title = (it.title || 'Sem título');
-      const citation = it.citation ? ` — <span class="small">${escapeHTML(it.citation)}</span>` : '';
-
-      const metaParts = [
-        it.year!=null ? `Ano: ${escapeHTML(String(it.year))}` : null,
-        (it.page_start!=null && it.page_end!=null) ? `pp. ${escapeHTML(String(it.page_start))}–${escapeHTML(String(it.page_end))}` : null,
-        it.source_file ? `Fonte: ${escapeHTML(it.source_file)}` : null,
-      ].filter(Boolean);
-
-      if(it.href){
-        metaParts.push(`<a class="badge" href="${escapeHTML(it.href)}" target="_blank" rel="noopener">Abrir</a>`);
-      }
-      const meta = metaParts.join(' • ');
-
-      el.innerHTML = `
-        <div>
-          <b>${highlight(title, q)}</b>${citation}
-          ${it.id ? `<span class="badge">ID: ${escapeHTML(String(it.id))}</span>` : ''}
+      <details class="diag">
+        <summary>Diagnóstico técnico</summary>
+        <div id="diagBox" class="alert" style="margin-top:10px">Aguardando…</div>
+        <div style="margin-top:10px">
+          <span class="pill" id="pIndex">índice: –</span>
+          <span class="pill" id="pCount">itens: –</span>
+          <span class="pill" id="pFields">campos ok: –</span>
+          <span class="pill" id="pMissing">faltantes: –</span>
+          <span class="pill" id="pTime">tempo: –</span>
         </div>
-        ${meta ? `<div class="meta">${meta}</div>` : ''}
-        <div class="small">${highlight((it.text||'').slice(0,1000), q)}${(it.text||'').length>1000?'...':''}</div>
-      `;
-      frag.appendChild(el);
-    }
-    list.appendChild(frag);
-    $('#results').style.display='block';
-  }
+      </details>
+    </div>
 
-  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-  function highlight(s, q){
-    if(!q) return escapeHTML(s||'');
-    const raw = s||'';
-    const idxs = [];
-    const src = (raw).normalize('NFD').replace(/\p{Diacritic}+/gu,'').toLowerCase();
-    let pos = 0;
-    while(true){
-      const i = src.indexOf(q, pos);
-      if(i<0) break;
-      idxs.push([i, i+q.length]);
-      pos = i+q.length;
-      if(idxs.length>50) break;
+    <div class="small" style="margin-top:10px">
+      Dica: você pode forçar outro índice via URL: <span class="kbd">?index=rxi_index.json&v=2</span>.
+    </div>
+  </div>
+
+  <script>
+  // ===================== CONFIG (TROCAR AQUI) =====================
+  const BACKEND_URL  = "https://script.google.com/macros/s/SEU_DEPLOY_ID/exec"; // ← COLE AQUI SEU GAS Web App
+  const APP_TOKEN    = "SEU_APP_SECRET";                                        // ← deve bater com APP_SECRET nas Propriedades do Script
+  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.json";                         // ← nome do seu índice padrão
+  const MAX_CONTEXTS = 12;  // quantos trechos enviamos para o backend (RAG)
+  const MAX_CHARS_PER_CTX = 1200; // recorte por trecho para não estourar payload
+  // ================================================================
+
+  // Util
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const qs = new URLSearchParams(location.search);
+  const getParam = k => qs.get(k);
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  const now = () => performance.now();
+
+  // Estado
+  let RECORDS = [];
+  let FASTTEXT = [];
+  let READY = false;
+
+  // UI refs
+  const dot=$('#dot'), msg=$('#msg'), stats=$('#stats'), res=$('#results');
+  const ansWrap=$('#answer'), ansText=$('#answerText'), ansSrc=$('#answerSources'), btnCopy=$('#btnCopy');
+  const diagBox=$('#diagBox'), pIndex=$('#pIndex'), pCount=$('#pCount'), pFields=$('#pFields'), pMissing=$('#pMissing'), pTime=$('#pTime');
+
+  // Index URL
+  const indexOverride = getParam('index');
+  const v = getParam('v') || '1';
+  const INDEX_URL = `./${indexOverride || DEFAULT_INDEX}?v=${encodeURIComponent(v)}`;
+
+  // Boot: carregar índice
+  (async function init(){
+    try{
+      setStatus('loading', 'Carregando índice…');
+      pIndex.textContent = 'índice: ' + INDEX_URL;
+
+      const t0 = now();
+      const resp = await fetch(INDEX_URL, { cache:'no-store' });
+      if(!resp.ok) throw new Error(`Falha ao carregar índice: ${resp.status} ${resp.statusText}`);
+      const rawText = await resp.text();
+
+      let data;
+      try{ data = JSON.parse(rawText); }
+      catch(e){
+        setStatus('err','JSON inválido');
+        diagBox.className='alert err';
+        diagBox.innerHTML = '<b>Erro:</b> JSON inválido. Verifique vírgulas finais e aspas.';
+        return;
+      }
+
+      const arrRaw = toArray(data);
+      if(!arrRaw.length){
+        setStatus('err','Índice vazio/shape incompatível');
+        diagBox.className='alert err';
+        diagBox.innerHTML='Índice carregado, porém vazio ou com shape incompatível.';
+        return;
+      }
+
+      const t1 = now();
+      RECORDS = arrRaw.map(normalize);
+      READY = true;
+      FASTTEXT = new Array(RECORDS.length);
+      for(let i=0;i<Math.min(300, RECORDS.length);i++){
+        FASTTEXT[i] = (RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text).toLowerCase();
+      }
+
+      // diagnóstico de campos essenciais
+      const required = ['title','citation','text'];
+      let missing = 0;
+      RECORDS.forEach(r => required.forEach(k => { if(!r[k]) missing++; }));
+      const okFields = (RECORDS.length*required.length-missing)+'/'+(RECORDS.length*required.length);
+
+      pCount.textContent  = 'itens: ' + RECORDS.length;
+      pFields.textContent = 'campos ok: ' + okFields;
+      pMissing.textContent= 'faltantes: ' + missing;
+      pTime.textContent   = 'tempo: ' + Math.round(t1 - t0) + ' ms';
+
+      setStatus('ok','Índice carregado.');
+      stats.textContent = `Índice: ${indexOverride||DEFAULT_INDEX} • Itens: ${RECORDS.length}`;
+
+      res.hidden=false;
+    }catch(err){
+      setStatus('err','Falha ao carregar índice');
+      diagBox.className='alert err';
+      diagBox.innerHTML = `<b>Erro:</b> ${esc(err.message)}`;
     }
-    if(!idxs.length) return escapeHTML(raw);
-    let out='', last=0;
-    for(const [a,b] of idxs){
-      out += escapeHTML(raw.slice(last,a)) + '<mark>' + escapeHTML(raw.slice(a,b)) + '</mark>';
-      last = b;
+  })();
+
+  // Helpers
+  function toArray(raw){
+    if(Array.isArray(raw)) return raw;
+    if(raw && Array.isArray(raw.chunks)) return raw.chunks;
+    if(raw && Array.isArray(raw.items)) return raw.items;
+    if(raw && Array.isArray(raw.documents)) return raw.documents;
+    return [];
+  }
+  function normalize(item){
+    return {
+      id: item.id ?? item.doc_id ?? crypto.randomUUID(),
+      title: item.title ?? item.document_title ?? '',
+      year: item.year ?? item.date_year ?? '',
+      page_start: item.page_start ?? item.page ?? item.start ?? '',
+      page_end: item.page_end ?? item.end ?? '',
+      citation: item.citation ?? item.source ?? '',
+      text: item.text ?? item.content ?? item.body ?? '',
+      source_file: item.source_file ?? item.file ?? ''
+    };
+  }
+  function setStatus(kind, text){ dot.className = 'dot ' + (kind||'loading'); msg.textContent = text||''; }
+  function tokenize(q){ return q.toLowerCase().trim().split(/\s+/).filter(Boolean); }
+  function highlight(text, terms){
+    if(!terms.length) return esc(text);
+    const lower = text.toLowerCase();
+    let pos=-1;
+    for(const t of terms){ const p = lower.indexOf(t); if(p>=0 && (pos<0 || p<pos)) pos=p; }
+    let snippet = text;
+    if(pos>=0 && text.length>360){
+      const start = Math.max(0, pos-140);
+      const end   = Math.min(text.length, pos+220);
+      snippet = (start>0?'…':'') + text.slice(start,end) + (end<text.length?'…':'');
+    } else if(text.length>360){
+      snippet = text.slice(0,360) + '…';
     }
-    out += escapeHTML(raw.slice(last));
+    let out = esc(snippet);
+    terms.forEach(t=>{
+      const rx = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+      out = out.replace(rx,'<mark>$1</mark>');
+    });
     return out;
   }
-})();
-</script>
+  function scoreRecord(rec, terms, i){
+    if(!FASTTEXT[i]) FASTTEXT[i] = (rec.title + ' ' + rec.citation + ' ' + rec.text).toLowerCase();
+    const blob = FASTTEXT[i];
+    let s = 0;
+    const titleL = rec.title.toLowerCase();
+    const citeL  = rec.citation.toLowerCase();
+    for(const t of terms){
+      if(titleL.includes(t)) s += 3;
+      if(citeL.includes(t))  s += 2;
+      const m = blob.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'));
+      if(m) s += Math.min(5, m.length);
+    }
+    return s;
+  }
+
+  // UI actions
+  $('#btnList').addEventListener('click', ()=>{
+    const q = $('#q').value;
+    listResults(q);
+  });
+  $('#btnClear').addEventListener('click', ()=>{
+    $('#q').value=''; res.innerHTML=''; res.hidden=false; ansWrap.hidden=true; $('#q').focus();
+  });
+  $('#q').addEventListener('keydown', e=>{ if(e.key==='Enter'){ listResults(e.target.value); }});
+  $('#btnIA').addEventListener('click', ()=> askIA($('#q').value));
+
+  btnCopy.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(ansText.textContent);
+      btnCopy.textContent='Copiado!';
+      setTimeout(()=>btnCopy.textContent='Copiar', 1200);
+    }catch(e){ alert('Não foi possível copiar.'); }
+  });
+
+  function listResults(q){
+    const terms = tokenize(q);
+    if(!terms.length){ res.innerHTML=''; res.hidden=false; ansWrap.hidden=true; return; }
+    const t0=now();
+    const scored = RECORDS.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+                          .filter(o=>o.s>0)
+                          .sort((a,b)=>b.s-a.s)
+                          .slice(0,120);
+    const t1=now();
+
+    if(!scored.length){
+      res.innerHTML = `<div class="alert">Nenhum resultado para <b>${esc(q)}</b>. Tente outros termos.</div>`;
+      res.hidden=false; ansWrap.hidden=true; return;
+    }
+
+    res.innerHTML = scored.map(({rec})=>{
+      const file = rec.source_file ? ` • <span class="small">${esc(rec.source_file)}</span>` : '';
+      const meta = `${rec.year?`Ano: ${esc(rec.year)} • `:''}${rec.page_start&&rec.page_end?`pp. ${esc(rec.page_start)}–${esc(rec.page_end)} • `:''}Fonte: ${esc(rec.source_file||'')}`;
+      return `
+        <div class="item">
+          <div class="title">${esc(rec.title || 'Sem título')}</div>
+          <div class="cite">${esc(rec.citation||'')}${file}</div>
+          <div class="snippet">${highlight(rec.text||'', terms)}</div>
+          <div class="small" style="margin-top:6px">${esc(meta)}</div>
+        </div>
+      `;
+    }).join('');
+    res.hidden=false; ansWrap.hidden=true;
+  }
+
+  async function askIA(q){
+    const terms = tokenize(q);
+    if(!terms.length){ alert('Digite sua pergunta.'); return; }
+    if(!READY){ alert('Aguarde o índice carregar.'); return; }
+
+    // recuperar top-K para contexto
+    const scored = RECORDS.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+                          .filter(o=>o.s>0)
+                          .sort((a,b)=>b.s-a.s)
+                          .slice(0, MAX_CONTEXTS);
+
+    if(!scored.length){
+      ansText.textContent = 'Nenhuma base encontrada para responder. Tente reformular sua pergunta.';
+      ansSrc.innerHTML = ''; ansWrap.hidden=false; res.hidden=false; return;
+    }
+
+    // montar payload p/ backend
+    const contexts = scored.map(({rec})=>{
+      const txt = (rec.text || '').slice(0, MAX_CHARS_PER_CTX);
+      return {
+        title: rec.title || '',
+        citation: rec.citation || '',
+        text: txt,
+        source_file: rec.source_file || '',
+        page_start: rec.page_start || '',
+        page_end: rec.page_end || ''
+      };
+    });
+
+    // UI
+    ansWrap.hidden=false; res.hidden=false;
+    ansText.textContent = 'Gerando resposta…';
+    ansSrc.innerHTML = '';
+    btnCopy.textContent = 'Copiar';
+
+    try{
+      const r = await fetch(BACKEND_URL, {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
+      });
+
+      if(!r.ok){
+        ansText.textContent = `Falha no backend (${r.status} ${r.statusText}). Verifique BACKEND_URL/APP_TOKEN e CORS do GAS.`;
+        return;
+      }
+
+      // aceita {answer, sources}, {result}, ou texto puro
+      let outText='', outSources=[];
+      const ct = (r.headers.get('content-type')||'').toLowerCase();
+      if(ct.includes('application/json')){
+        const data = await r.json();
+        outText = data.answer || data.result || data.text || JSON.stringify(data);
+        outSources = data.sources || data.citations || [];
+      }else{
+        outText = await r.text();
+      }
+
+      // Render
+      ansText.textContent = (outText||'').trim() || 'Sem conteúdo retornado.';
+      if(outSources && outSources.length){
+        // fontes do backend
+        ansSrc.innerHTML = 'Fontes: ' + outSources.map(s=>{
+          const t = [s.title, s.citation].filter(Boolean).join(' — ');
+          return `<span class="pill">${esc(t||'Fonte')}</span>`;
+        }).join(' ');
+      }else{
+        // caso backend não mande fontes, mostramos as usadas no contexto (top-5)
+        const top5 = contexts.slice(0,5);
+        ansSrc.innerHTML = 'Fontes (contexto): ' + top5.map(s=>{
+          const t = [s.title, s.citation].filter(Boolean).join(' — ');
+          return `<span class="pill">${esc(t||'Fonte')}</span>`;
+        }).join(' ');
+      }
+
+    }catch(e){
+      ansText.textContent = 'Erro ao chamar o backend: ' + e.message;
+    }
+  }
+  </script>
 </body>
 </html>
