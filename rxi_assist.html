@@ -7,8 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --brand:#006FFF;           /* sua cor padrão */
-      --accent:#5aa7ff;
+      --brand:#006FFF; --accent:#5aa7ff;
       --bg1:#f2eef9; --bg2:#dff0ff; --bg3:#ffe0ec;
       --text:#1f2937; --muted:#6b7280; --pill:#f6f3f8; --bd:#e7e2ec;
       --ok:#16a34a; --warn:#f59e0b; --err:#dc2626;
@@ -24,9 +23,7 @@
         radial-gradient(1100px 560px at 35% 10%, var(--bg2), transparent 60%),
         radial-gradient(1200px 700px at 15% 80%, var(--bg1), #fff 70%);
     }
-    .topbar{
-      position:fixed; inset:16px 16px auto 16px; display:flex; align-items:center; gap:12px; z-index:2;
-    }
+    .topbar{position:fixed; inset:16px 16px auto 16px; display:flex; align-items:center; gap:12px; z-index:2;}
     .brand{display:flex;align-items:center;gap:10px; background:#fff; border:1px solid var(--bd);
       padding:8px 12px; border-radius:12px; box-shadow:var(--shadow)}
     .brand-logo{width:22px; height:22px; border-radius:6px; object-fit:contain}
@@ -35,32 +32,19 @@
       background:#fff; border:1px solid var(--bd); padding:6px 8px; border-radius:999px; box-shadow:var(--shadow)}
     .dot{width:8px;height:8px;border-radius:50%}
     .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--err)}
-    .container{
-      max-width:1200px; margin:0 auto; padding:88px 16px 140px;
-      min-height:100%;
-      display:flex; flex-direction:column; align-items:center;
-    }
-    .hello{
-      margin-top:8vh; text-align:center; line-height:1.2; color:#111;
-      transition:opacity .25s ease;
-    }
+    .container{max-width:1200px; margin:0 auto; padding:88px 16px 140px; min-height:100%; display:flex; flex-direction:column; align-items:center;}
+    .hello{margin-top:8vh; text-align:center; line-height:1.2; color:#111; transition:opacity .25s ease;}
     .hello h1{font-size:min(8vw,48px); margin:0 0 8px 0; font-weight:800}
     .hello p{margin:0; color:var(--muted)}
     .chat{
       position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
       width:min(980px, calc(100% - 24px));
-      background:#fff; border:1px solid var(--bd); border-radius:22px; box-shadow:var(--shadow);
-      overflow:hidden;
+      background:#fff; border:1px solid var(--bd); border-radius:22px; box-shadow:var(--shadow); overflow:hidden;
     }
-    .messages{
-      max-height:52vh; overflow:auto; padding:18px 18px 2px; scrollbar-width:thin;
-    }
+    .messages{max-height:52vh; overflow:auto; padding:18px 18px 2px; scrollbar-width:thin;}
     .msg{display:flex; gap:10px; margin:12px 6px}
-    .msg .bubble{
-      max-width:78%; padding:12px 14px; border-radius:16px; border:1px solid var(--bd); background:#fff;
-      box-shadow:0 2px 10px rgba(17,17,17,.04);
-      white-space:pre-wrap; line-height:1.5;
-    }
+    .msg .bubble{max-width:78%; padding:12px 14px; border-radius:16px; border:1px solid var(--bd); background:#fff;
+      box-shadow:0 2px 10px rgba(17,17,17,.04); white-space:pre-wrap; line-height:1.5;}
     .msg.user{justify-content:flex-end}
     .msg.user .bubble{background:#eef5ff; border-color:#d9eaff}
     .msg.assist .bubble{background:#fafbff}
@@ -69,22 +53,15 @@
     .pill{display:inline-block; padding:4px 8px; border-radius:999px; background:var(--pill);
       border:1px solid var(--bd); margin:0 6px 6px 0; font-size:.8rem; color:#555}
     .toolbar{display:flex; gap:8px; padding:14px; border-top:1px solid var(--bd); align-items:center}
-    .in{
-      flex:1; display:flex; align-items:center; gap:10px; border:1px solid var(--bd);
-      background:#fff; border-radius:14px; padding:8px 10px;
-    }
+    .in{flex:1; display:flex; align-items:center; gap:10px; border:1px solid var(--bd); background:#fff; border-radius:14px; padding:8px 10px;}
     input[type="text"]{flex:1; border:0; outline:0; font-size:1rem; padding:8px}
-    .btn{
-      padding:10px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700; box-shadow:var(--shadow);
-      background:var(--brand); color:#fff;
-    }
+    .btn{padding:10px 14px; border-radius:12px; border:0; cursor:pointer; font-weight:700; box-shadow:var(--shadow); background:var(--brand); color:#fff;}
     .btn.secondary{background:#fff; color:var(--brand); border:1px solid var(--bd)}
     .btn.ghost{background:#fff; color:#111; border:1px solid var(--bd)}
     .btn:active{transform:translateY(1px)}
     .toast{position:fixed; left:50%; bottom:88px; transform:translateX(-50%); background:#111; color:#fff;
       padding:8px 12px; border-radius:999px; font-size:.88rem; opacity:0; transition:opacity .25s ease; pointer-events:none}
     .toast.show{opacity:1}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#f5f5f5;border:1px solid #e5e5e5;border-radius:6px;padding:2px 6px}
     mark{background:#ffef9f; padding:0 2px; border-radius:2px}
   </style>
 </head>
@@ -127,7 +104,7 @@
   // ===================== CONFIG =====================
   const BACKEND_URL   = "https://script.google.com/macros/s/AKfycbwTbfTOwVDo0ebJqtbA9UeHvdTXSxFwzwzuuH6Hp6tUT9aSe5HKFzBkOEJYLM6w0cYw/exec";
   const APP_TOKEN     = "rxia_9ZP2-7kQvY";
-  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.curated.json"; // troque se quiser outro
+  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.curated.json"; // ajuste se quiser outro
   const MAX_CONTEXTS  = 6;
   const MAX_CHARS_PER_CTX = 700;
   // ==================================================
@@ -147,24 +124,38 @@
     return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   }
   function tokenize(q){ return String(q||'').trim().split(/\s+/).filter(Boolean); }
+
+  // ===== INTENÇÃO BI-RADS (nova) =====
+  function biradsIntent(q){
+    const qn = norm(q);
+    const isBirads = /\bbi[-\s]?rads?\b/.test(qn) || qn.includes('birads') || qn.includes('mamografia') || qn.includes('mastologia');
+    if(!isBirads) return {isBirads:false, sub:null, rx:null};
+
+    let sub=null, rx=null;
+    if(/\b4\s*[aA]\b/.test(qn)) { sub='4a'; rx=/\b4\s*[- ]?\s*a\b/i; }
+    else if(/\b4\s*[bB]\b/.test(qn)) { sub='4b'; rx=/\b4\s*[- ]?\s*b\b/i; }
+    else if(/\b4\s*[cC]\b/.test(qn)) { sub='4c'; rx=/\b4\s*[- ]?\s*c\b/i; }
+    else if(/\b4\b/.test(qn)) { sub='4'; rx=/\bbi[-\s]?rads[^0-9a-zA-Z]{0,6}4\b/i; }
+
+    return {isBirads:true, sub, rx};
+  }
+
   function expandTerms(baseTerms){
     const out = new Set(baseTerms.map(norm));
     const qn = norm(baseTerms.join(' '));
-    const isBiradsCtx = /\bbi[-\s]?rads?\b/.test(qn) || qn.includes('birads') ||
-                        qn.includes('mama') || qn.includes('mamografia') ||
-                        qn.includes('mastologia') || qn.includes('subcategoria');
-    if (isBiradsCtx) {
-      if (/\b4\b/.test(qn) || qn.includes('4a') || qn.includes('4b') || qn.includes('4c')){
-        out.add('4a'); out.add('4b'); out.add('4c'); out.add('subcategoria'); out.add('subcategorias');
-      }
-      if (/\b3\b/.test(qn)) { out.add('seguimento'); out.add('6'); out.add('meses'); }
+    const {isBirads, sub} = biradsIntent(qn);
+    if(isBirads){
+      if(sub==='4a'){ out.add('4a'); out.add('4 a'); out.add('4-a'); }
+      if(sub==='4b'){ out.add('4b'); out.add('4 b'); out.add('4-b'); }
+      if(sub==='4c'){ out.add('4c'); out.add('4 c'); out.add('4-c'); }
+      if(sub==='4'){ out.add('4'); out.add('categoria'); out.add('suspeito'); }
     }
     return Array.from(out);
   }
+  // ===================================
 
   // Estado
   let RECORDS = [];
-  let FASTTEXT = [];
   let FASTTEXT_NORM = [];
   let READY = false;
   let LAST_CONTEXTS = []; // p/ “Ver trechos”
@@ -203,12 +194,9 @@
 
       RECORDS = arr.map(normalize);
       READY = true;
-      FASTTEXT = new Array(RECORDS.length);
       FASTTEXT_NORM = new Array(RECORDS.length);
       for(let i=0;i<Math.min(300, RECORDS.length);i++){
-        const blob = (RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text);
-        FASTTEXT[i] = blob.toLowerCase();
-        FASTTEXT_NORM[i] = norm(blob);
+        FASTTEXT_NORM[i] = norm(RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text);
       }
       const t1 = Math.round(now() - t0);
       $('#brandDot').classList.add('ok');
@@ -240,23 +228,36 @@
   }
 
   function domainPool(q){
-    const qL = String(q||'').toLowerCase();
-    if (/\bbi[-\s]?rads?\b/.test(qL) || /mama|mamografia|mastologia/.test(qL)) {
-      const pool = RECORDS.filter(r=>{
+    // 1) recorta por área (mama/BI-RADS)
+    const qn = norm(q);
+    const isBirads = biradsIntent(qn).isBirads;
+    let pool = RECORDS;
+    if(isBirads){
+      const subset = RECORDS.filter(r=>{
         const t = (r.title + ' ' + r.citation + ' ' + r.text).toLowerCase();
         return t.includes('bi-rads') || t.includes('birads') || t.includes('mama') || t.includes('mamografia') || t.includes('mastologia');
       });
-      if (pool.length) return pool;
+      if(subset.length) pool = subset;
     }
-    return RECORDS;
+
+    // 2) se houver subcategoria (4/4A/4B/4C), restringe mais
+    const intent = biradsIntent(qn);
+    if(intent.rx){
+      const stricter = pool.filter(r => intent.rx.test(r.title+' '+r.citation+' '+r.text));
+      if(stricter.length) pool = stricter;
+    }
+    return pool;
   }
 
-  function scoreRecord(rec, terms, i){
+  function scoreRecord(rec, terms, i, intentRx){
     if(!FASTTEXT_NORM[i]) FASTTEXT_NORM[i] = norm(rec.title + ' ' + rec.citation + ' ' + rec.text);
     const blob = FASTTEXT_NORM[i];
     let s = 0;
     const titleN = norm(rec.title);
     const citeN  = norm(rec.citation);
+    // bônus forte se bate a subcategoria exata
+    if(intentRx && intentRx.test(rec.title+' '+rec.citation+' '+rec.text)) s += 12;
+
     for(const t of terms){
       if(!t) continue;
       if(titleN.includes(t)) s += 3;
@@ -315,12 +316,8 @@
       showToast('Copiado!');
     }catch(_){ showToast('Não foi possível copiar'); }
   });
-  $('#btnUp').addEventListener('click', ()=>{
-    messages.scrollTo({top:0, behavior:'smooth'});
-  });
-  $('#btnDown').addEventListener('click', ()=>{
-    messages.scrollTo({top:messages.scrollHeight, behavior:'smooth'});
-  });
+  $('#btnUp').addEventListener('click', ()=>{ messages.scrollTo({top:0, behavior:'smooth'}); });
+  $('#btnDown').addEventListener('click', ()=>{ messages.scrollTo({top:messages.scrollHeight, behavior:'smooth'}); });
 
   async function submit(){
     const q = $('#q').value.trim();
@@ -330,10 +327,11 @@
     addMsg('user', esc(q));
     const thinking = addMsg('assist', `<div class="small">Pensando…</div>`);
 
-    // Recuperar top-K
+    // Recuperar top-K com foco na subcategoria
     const terms = expandTerms(tokenize(q));
+    const intent = biradsIntent(q);
     const pool = domainPool(q);
-    const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+    const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i,intent.rx)}))
                        .filter(o=>o.s>0)
                        .sort((a,b)=>b.s-a.s)
                        .slice(0, MAX_CONTEXTS);
@@ -345,12 +343,8 @@
     const contexts = scored.map(({rec})=>{
       const txt = (rec.text || '').slice(0, MAX_CHARS_PER_CTX);
       return {
-        title: rec.title || '',
-        citation: rec.citation || '',
-        text: txt,
-        source_file: rec.source_file || '',
-        page_start: rec.page_start || '',
-        page_end: rec.page_end || ''
+        title: rec.title || '', citation: rec.citation || '', text: txt,
+        source_file: rec.source_file || '', page_start: rec.page_start || '', page_end: rec.page_end || ''
       };
     });
     LAST_CONTEXTS = contexts.slice();
@@ -390,13 +384,13 @@
 
       thinking.innerHTML = `${esc((outText||'').trim() || 'Sem conteúdo retornado.')}\n<div class="small" style="margin-top:8px">${pills}</div>`;
     }catch(e){
-      // Fallback local (sem IA)
+      // === Fallback local (sem IA) – texto pedido ===
       const rawTerms = tokenize(q);
       const bullets = contexts.slice(0,4).map(c=>{
         const snip = (c.text||'').split(/(?<=\.)\s+/).slice(0,2).join(' ');
         return `• ${highlight(snip, rawTerms)}`;
       }).join('\n');
-      thinking.innerHTML = `<b>Resumo de protocolos (IA direcionada)</b>\n${bullets}\n<div class="small" style="margin-top:8px">Fontes (contexto): ${
+      thinking.innerHTML = `<b>Resumo conforme protocolos (IA direcionada ao índice)</b>\n${bullets}\n<div class="small" style="margin-top:8px">Fontes (contexto): ${
         contexts.slice(0,5).map(s=>{
           const t = [s.title, s.citation].filter(Boolean).join(' — ');
           return `<span class="pill">${esc(t||'Fonte')}</span>`;
