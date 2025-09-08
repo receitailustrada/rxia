@@ -386,7 +386,7 @@
 
       thinking.innerHTML = `${esc((outText||'').trim() || 'Sem conteúdo retornado.')}\n<div class="small" style="margin-top:8px">${pills}</div>`;
     }catch(e){
-      // Fallback local (sem IA)
+      // Protocolos oficiais (IA direcionada)
       const rawTerms = tokenize(q);
       const bullets = contexts.slice(0,4).map(c=>{
         const snip = (c.text||'').split(/(?<=\.)\s+/).slice(0,2).join(' ');
@@ -403,6 +403,7 @@
   </script>
 </body>
 </html>
+
 
 
 
