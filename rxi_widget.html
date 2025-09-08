@@ -101,15 +101,15 @@
   </div>
 
   <script>
-  // ===================== CONFIG (TROCAR AQUI) =====================
-  const BACKEND_URL  = "https://script.google.com/macros/s/AKfycbwTbfTOwVDo0ebJqtbA9UeHvdTXSxFwzwzuuH6Hp6tUT9aSe5HKFzBkOEJYLM6w0cYw/exec"; // ← COLE AQUI SEU GAS Web App
-  const APP_TOKEN    = "rxia_9ZP2-7kQvY";                                        // ← deve bater com APP_SECRET nas Propriedades do Script
-  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.json";                         // ← nome do seu índice padrão
-  const MAX_CONTEXTS = 6;  // quantos trechos enviamos para o backend (RAG)
-  const MAX_CHARS_PER_CTX = 700; // recorte por trecho para não estourar payload
+  // ===================== CONFIG (ajuste aqui) =====================
+  const BACKEND_URL   = "https://script.google.com/macros/s/AKfycbwTbfTOwVDo0ebJqtbA9UeHvdTXSxFwzwzuuH6Hp6tUT9aSe5HKFzBkOEJYLM6w0cYw/exec";
+  const APP_TOKEN     = "rxia_9ZP2-7kQvY";
+  const DEFAULT_INDEX = "rxi_index.cleaned.pruned.curated.json"; // use este se já subiu; senão, troque pelo seu atual
+  const MAX_CONTEXTS  = 6;
+  const MAX_CHARS_PER_CTX = 700;
   // ================================================================
 
-    // Util
+  // Util
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const qs = new URLSearchParams(location.search);
@@ -120,6 +120,7 @@
   // Estado
   let RECORDS = [];
   let FASTTEXT = [];
+  let FASTTEXT_NORM = []; // cache normalizado (sem acentos)
   let READY = false;
 
   // UI refs
@@ -164,8 +165,11 @@
       RECORDS = arrRaw.map(normalize);
       READY = true;
       FASTTEXT = new Array(RECORDS.length);
+      FASTTEXT_NORM = new Array(RECORDS.length);
       for(let i=0;i<Math.min(300, RECORDS.length);i++){
-        FASTTEXT[i] = (RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text).toLowerCase();
+        const blob = (RECORDS[i].title + ' ' + RECORDS[i].citation + ' ' + RECORDS[i].text);
+        FASTTEXT[i] = blob.toLowerCase();
+        FASTTEXT_NORM[i] = norm(blob);
       }
 
       // diagnóstico de campos essenciais
@@ -212,11 +216,41 @@
   }
   function setStatus(kind, text){ dot.className = 'dot ' + (kind||'loading'); msg.textContent = text||''; }
   function tokenize(q){ return q.toLowerCase().trim().split(/\s+/).filter(Boolean); }
+
+  // Normaliza para busca (minúsculas + sem acentos)
+  function norm(s){
+    return String(s||'')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'');
+  }
+
+  // Expande termos (ex.: BI-RADS 4 → 4a/4b/4c/subcategoria)
+  function expandTerms(baseTerms){
+    const out = new Set(baseTerms.map(norm));
+    const qn = norm(baseTerms.join(' '));
+
+    const isBiradsCtx = /\bbi[-\s]?rads?\b/.test(qn) || qn.includes('birads') ||
+                        qn.includes('mama') || qn.includes('mamografia') ||
+                        qn.includes('mastologia') || qn.includes('subcategoria');
+
+    if (isBiradsCtx) {
+      if (/\b4\b/.test(qn) || qn.includes('4a') || qn.includes('4b') || qn.includes('4c')){
+        out.add('4a'); out.add('4b'); out.add('4c');
+        out.add('subcategoria'); out.add('subcategorias');
+      }
+      if (/\b3\b/.test(qn)) {
+        out.add('seguimento'); out.add('6'); out.add('meses');
+      }
+    }
+    return Array.from(out);
+  }
+
   function highlight(text, terms){
     if(!terms.length) return esc(text);
     const lower = text.toLowerCase();
     let pos=-1;
-    for(const t of terms){ const p = lower.indexOf(t); if(p>=0 && (pos<0 || p<pos)) pos=p; }
+    for(const t of terms){ const p = lower.indexOf(t.toLowerCase()); if(p>=0 && (pos<0 || p<pos)) pos=p; }
     let snippet = text;
     if(pos>=0 && text.length>360){
       const start = Math.max(0, pos-140);
@@ -227,30 +261,32 @@
     }
     let out = esc(snippet);
     terms.forEach(t=>{
-      const rx = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
+      const rx = new RegExp(`(${String(t).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'ig');
       out = out.replace(rx,'<mark>$1</mark>');
     });
     return out;
   }
+
   function scoreRecord(rec, terms, i){
-    if(!FASTTEXT[i]) FASTTEXT[i] = (rec.title + ' ' + rec.citation + ' ' + rec.text).toLowerCase();
-    const blob = FASTTEXT[i];
+    if(!FASTTEXT_NORM[i]) FASTTEXT_NORM[i] = norm(rec.title + ' ' + rec.citation + ' ' + rec.text);
+    const blob = FASTTEXT_NORM[i];
     let s = 0;
-    const titleL = rec.title.toLowerCase();
-    const citeL  = rec.citation.toLowerCase();
+    const titleN = norm(rec.title);
+    const citeN  = norm(rec.citation);
     for(const t of terms){
-      if(titleL.includes(t)) s += 3;
-      if(citeL.includes(t))  s += 2;
-      const m = blob.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'));
+      if (!t) continue;
+      if(titleN.includes(t)) s += 3;
+      if(citeN.includes(t))  s += 2;
+      const rx = new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
+      const m = blob.match(rx);
       if(m) s += Math.min(5, m.length);
     }
     return s;
   }
 
-  // ---- Filtro de domínio (foca nos documentos certos) ----
+  // ---- Filtro de domínio (foca BI-RADS/mama quando aplicável) ----
   function domainPool(q){
     const qL = String(q||'').toLowerCase();
-    // Se perguntar por BI-RADS/mama, restringe ao tema
     if (/\bbi[-\s]?rads?\b/.test(qL) || /mama|mamografia|mastologia/.test(qL)) {
       const pool = RECORDS.filter(r=>{
         const t = (r.title + ' ' + r.citation + ' ' + r.text).toLowerCase();
@@ -258,10 +294,9 @@
       });
       if (pool.length) return pool;
     }
-    // (poderia adicionar outros domínios aqui, ex. O-RADS, colo do útero, etc.)
     return RECORDS;
   }
-  // --------------------------------------------------------
+  // ---------------------------------------------------------------
 
   // UI actions
   $('#btnList').addEventListener('click', ()=>{
@@ -283,11 +318,11 @@
   });
 
   function listResults(q){
-    const terms = tokenize(q);
+    const rawTerms = tokenize(q);            // para highlight (mostra o que o usuário digitou)
+    const terms    = expandTerms(rawTerms);  // para pontuação/busca (inclui 4a/4b/4c etc.)
     if(!terms.length){ res.innerHTML=''; res.hidden=false; ansWrap.hidden=true; return; }
     const t0=now();
 
-    // usa o pool filtrado por domínio
     const pool = domainPool(q);
     const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
                        .filter(o=>o.s>0)
@@ -307,7 +342,7 @@
         <div class="item">
           <div class="title">${esc(rec.title || 'Sem título')}</div>
           <div class="cite">${esc(rec.citation||'')}${file}</div>
-          <div class="snippet">${highlight(rec.text||'', terms)}</div>
+          <div class="snippet">${highlight(rec.text||'', rawTerms)}</div>
           <div class="small" style="margin-top:6px">${esc(meta)}</div>
         </div>
       `;
@@ -316,7 +351,7 @@
   }
 
   async function askIA(q){
-    const terms = tokenize(q);
+    const terms = expandTerms(tokenize(q));
     if(!terms.length){ alert('Digite sua pergunta.'); return; }
     if(!READY){ alert('Aguarde o índice carregar.'); return; }
 
@@ -377,13 +412,11 @@
       // Render
       ansText.textContent = (outText||'').trim() || 'Sem conteúdo retornado.';
       if(outSources && outSources.length){
-        // fontes do backend
         ansSrc.innerHTML = 'Fontes: ' + outSources.map(s=>{
           const t = [s.title, s.citation].filter(Boolean).join(' — ');
           return `<span class="pill">${esc(t||'Fonte')}</span>`;
         }).join(' ');
       }else{
-        // caso backend não mande fontes, mostramos as usadas no contexto (top-5)
         const top5 = contexts.slice(0,5);
         ansSrc.innerHTML = 'Fontes (contexto): ' + top5.map(s=>{
           const t = [s.title, s.citation].filter(Boolean).join(' — ');
@@ -395,9 +428,6 @@
       ansText.textContent = 'Erro ao chamar o backend: ' + e.message;
     }
   }
-</script>
+  </script>
 </body>
 </html>
-
-
-
