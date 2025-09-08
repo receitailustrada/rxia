@@ -1,0 +1,217 @@
+[
+  {
+    "id": "andrologia-p1",
+    "area": "Andrologia",
+    "source": "TelessaúdeRS",
+    "title": "Protocolo 1 — Disfunção sexual masculina",
+    "year": 2018,
+    "version": "2018-05-21",
+    "source_file": "Andrologia (2).pdf",
+    "tags": [
+      "andrologia",
+      "DE",
+      "disfunção erétil",
+      "PDE-5",
+      "peyronie",
+      "ejaculação precoce",
+      "hipogonadismo"
+    ],
+    "encaminhar_para": [
+      "Andrologia/Urologia",
+      "Endocrinologia (hipogonadismo)"
+    ],
+    "criterios_encaminhamento": [
+      "Disfunção erétil refratária a inibidor de PDE-5 por 6 meses",
+      "Disfunção erétil com contraindicação ou efeito adverso a inibidor de PDE-5",
+      "Doença de Peyronie com incapacidade para relação sexual",
+      "Ejaculação precoce refratária (ISRS + terapia comportamental por 3 meses)",
+      "Disfunção sexual com suspeita ou diagnóstico de hipogonadismo"
+    ],
+    "conteudo_minimo": [
+      "Sinais e sintomas",
+      "Tratamentos para DE (fármaco, dose, posologia)",
+      "Outros medicamentos (posologia)",
+      "Peyronie: incapacidade para relação sexual (sim/não)",
+      "Hipogonadismo: 2 dosagens de testosterona total em dias diferentes (datas); na 2ª amostra: LH, FSH, prolactina, TSH, T4-livre",
+      "Nº da teleconsultoria (se houver)"
+    ],
+    "encaminhamento_coringa": "Encaminhar conforme critérios após uso dos recursos locais; se suspeita de hipogonadismo, direcionar à Endocrinologia.",
+    "observacoes": "Priorize casos com infertilidade do casal/espermograma alterado.",
+    "creditos": "TelessaúdeRS-UFRGS (2018) — Porto Alegre/RS",
+    "referencias": "Vide protocolo original no site: www.telessauders.ufrgs.br",
+    "qa": [
+      {
+        "pergunta": "qual a conduta para disfunção erétil refratária ao pde-5?",
+        "resposta": "Encaminhar à Andrologia/Urologia; incluir no encaminhamento tratamentos tentados (dose/posologia), outros fármacos em uso e, se suspeita de hipogonadismo, resultados hormonais (testosterona total 2x; LH, FSH, prolactina, TSH, T4-livre)."
+      }
+    ]
+  },
+  {
+    "id": "andrologia-p2",
+    "area": "Andrologia",
+    "source": "TelessaúdeRS",
+    "title": "Protocolo 2 — Varicocele",
+    "year": 2018,
+    "version": "2018-05-21",
+    "source_file": "Andrologia (2).pdf",
+    "tags": [
+      "andrologia",
+      "varicocele",
+      "espermograma",
+      "dor escrotal"
+    ],
+    "encaminhar_para": [
+      "Andrologia/Urologia"
+    ],
+    "criterios_encaminhamento": [
+      "Varicocele + testículo ipsilateral diminuído",
+      "Varicocele clínica + espermograma alterado + desejo reprodutivo",
+      "Varicocele com sintomas (dor/desconforto)"
+    ],
+    "conteudo_minimo": [
+      "Sinais e sintomas (tempo, frequência, unilateral/bilateral, volume testicular)",
+      "Ecografia escrotal (data), se realizada",
+      "Eco/TC de abdome (varicocele unilateral direita), se realizada (data)",
+      "Espermograma (data), se realizado",
+      "Nº da teleconsultoria (se houver)"
+    ],
+    "encaminhamento_coringa": "Encaminhar à Andrologia/Urologia quando presentes os critérios; usar recursos locais (USG, espermograma) quando disponíveis.",
+    "observacoes": "Varicocele clínica: visível/palpável em ortostatismo; ultrassom: diâmetro venoso >2,45 mm em repouso ou >2,95 mm em Valsalva.",
+    "creditos": "TelessaúdeRS-UFRGS (2018) — Porto Alegre/RS",
+    "referencias": "Vide protocolo original no site: www.telessauders.ufrgs.br",
+    "qa": [
+      {
+        "pergunta": "quando encaminhar varicocele unilateral direita com dor?",
+        "resposta": "Dor/desconforto é critério de encaminhamento. Se possível, descrever ecografia escrotal e, em varicocele direita, eco/TC de abdome com data."
+      },
+      {
+        "pergunta": "qual a conduta para varicocele?",
+        "resposta": "Avaliar clínica e USG; se testículo ipsilateral diminuído, espermograma alterado com desejo reprodutivo ou dor, encaminhar à Andrologia/Urologia."
+      }
+    ]
+  },
+  {
+    "id": "andrologia-p3",
+    "area": "Andrologia",
+    "source": "TelessaúdeRS",
+    "title": "Protocolo 3 — Infertilidade Masculina",
+    "year": 2018,
+    "version": "2018-05-21",
+    "source_file": "Andrologia (2).pdf",
+    "tags": [
+      "andrologia",
+      "infertilidade",
+      "azoospermia",
+      "varicocele",
+      "oligospermia",
+      "vasectomia"
+    ],
+    "encaminhar_para": [
+      "Andrologia"
+    ],
+    "criterios_encaminhamento": [
+      "Varicocele clínica associada à oligospermia",
+      "Azoospermia ou outras alterações de espermograma com desejo de investigação",
+      "Desejo de reversão de vasectomia"
+    ],
+    "conteudo_minimo": [
+      "Tentativa de gestação (sim/não; há quanto tempo)",
+      "História reprodutiva, DE/ejaculação, varicocele clínica, vasectomia prévia",
+      "Espermograma com data (se realizado)",
+      "Nº da teleconsultoria (se houver)"
+    ],
+    "encaminhamento_coringa": "Priorizar infertilidade do casal; incluir dados do espermograma e tempo de tentativa de gravidez.",
+    "creditos": "TelessaúdeRS-UFRGS (2018) — Porto Alegre/RS",
+    "referencias": "Vide protocolo original no site: www.telessauders.ufrgs.br"
+  },
+  {
+    "id": "urologia-adulto-prot3",
+    "area": "Urologia Adulto",
+    "source": "TelessaúdeRS",
+    "title": "Protocolo 3 — Patologias Escrotais Benignas (inclui Varicocele)",
+    "year": 2023,
+    "version": "2023-02-23",
+    "page_start": 8,
+    "page_end": 9,
+    "source_file": "Urologia Adulto.pdf",
+    "tags": [
+      "urologia adulto",
+      "varicocele",
+      "hidrocele",
+      "cisto de cordão",
+      "epidídimo",
+      "dor escrotal",
+      "andrologia"
+    ],
+    "encaminhar_para": [
+      "Urologia",
+      "Urologia - Andrologia (varicocele conforme critérios)"
+    ],
+    "criterios_encaminhamento": [
+      "Urgência: suspeita de torção testicular (dor aguda, edema, nódulo macio)",
+      "Urologia: patologias escrotais benignas sintomáticas (exceto varicocele)",
+      "Urologia - Andrologia (varicocele): testículo ipsilateral diminuído; OU espermograma alterado com varicocele clínica e desejo de filhos; OU dor/desconforto"
+    ],
+    "conteudo_minimo": [
+      "Sinais e sintomas (tempo, frequência, fatores de alívio/desencadeantes)",
+      "USG escrotal (anexar/descrever com data), se realizada",
+      "Se varicocele: espermograma (data), se realizado",
+      "Nº da teleconsultoria (se houver)"
+    ],
+    "encaminhamento_coringa": "Se dor escrotal importante ou dúvida de torção, emergência. Varicocele com critérios → direcionar à Andrologia.",
+    "observacoes": "Varicocele clínica: visível/palpável em ortostatismo; ultrassom: veia >2,45 mm repouso ou >2,95 mm em Valsalva.",
+    "creditos": "TelessaúdeRS-UFRGS (2023) — Porto Alegre/RS",
+    "referencias": "Vide protocolo original no site: www.telessauders.ufrgs.br",
+    "qa": [
+      {
+        "pergunta": "quando encaminhar varicocele unilateral direita com dor?",
+        "resposta": "Dor/desconforto é critério para encaminhar (Urologia - Andrologia). Se possível, anexar USG escrotal e espermograma (data)."
+      },
+      {
+        "pergunta": "qual a conduta para varicocele?",
+        "resposta": "Registrar sinais/sintomas e exames; se presentes os critérios (testículo ipsilateral diminuído, espermograma alterado + desejo reprodutivo, ou dor), encaminhar à Andrologia."
+      }
+    ]
+  },
+  {
+    "id": "urologia-pediatrica-prot2",
+    "area": "Urologia Pediátrica",
+    "source": "TelessaúdeRS",
+    "title": "Protocolo 2 — Patologias escrotais benignas (pediatria, inclui Varicocele)",
+    "year": 2020,
+    "version": "2020-03-09",
+    "source_file": "Encaminhamento Urologia Pediátrica.pdf",
+    "tags": [
+      "urologia pediátrica",
+      "varicocele",
+      "hidrocele",
+      "criptorquidia",
+      "hérnia inguinal",
+      "testículo retrátil"
+    ],
+    "encaminhar_para": [
+      "Urologia Pediátrica",
+      "Urologia Pediátrica + Endocrinologia Pediátrica (se ADS)"
+    ],
+    "criterios_encaminhamento": [
+      "Urgência: suspeita de torção testicular; recém-nascido com sinais de anomalia da diferenciação sexual (ADS) não investigada",
+      "Hidrocele persistente >12 meses, ou dúvida diagnóstica/associação com hérnia",
+      "Varicocele: testículo ipsilateral diminuído (diferença 10–15% ou >2 mL por USG); condição testicular adicional que afete fertilidade; varicocele palpável bilateral; dor/desconforto; alteração do espermograma (adolescentes)",
+      "Criptorquidia: testículo retido após 4 meses (ou idade corrigida), ectópico/ausente/ascendente, ou dúvida com testículo retrátil"
+    ],
+    "conteudo_minimo": [
+      "Sinais e sintomas (dor/peso, variabilidade do volume, palpação testicular, alterações de volume, palpação de varicocele, hérnia, atrofia de bolsa, sinais de ADS)",
+      "USG de bolsa escrotal (data), se realizada",
+      "Nº da teleconsultoria (se houver)"
+    ],
+    "encaminhamento_coringa": "Em suspeita de torção, emergência. Varicocele com critérios → Urologia Pediátrica; se ADS, associar Endocrinologia Pediátrica.",
+    "creditos": "TelessaúdeRS-UFRGS (2020) — Porto Alegre/RS",
+    "referencias": "Vide protocolo original no site: www.telessauders.ufrgs.br",
+    "qa": [
+      {
+        "pergunta": "qual a conduta para varicocele em adolescente?",
+        "resposta": "Encaminhar se dor/desconforto, testículo ipsilateral menor, varicocele bilateral palpável, condição testicular adicional que afete fertilidade ou espermograma alterado."
+      }
+    ]
+  }
+]
