@@ -109,7 +109,7 @@
   const MAX_CHARS_PER_CTX = 700; // recorte por trecho para não estourar payload
   // ================================================================
 
-  // Util
+    // Util
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const qs = new URLSearchParams(location.search);
@@ -247,6 +247,22 @@
     return s;
   }
 
+  // ---- Filtro de domínio (foca nos documentos certos) ----
+  function domainPool(q){
+    const qL = String(q||'').toLowerCase();
+    // Se perguntar por BI-RADS/mama, restringe ao tema
+    if (/\bbi[-\s]?rads?\b/.test(qL) || /mama|mamografia|mastologia/.test(qL)) {
+      const pool = RECORDS.filter(r=>{
+        const t = (r.title + ' ' + r.citation + ' ' + r.text).toLowerCase();
+        return t.includes('bi-rads') || t.includes('birads') || t.includes('mama') || t.includes('mamografia') || t.includes('mastologia');
+      });
+      if (pool.length) return pool;
+    }
+    // (poderia adicionar outros domínios aqui, ex. O-RADS, colo do útero, etc.)
+    return RECORDS;
+  }
+  // --------------------------------------------------------
+
   // UI actions
   $('#btnList').addEventListener('click', ()=>{
     const q = $('#q').value;
@@ -270,10 +286,13 @@
     const terms = tokenize(q);
     if(!terms.length){ res.innerHTML=''; res.hidden=false; ansWrap.hidden=true; return; }
     const t0=now();
-    const scored = RECORDS.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
-                          .filter(o=>o.s>0)
-                          .sort((a,b)=>b.s-a.s)
-                          .slice(0,120);
+
+    // usa o pool filtrado por domínio
+    const pool = domainPool(q);
+    const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+                       .filter(o=>o.s>0)
+                       .sort((a,b)=>b.s-a.s)
+                       .slice(0,120);
     const t1=now();
 
     if(!scored.length){
@@ -301,11 +320,12 @@
     if(!terms.length){ alert('Digite sua pergunta.'); return; }
     if(!READY){ alert('Aguarde o índice carregar.'); return; }
 
-    // recuperar top-K para contexto
-    const scored = RECORDS.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
-                          .filter(o=>o.s>0)
-                          .sort((a,b)=>b.s-a.s)
-                          .slice(0, MAX_CONTEXTS);
+    // recuperar top-K para contexto (usando pool filtrado)
+    const pool = domainPool(q);
+    const scored = pool.map((rec,i)=>({rec,i,s:scoreRecord(rec,terms,i)}))
+                       .filter(o=>o.s>0)
+                       .sort((a,b)=>b.s-a.s)
+                       .slice(0, MAX_CONTEXTS);
 
     if(!scored.length){
       ansText.textContent = 'Nenhuma base encontrada para responder. Tente reformular sua pergunta.';
@@ -332,11 +352,11 @@
     btnCopy.textContent = 'Copiar';
 
     try{
-     const r = await fetch(BACKEND_URL, {
-     method: 'POST',
-     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simples → sem preflight
-     body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
-    });
+      const r = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simples → sem preflight
+        body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
+      });
 
       if(!r.ok){
         ansText.textContent = `Falha no backend (${r.status} ${r.statusText}). Verifique BACKEND_URL/APP_TOKEN e CORS do GAS.`;
@@ -375,9 +395,8 @@
       ansText.textContent = 'Erro ao chamar o backend: ' + e.message;
     }
   }
-  </script>
-</body>
-</html>
+
+
 
 
 
