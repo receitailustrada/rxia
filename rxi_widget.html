@@ -332,11 +332,11 @@
     btnCopy.textContent = 'Copiar';
 
     try{
-      const r = await fetch(BACKEND_URL, {
-        method:'POST',
-        headers:{'content-type':'application/json'},
-        body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
-      });
+     const r = await fetch(BACKEND_URL, {
+     method: 'POST',
+     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simples → sem preflight
+     body: JSON.stringify({ question: q, contexts, token: APP_TOKEN })
+    });
 
       if(!r.ok){
         ansText.textContent = `Falha no backend (${r.status} ${r.statusText}). Verifique BACKEND_URL/APP_TOKEN e CORS do GAS.`;
@@ -378,5 +378,6 @@
   </script>
 </body>
 </html>
+
 
 
