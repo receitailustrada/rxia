@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RXI • Painel SERMulher RS (Código completo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  /* Define o tamanho base de 1rem = 16px */
+  html {
+    font-size: 100%; /* 100% do tamanho padrão do navegador (geralmente 16px) */
+  }
+
+  :root{
+    --roxo:#64376e; --lilas:#9169a5; --pb80:#333; --pb40:#777;
+    --bg:#fff; --text:#222; --card:#fff; --border:#e8e2ef; --shadow:0.0rem 0.125rem 0.625rem rgba(100,55,110,.08); /* Convertido */
+    --blue:#174181; --error:#9b1c1c; --ok:#1aa36f; --warn:#e6a100;
+    --toast-bg:rgba(34,34,34,.92); --toast-text:#fff; --focus:#baa4cc;
+    --grp-mama:#8b5bd1; --grp-utero:#64376e; --grp-geral:#4a7bd6;
+    --orange:#ff8d2b;
+  }
+
+  *{box-sizing:border-box}
+  /* 18px / 16px = 1.125rem */
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:1.125rem;}
+
+  /* HEADER claro sempre */
+  header{
+    background:#fff; color:#222; border-bottom:0.125rem solid var(--roxo); /* Convertido */
+    display:flex;align-items:center;justify-content:space-between;gap:0.75rem; /* Convertido */
+    padding:0.75rem 1rem;flex-wrap:wrap; box-shadow:var(--shadow); /* Convertido */
+    position: sticky; top:0; z-index:1000;
+  }
+  .brand{display:flex;align-items:center;gap:0.75rem} /* Convertido */
+  .brand img{height:5.25rem;width:auto} /* Convertido */
+  /* 24px / 16px = 1.5rem */
+  .brand h1{margin:0;color:var(--roxo);font-weight:800;font-size:1.5rem;letter-spacing:.0125rem} /* Convertido */
+
+  main{max-width:100rem;margin:1.125rem auto;padding:0 1rem 8.75rem} /* Convertido */
+  .card{
+   border:0.0625rem solid var(--border); /* Convertido */
+  border-radius:0.75rem; /* Convertido */
+  padding:1rem; /* Convertido */
+  background:#fff;
+  box-shadow:var(--shadow); padding:0.875rem 1rem; margin-bottom:1rem; transition:transform .15s /* Convertido */
+  }
+  .card:hover{transform:translateY(-0.125rem)} /* Convertido */
+  .card h2{
+  margin:-1rem -1rem 0.75rem; /* Convertido */
+  padding:0.625rem 0.875rem; /* Convertido */
+  background:var(--roxo);
+  color:#fff;
+  /* 18px / 16px = 1.125rem */
+  font-size:1.125rem;
+  border-radius:0.75rem 0.75rem 0 0; /* Convertido */
+}
+  .badge-step{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:1.625rem;height:1.625rem;border-radius:999px;font-weight:800;/* 13px / 16px = 0.8125rem */font-size:0.8125rem;
+    background:color-mix(in srgb, var(--roxo) 14%, #ffffff);
+    color:var(--roxo); border:0.0625rem solid color-mix(in srgb, var(--roxo) 40%, #ffffff); /* Convertido */
+  }
+
+  /* 13px / 16px = 0.8125rem */
+  label{display:block;font-size:0.8125rem;color:var(--pb80);margin:0 0 0.375rem} /* Convertido */
+  input,select,textarea{
+    width:100%;padding:0.625rem 0.75rem;border:0.0625rem solid var(--border);border-radius:0.625rem;background:#fff;color:#222;/* 15px / 16px = 0.9375rem */font-size:0.9375rem;outline:none;
+    transition:border-color .15s, box-shadow .15s
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--lilas);box-shadow:0 0 0 0.1875rem color-mix(in srgb, var(--lilas) 35%, transparent)} /* Convertido */
+  textarea{min-height:7.5rem;resize:vertical} /* Convertido */
+  #saida{min-height:25rem} /* Convertido */
+  .row{display:flex;flex-wrap:wrap;gap:0.75rem} /* Convertido */
+  .row.end{align-items:flex-end}
+  .field{flex:1 1 16.25rem;min-width:15rem} /* Convertido */
+  /* 12px / 16px = 0.75rem */
+  .muted{color:var(--pb40);font-size:0.75rem}
+  .pill-group{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem} /* Convertido */
+  .pill{position:relative;display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border-radius:999px;border:0.0625rem solid var(--border);background:#fcfbfe;color:var(--roxo);cursor:pointer;user-select:none;transition:.15s;/* 15px / 16px = 0.9375rem */font-size:0.9375rem}
+  .pill:hover{background:var(--lilas);color:#fff}
+  .pill input{position:absolute;opacity:0;pointer-events:none}
+  .pill.active{background:var(--roxo);color:#fff;border-color:transparent}
+  .pill.err{outline:0.125rem solid var(--error)} /* Convertido */
+  .chip{display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.625rem;border-radius:999px;background:#eee7f5;color:#452357;border:0.0625rem solid rgba(0,0,0,.06);cursor:pointer;user-select:none;/* 13px / 16px = 0.8125rem */font-size:0.8125rem;font-weight:700}
+  .chip[data-active="true"]{background:linear-gradient(145deg,#805d91,#6b4780);color:#fff;border-color:transparent}
+
+  .actions{display:flex;flex-wrap:wrap;gap:0.625rem;margin-top:0.625rem} /* Convertido */
+  button{display:inline-flex;align-items:center;gap:0.625rem;cursor:pointer;border:0;border-radius:0.625rem;padding:0.625rem 0.875rem;font-weight:800;letter-spacing:.0125rem;transition:filter .15s, background .2s, color .2s, border-color .2s} /* Convertido */
+  button:focus-visible{outline:0.1875rem solid var(--focus);outline-offset:0.125rem} /* Convertido */
+  button:hover{filter:brightness(1.03)}
+  .btn{background:var(--roxo);color:#fff}
+  .btn-sec{background:var(--lilas);color:#fff}
+  .btn-ghost{background:transparent;color:var(--roxo);border:0.0625rem solid var(--roxo)} /* Convertido */
+  .btn-orange{background:var(--orange);color:#fff}
+  .btn-done{background:var(--ok) !important;color:#fff !important;border-color:var(--ok) !important}
+
+  .btn-gercon{background:#fff;color:var(--blue);border:0.0625rem solid var(--blue);box-shadow:0.375rem 0.375rem 0.75rem rgba(0,0,0,.08),-0.375rem -0.375rem 0.75rem #fff} /* Convertido */
+  .btn-gercon:hover{background:#f0f6ff;color:#0e2a50;box-shadow:inset 0.25rem 0.25rem 0.5rem rgba(0,0,0,.06), inset -0.25rem -0.25rem 0.5rem #fff} /* Convertido */
+  .btn-gercon img{height:1.125rem;display:block} /* Convertido */
+  .outbox{display:grid;grid-template-columns:1fr;gap:0.75rem} /* Convertido */
+  /* 13px / 16px = 0.8125rem */
+  .counter{font-size:0.8125rem}
+  .danger{color:var(--error)}
+  .toolbar{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap} /* Convertido */
+
+  .switch{--h:1.75rem;position:relative;display:inline-flex;align-items:center;gap:0.625rem;background:#fff;border:0.0625rem solid var(--border);border-radius:0.75rem;padding:0.375rem 0.625rem;cursor:pointer} /* Convertido */
+  .switch input{position:absolute;opacity:0;pointer-events:none}
+  .switch .track{width:3.25rem;height:var(--h);background:#e7e0ef;border-radius:999px;position:relative;flex:0 0 auto;transition:background .2s} /* Convertido */
+  .switch .thumb{position:absolute;top:0.1875rem;left:0.1875rem;width:1.375rem;height:1.375rem;border-radius:50%;background:#fff;box-shadow:0 0.125rem 0.375rem rgba(0,0,0,.2);transition:left .2s} /* Convertido */
+  .switch.on .track{background:linear-gradient(90deg,var(--lilas),var(--roxo))}
+  .switch.on .thumb{left:1.6875rem} /* Convertido */
+  /* 12px / 16px = 0.75rem */
+  .switch .label{font-size:0.75rem;color:var(--pb80);font-weight:700;letter-spacing:.0125rem;white-space:nowrap}
+
+  .group-bar{position:sticky;top:9.125rem;z-index:900;background:color-mix(in srgb, var(--card) 85%, transparent);backdrop-filter:saturate(1.2) blur(6px);border:0.0625rem solid var(--border);border-radius:0.75rem;padding:0.5rem;margin:-0.25rem 0 0.5rem 0;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center} /* Convertido */
+  /* 12px / 16px = 0.75rem */
+  .gbtn{background:#fff;color:#222;border:0.125rem solid var(--border);padding:0.375rem 0.625rem;border-radius:999px;font-weight:800;font-size:0.75rem;cursor:pointer}
+  .gbtn[data-group="mama"]{border-color:var(--grp-mama)} .gbtn[data-group="utero"]{border-color:var(--grp-utero)} .gbtn[data-group="geral"]{border-color:var(--grp-geral)}
+  .gbtn.active{box-shadow:inset 0 0 0 0.125rem currentColor} /* Convertido */
+  .gbtn .dot{display:inline-block;width:0.625rem;height:0.625rem;border-radius:50%;margin-right:0.375rem;vertical-align:-0.0625rem} /* Convertido */
+  .gbtn[data-group="mama"] .dot{background:var(--grp-mama)} .gbtn[data-group="utero"] .dot{background:var(--grp-utero)} .gbtn[data-group="geral"] .dot{background:var(--grp-geral)}
+  .pill[data-group="mama"]{border-color:color-mix(in srgb, var(--grp-mama) 65%, #fff)} .pill[data-group="utero"]{border-color:color-mix(in srgb, var(--grp-utero) 65%, #fff)} .pill[data-group="geral"]{border-color:color-mix(in srgb, var(--grp-geral) 65%, #fff)}
+
+  .step-head{display:flex;align-items:center;gap:0.625rem;margin:0.25rem 0 0.375rem} /* Convertido */
+  /* 14px / 16px = 0.875rem */
+  .step-head .title{font-weight:800;color:var(--roxo);font-size:0.875rem;letter-spacing:.0125rem}
+
+  .routebar{position:sticky;top:4.25rem;z-index:920;border:0.0625rem dashed var(--border);border-radius:0.75rem;padding:0.5rem 0.625rem;margin:-0.125rem 0 0.75rem;background:color-mix(in srgb, var(--card) 85%, transparent);backdrop-filter:saturate(1.2) blur(6px);display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;justify-content:space-between} /* Convertido */
+  /* 14px / 16px = 0.875rem */
+  .routebar .summary{font-size:0.875rem} .routebar .summary strong{color:var(--roxo)} /* 12px / 16px = 0.75rem */.routebar .why{font-size:0.75rem;color:var(--pb40)}
+  .k{display:inline-flex;gap:0.375rem;align-items:center;padding:0.25rem 0.5rem;border-radius:999px;border:0.0625rem solid var(--border);background:#fff;/* 12px / 16px = 0.75rem */font-size:0.75rem} /* Convertido */
+
+  .alertbar{position:sticky;top:7.5rem;z-index:950;background:#fff3f3;border:0.0625rem solid #ffc9c9;border-left:0.375rem solid var(--error);border-radius:0.625rem;padding:0.625rem 0.75rem;margin-bottom:0.75rem} /* Convertido */
+  .alertbar h3{margin:0 0 0.25rem;color:var(--error);/* 15px / 16px = 0.9375rem */font-size:0.9375rem} /* Convertido */
+  .alertbar ul{margin:0.375rem 0 0 1.375rem} .alertbar li{margin-bottom:0.25rem} /* Convertido */
+  .alert-actions{display:flex;gap:0.5rem;margin-top:0.5rem} /* Convertido */
+  .disabled{opacity:.45;pointer-events:none}
+
+  .drawer{position:fixed;inset:0 0 0 auto;width:min(35rem,96vw);background:var(--card);border-left:0.0625rem solid var(--border);box-shadow:-0.75rem 0 1.75rem rgba(0,0,0,.25);transform:translateX(110%);transition:transform .25s ease;z-index:980;padding:0.875rem 1rem;overflow:auto} /* Convertido */
+  .drawer.show{transform:translateX(0)}
+  .drawer h3{margin:0 0 0.5rem;color:var(--roxo);/* 18px / 16px = 1.125rem */font-size:1.125rem;font-weight:800}
+  .chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.625rem} /* Convertido */
+
+  .toast{position:fixed;left:50%;bottom:1.375rem;transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:0.625rem 0.875rem;border-radius:0.625rem;/* 14px / 16px = 0.875rem */font-size:0.875rem;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:9999} /* Convertido */
+  .toast.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(-0.25rem)} /* Convertido */
+
+  /* FABs lado direito (Base legal + topo/fim) */
+  .fab{position:fixed;right:1rem;bottom:1rem;display:flex;flex-direction:column;gap:0.5rem;z-index:950} /* Convertido */
+  .fab button{border-radius:999px;box-shadow:var(--shadow)}
+  #btn-legal{background:var(--roxo);color:#fff;border:0;padding:0.625rem 0.75rem} /* Convertido */
+  /* Setas: sempre visíveis com 50% de opacidade, 100% no hover/foco */
+  .navbtn{width:2.875rem;height:2.875rem;display:flex;align-items:center;justify-content:center;border:0.125rem solid var(--roxo);background:rgba(100,55,110,.06);color:var(--roxo);opacity:.5} /* Convertido */
+  .navbtn:hover,.navbtn:focus-visible{opacity:1}
+  /* 24px / 16px = 1.5rem */
+  .navbtn span{font-size:1.5rem;font-weight:800;line-height:1}
+
+  /* Créditos */
+  footer{max-width:100rem;margin:0 auto 2.5rem;padding:0 1rem} /* Convertido */
+  /* 13.5px / 16px = 0.84375rem */
+  .credits{font-size:0.84375rem;color:#555;border-top:0.0625rem dashed var(--border);padding-top:0.625rem} /* Convertido */
+
+  /* PDF helper */
+  .pdf-row{display:flex;gap:0.625rem;align-items:center;flex-wrap:wrap} /* Convertido */
+  .pdf-row .field{min-width:20rem;flex:1} /* Convertido */
+  .pdf-row button{flex:0 0 auto}
+  @media (min-width:56.25rem){ .pdf-row{flex-wrap:nowrap} } /* Convertido */
+  /* 12px / 16px = 0.75rem */
+  .pdf-status{font-size:0.75rem;color:#555;margin-top:0.25rem} /* Convertido */
+
+/* ==== TOASTS COLORIDOS RXI ==== */
+.toast {
+  position: fixed;
+  bottom: 1.25rem; /* Convertido */
+  right: 1.25rem; /* Convertido */
+  padding: 0.75rem 1.125rem; /* Convertido */
+  border-radius: 0.5rem; /* Convertido */
+  /* 14px / 16px = 0.875rem */
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.25); /* Convertido */
+  opacity: 0;
+  transform: translateY(1.25rem); /* Convertido */
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #1aa36f; }
+.toast.warning { background: #e6a100; }
+.toast.error   { background: #c0392b; }
+.toast.info    { background: #174181; }
+
+/* ==== GUIA INTERATIVO RXI ==== */
+#guia-rxi {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+}
+.guia-box {
+  background:#fff;
+  color:#222;
+  padding:1.25rem; /* Convertido */
+  border-radius:0.625rem; /* Convertido */
+  max-width:31.25rem; /* Convertido */
+  text-align:center;
+  box-shadow:0 0.375rem 1.25rem rgba(0,0,0,0.3); /* Convertido */
+}
+.guia-box h3 { margin-top:0; }
+.guia-btns { margin-top:1.25rem; } /* Convertido */
+.guia-btns button {
+  margin:0 0.5rem; /* Convertido */
+  padding:0.5rem 0.875rem; /* Convertido */
+  border:none;
+  border-radius:0.375rem; /* Convertido */
+  cursor:pointer;
+  font-weight:600;
+  /* 14px / 16px = 0.875rem */
+  font-size:0.875rem;
+}
+.btn-prev { background:#777; color:#fff; }
+.btn-next { background:#64376e; color:#fff; }
+.btn-close { background:#c0392b; color:#fff; }
+
+
+/* RXI switch styles */
+.switch{--h:1.75rem;position:relative;display:inline-flex;align-items:center;gap:0.625rem;background:#fff;border:0.125rem solid color-mix(in srgb, var(--roxo) 20%, var(--border));border-radius:0.75rem;padding:0.375rem 0.625rem;cursor:pointer;box-shadow:0 0.125rem 0.625rem rgba(100,55,110,.08)} /* Convertido */
+.switch-input{position:absolute;opacity:0;pointer-events:none}
+.switch-track{width:3.25rem;height:var(--h);background:#e7e0ef;border-radius:999px;position:relative;flex:0 0 auto;transition:background .2s,box-shadow .2s;border:0.0625rem solid color-mix(in srgb, var(--roxo) 20%, var(--border));box-shadow:inset 0 0.125rem 0.375rem rgba(0,0,0,.10)} /* Convertido */
+.switch-thumb{position:absolute;top:0.1875rem;left:0.1875rem;width:1.375rem;height:1.375rem;border-radius:50%;background:#fff;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,.25);transition:left .2s,box-shadow .2s} /* Convertido */
+.switch-input:checked+.switch-track{background:linear-gradient(90deg,var(--lilas),var(--roxo));box-shadow:inset 0 0.125rem 0.375rem rgba(0,0,0,.12),0 0 0 0.1875rem rgba(100,55,110,.25)} /* Convertido */
+.switch-input:checked+.switch-track .switch-thumb{left:1.6875rem;box-shadow:0 0.125rem 0.625rem rgba(0,0,0,.30),0 0 0 0.375rem rgba(100,55,110,.20)} /* Convertido */
+/* 12px / 16px = 0.75rem */
+.switch-label{font-size:0.75rem;color:var(--pb80);font-weight:700;letter-spacing:.0125rem;white-space:nowrap}
+/* Highlight only this toggle */
+#filterToggle+.switch-track{background:#e4daf0;border:0.0625rem solid #bda6d3} /* Convertido */
+#filterToggle:checked+.switch-track{background:linear-gradient(90deg,#5d2a6b,#9169a5);border-color:transparent;box-shadow:inset 0 0.125rem 0.375rem rgba(0,0,0,.12),0 0 0 0.1875rem rgba(100,55,110,.28)} /* Convertido */
+#filterToggle+.switch-track .switch-thumb{box-shadow:0 0.125rem 0.375rem rgba(0,0,0,.28)} /* Convertido */
+#filterToggle:checked+.switch-track .switch-thumb{left:1.8125rem;box-shadow:0 0.125rem 0.625rem rgba(0,0,0,.30),0 0 0 0.375rem rgba(100,55,110,.18)} /* Convertido */
+#filterToggle~.switch-label{color:#6b6280;font-weight:700}
+#filterToggle:checked~.switch-label{color:#5d2a6b}
+
+
+/* Ajustes de sobreposição do VLibras */
+.vw-access-button { z-index: 99999 !important; }
+.vw-plugin-wrapper { z-index: 99998 !important; }
+</style>
+</head>
+<!-- VLibras: Widget de Acessibilidade em Libras -->
+<div vw class="enabled">
+  <div vw-access-button class="active"></div>
+  <div vw-plugin-wrapper>
+    <div class="vw-plugin-top-wrapper"></div>
+  </div>
+</div>
+
+
+<!-- Guia em etapas RXI -->
+<div id="guia-rxi">
+  <div class="guia-box">
+    <h3 id="guia-titulo">📖 Bem-vindo ao sistema RXI</h3>
+    <p id="guia-texto">Este é o sistema de Toasts RXI. Ele exibe notificações rápidas para feedback visual.</p>
+    <div class="guia-btns">
+      <button class="btn-prev" onclick="guiaAnterior()" disabled>◀ Voltar</button>
+      <button class="btn-next" onclick="guiaProximo()">Próximo ▶</button>
+      <button class="btn-close" onclick="fecharGuia()">✖ Fechar</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <img src="https://raw.githubusercontent.com/receitailustrada/rxi-imagens/refs/heads/main/logo-SERMulher%20RS.png" alt="SERMulher RS">
+    <h1> 📱Painel de Encaminhamento • Cruz Alta</h1>
+  </div>
+  <div class="toolbar"> <!-- Este div agora agrupa o switch e os botões -->
+    <div class="switch" id="switch-upper" role="switch" aria-checked="true">
+      <div class="track"><div class="thumb"></div></div>
+      <span class="label">🔡 GERCON 🔠</span>
+      <input type="checkbox" id="upper" checked />
+    </div>
+
+    <button id="copy" class="btn-sec" title="Copiar texto">📋 Copiar</button>
+    <button id="clear" class="btn-orange" title="Limpar e reiniciar">Limpar 🧹 reiniciar</button>
+    <button id="gercon" class="btn-gercon" title="FORMATAR">
+      <img src="https://raw.githubusercontent.com/receitailustrada/rxi-imagens/a043cf565f03f16245b013c07d27b2a15e1af2eb/logo-gercon.svg" alt="GERCON">
+      FORMATAR
+    </button>
+  </div>
+</header>
+
+<main id="topo">
+
+  <!-- ETAPA 1 -->
+  <div class="step-head"><span class="badge-step">1</span><span class="title">Destino sugerido (explicação)</span></div>
+  <section class="routebar" id="routebar">
+    <div class="summary">
+      <strong>Destino sugerido:</strong> <span id="route-dest">SERMulher RS</span>
+      <span class="k" id="route-prio" style="display:none"></span>
+      <span class="k" id="route-risk" style="display:none"></span>
+      <div class="why" id="route-why"></div>
+    </div>
+    <!-- Removido aqui o switch + "Aplicar" (duplicado). Mantido apenas na Etapa 2. -->
+  </section>
+
+  <!-- ALERTA -->
+  <section id="alert" class="alertbar" style="display:none">
+    <h3>⚠️ Inconsistências detectadas</h3>
+    <ul id="alert-list"></ul>
+    <div class="alert-actions" id="alert-actions">
+      <button id="fix-auto" class="btn">Corrigir automaticamente</button>
+      <button id="no-ref" class="btn-sec" style="display:none">Explicar risco e manter na APS (não encaminhar)</button>
+      <button id="dismiss" class="btn-ghost">Ignorar (não recomendado)</button>
+    </div>
+    <div class="muted">Com inconsistências ativas, as ações de GERCON/Copiar ficam desabilitadas.</div>
+  </section>
+
+  <!-- ETAPA 2 -->
+  <section class="card step" id="etapa-2">
+    <h2><span class="badge-step">2</span> Identificação & Linha de cuidado</h2>
+    <div class="row">
+      <div class="field">
+        <label>Nome completo (opcional)</label>
+        <input id="nome" placeholder="Não armazenamos dados 🔏">
+      </div>
+      <div class="field">
+        <label>Data do encaminhamento</label>
+        <input id="data" type="date"><div class="muted">Data do dia (editável).</div>
+      </div>
+      <div class="field">
+        <label>Data de nascimento</label>
+        <input id="dob" type="date" />
+        <div class="muted">A idade é calculada automaticamente.</div>
+      </div>
+      <div class="field">
+        <label>Idade (automático)</label>
+        <input id="idade" type="text" readonly placeholder="—">
+      </div>
+
+      <div class="field">
+        <label>Linha de cuidado (eixo oficial)</label>
+        <select id="linha">
+          <option value="Colo do Útero">Colo do Útero</option>
+          <option value="Mama">Mama</option>
+          <option value="Endometriose / Miomatose">Endometriose / Miomatose</option>
+          <option value="Planejamento Reprodutivo (Infertilidade)">Planejamento Reprodutivo (Infertilidade)</option>
+          <option value="Climatério">Climatério</option>
+        </select>
+        <div class="muted">Temas de apoio (exemplo: lesões vulvares) aparecem nos botões e campos abaixo.</div>
+      </div>
+
+      <div class="field">
+        <label>Prioridade (manual)</label>
+        <select id="prioridade">
+          <option>Rotina 🟢</option><option>Preferencial 🟡</option><option>Urgência ambulatorial 🔴</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Destino manual (se desligar a sugestão)</label>
+        <select id="destinoManual">
+          <option>SERMulher RS</option><option>UPA 24h</option><option>Hospital</option><option>CAPS</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row end" style="gap:10px;align-items:center;margin-top:6px">
+      <div class="switch" id="sw-age-note" role="switch" aria-checked="false" title="Inserir parágrafo explicativo por idade">
+        <div class="track"><div class="thumb"></div></div>
+        <span class="label">Inserir nota de risco por idade para mulheres que desejam gestar</span>
+        <input type="checkbox" id="ageNote">
+      </div>
+
+      <!-- ÚNICO local com a automação de destino + botão aplicar -->
+      <div class="switch" id="sw-autoroute-dup" role="switch" aria-checked="true" title="O sistema analisa sinais/achados e sugere o melhor destino (SERMulher, UPA, Hospital). Você pode desligar e escolher manualmente." style="margin-left:8px">
+        <div class="track"><div class="thumb"></div></div>
+        <span class="label">Sugerir destino automaticamente (RXI)</span>
+        <input type="checkbox" id="autoroute-dup" checked>
+      </div>
+
+      <button id="apply-route-dup" class="btn-sec">Aplicar no texto</button>
+    </div>
+  </section>
+
+  <!-- ETAPA 3 -->
+  <section class="card step" id="sec-sinais">
+    <h2><span class="badge-step">3</span> Clínica: exames, sinais e sintomas (selecione)</h2>
+    <div class="group-bar" aria-label="Filtros de grupo">
+      <button class="gbtn active" data-group="all">👁️‍🗨️ Exibir todos</button>
+      <button class="gbtn" data-group="mama"><span class="dot"></span>Queixas da mama</button>
+      <button class="gbtn" data-group="utero"><span class="dot"></span>Queixas do útero/colo</button>
+      <button class="gbtn" data-group="geral"><span class="dot"></span>Queixas gerais</button>
+    </div>
+    <div class="pill-group" id="sinais">
+      <!-- Útero/colo -->
+      <label class="pill" data-group="utero"><input type="checkbox" value="Citologia alterada (ASC-H/AGC/HSIL)">🧫 Citologia alterada (ASC-H/AGC/HSIL)</label>
+      <label class="pill" data-group="utero"><input type="checkbox" value="Sangramento uterino anormal">🩸🚺 Sangramento uterino anormal</label>
+      <label class="pill" data-group="utero"><input type="checkbox" value="Sangramento pós-coital persistente">🩸🔞 Sangramento pós-coital persistente</label>
+      <label class="pill" data-group="utero"><input type="checkbox" value="Dor pélvica crônica">💥🚺 Dor pélvica crônica</label>
+      <!-- Mama -->
+      <label class="pill" data-group="mama"><input type="checkbox" value="Nódulo mamário palpável">🫱🏽‍🫲🏻 Nódulo mamário palpável</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Descarga papilar sanguinolenta">🗻🌋 Descarga papilar sanguinolenta</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Pele em casca de laranja ou retração">🟣 Pele em casca de laranja/retração</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Adenopatia axilar">🟣 Adenopatia axilar</label>
+      <!-- Gerais / apoio -->
+      <label class="pill" data-group="geral"><input type="checkbox" value="Sangramento pós-menopausa">🩸👵 Sangramento pós-menopausa</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Sangramento intermenstrual">🩸🌀 Sangramento intermenstrual</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Corrimento vaginal fétido/anormal">🫢💦 Corrimento vaginal fétido/anormal</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Dor pélvica aguda">💥🙍‍♀️ Dor pélvica aguda</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Dor mamária focal persistente (≥1 ciclo)">🟣 Dor mamária focal (≥1 ciclo)</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Secreção papilar serosa unilateral">🩸 Secreção papilar serosa unilateral</label>
+      <label class="pill" data-group="mama"><input type="checkbox" value="Inversão recente do mamilo">🟣 Inversão recente do mamilo</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Galactorreia">🧪 Galactorreia</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Sintomas de climatério persistentes após manejo na APS">🌡️ Climatério persistente ≥6m</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Suspeita de endometriose ou adenomiose">🟪 Suspeita de endometriose/adenomiose</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Miomatose com sangramento refratário">🟪 Miomatose com sangramento refratário</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Prurido vulvar persistente">🟣 Prurido vulvar persistente</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Lesão/ulceração vulvar">🟣 Lesão/ulceração vulvar</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Massa anexial palpável">🟪 Massa anexial palpável</label>
+      <label class="pill" data-group="geral"><input type="checkbox" value="Aumento do volume abdominal">🟪 Aumento do volume abdominal</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 4 -->
+  <section class="card step">
+    <h2><span class="badge-step">4</span> Exames (realizados/solicitados)</h2>
+    <div class="pill-group" id="exames">
+      <label class="pill"><input type="checkbox" value="Citopatológico cervical">🧫 Citopatológico cervical</label>
+      <label class="pill"><input type="checkbox" value="Colposcopia">🔬 Colposcopia</label>
+      <label class="pill"><input type="checkbox" value="Biópsia de colo uterino">🔬 Biópsia de colo uterino</label>
+      <label class="pill"><input type="checkbox" value="Mamografia">🩻 Mamografia</label>
+      <label class="pill"><input type="checkbox" value="Ultrassonografia mamária">🩻 US mamária</label>
+      <label class="pill"><input type="checkbox" value="US transvaginal ou pélvica">🩻 US transvaginal/pélvica</label>
+      <label class="pill"><input type="checkbox" value="Ressonância de mama">🩻 RM de mama</label>
+      <label class="pill"><input type="checkbox" value="β-hCG sérico">🧪 β-hCG sérico</label>
+      <label class="pill"><input type="checkbox" value="Hemograma e ferritina">🧪🟤 Hemograma e ferritina</label>
+      <label class="pill"><input type="checkbox" value="Prolactina e TSH">🧪🦋 Prolactina/TSH</label>
+      <label class="pill"><input type="checkbox" value="CA-125">🧪🎗️ CA-125</label>
+      <label class="pill"><input type="checkbox" value="BI-RADS 4 ou 5">⚠️ BI-RADS 4/5</label>
+    </div>
+
+    <!-- Importador de laudos (PDF/Imagem) -->
+    <div class="field" style="margin-top:10px">
+      <label>Inserir laudo (PDF/Imagem)</label>
+      <div class="pdf-row">
+        <div class="field">
+          <input id="pdfFile" type="file" accept=".pdf,image/*">
+          <div id="pdfStatus" class="pdf-status">Selecione um arquivo para habilitar a leitura.</div>
+        </div>
+        <button id="pdfRead" class="btn-ghost" type="button" disabled>📄 Ler PDF/Imagem</button>
+        
+      <!-- RXI: Toggle de filtragem (marketing/contatos/rodapés) -->
+      <span id="pdfBadge" class="k" style="display:none">Lido <span id="pdfPages" class="badge-dot">0</span></span>
+      </div>
+    </div>
+
+    <!-- Campo de texto para o conteúdo do PDF e botão para adicionar ao rascunho -->
+    <div class="field" style="margin-top:10px">
+      <label>Conteúdo extraído do PDF/Imagem (leitura prévia)</label>
+      <textarea id="pdfContentDisplay" readonly placeholder="Texto extraído do PDF/Imagem. Use o botão + abaixo para adicioná-lo às Observações Clínicas Item 7. Este conteúdo integra o encaminhamento final, limitado a 2000 caracteres. ⚠️ Edite e ajuste no Item 7 para otimizar."></textarea>
+      <button id="addPdfContentToOutput" class="btn-sec" type="button" style="margin-top:8px;" disabled>+ Adicionar texto do PDF ao rascunho</button>
+      <div class="muted">Este texto será adicionado ao campo de "Observações Clínicas".</div>
+    </div>
+  </section>
+
+  <!-- ETAPA 5 – EXAME FÍSICO -->
+  <section class="card step" id="sec-exame">
+    <h2><span class="badge-step">5</span> Exame físico (pronto/editar)</h2>
+
+    <div class="row" style="gap:10px;align-items:center">
+      <div class="switch" id="sw-inc-exam" role="switch" aria-checked="false" title="Incluir exame físico no texto">
+        <div class="track"><div class="thumb"></div></div>
+        <span class="label">Incluir EF completo no texto final</span>
+        <input type="checkbox" id="incExam">
+      </div>
+      <button id="exam-fill-normal" class="btn-ghost" type="button">✅ Normal (completo)</button>
+      <button id="exam-clear" class="btn-ghost" type="button">🧹 Limpar exame</button>
+    </div>
+
+    <div class="row" style="margin-top:8px">
+      <div class="field" style="min-width:280px">
+        <label>Normais (clique para inserir/remover)</label>
+        <div class="chips" id="exam-normais">
+          <span class="chip" data-key="geral" data-text="Geral: BEG, AAA, hidratada.">Geral</span>
+          <span class="chip" data-key="sv" data-text="Sinais vitais estáveis (PA e FC em valores de referência).">Sinais vitais</span>
+          <span class="chip" data-key="mamas-n" data-text="Mamas: simétricas, sem retrações, pele normal; sem nódulos palpáveis; sem descarga papilar.">Mamas normais</span>
+          <span class="chip" data-key="axilas-n" data-text="Axilas: sem linfonodomegalias palpáveis.">Axilas normais</span>
+          <span class="chip" data-key="abd-n" data-text="Abdome: plano, flácido, indolor à palpação, sem massas palpáveis.">Abdome normal</span>
+          <span class="chip" data-key="esp-n" data-text="Especular: colo rosado, sem lesões visíveis ou sangramento.">Especular normal</span>
+          <span class="chip" data-key="toque-n" data-text="Toque bimanual: útero em volume habitual, móvel, indolor; anexos livres, sem massas.">Toque bimanual normal</span>
+        </div>
+      </div>
+      <div class="field" style="min-width:280px">
+        <label>Alterados (clique para inserir/remover • edite os colchetes)</label>
+        <div class="chips" id="exam-alterados">
+          <span class="chip" data-key="mama-nod" data-text="Mama: nódulo palpável em [quadrante] [lado], ~[2,0] cm, consistência [firme], [móvel]/[fixo], [doloroso]/[indolor].">Mama – nódulo</span>
+          <span class="chip" data-key="mama-pele" data-text="Mama: retração cutânea em [quadrante]/peau d’orange.">Mama – pele</span>
+          <span class="chip" data-key="mama-desc" data-text="Descarga papilar [serosa/sanguinolenta] [unilateral/bilateral].">Mama – descarga</span>
+          <span class="chip" data-key="axila-linf" data-text="Axila: linfonodo palpável ~[1,5] cm, [móvel]/[fixo], [doloroso]/[indolor].">Axila – linfonodo</span>
+          <span class="chip" data-key="abd-dor" data-text="Abdome: dor à palpação em [hipogástrio/quadrante], sem sinais de peritonismo.">Abdome – dor</span>
+          <span class="chip" data-key="colo-lesao" data-text="Especular: lesão [exofítica/ulcerada] em colo, sangramento ao toque.">Colo – lesão</span>
+          <span class="chip" data-key="toque-dor" data-text="Toque bimanual: dor à mobilização do colo, [massa anexial] [direita/esquerda].">Toque – dor/massa</span>
+        </div>
+      </div>
+    </div>
+
+    <label style="margin-top:10px">Texto do exame (editável)</label>
+    <textarea id="exame-txt" placeholder="Clique nos botões acima para inserir trechos prontos. Clique em limpar para remover. Você pode editar livremente aqui."></textarea>
+    <div class="muted">Obs.: use apenas se o exame foi realizado e está registrado — por padrão fica desligado.</div>
+  </section>
+
+<!-- ETAPA 6 – MEDICAMENTOS -->
+<section class="card step">
+  <h2><span class="badge-step">6</span> Medicamentos/condutas </h2>
+
+  <p class="muted" style="margin:0 0 6px"><strong>Fez uso prévio</strong> (clique para inserir):</p>
+  <div class="pill-group" id="meds">
+    <label class="pill"><input type="checkbox" value="Analgésicos e AINEs otimizados">💊 AINEs/analgésicos</label>
+    <label class="pill"><input type="checkbox" value="Anticoncepcional combinado ou progestagênio contínuo">💊 ACO/progestagênio</label>
+    <label class="pill"><input type="checkbox" value="DIU liberador de levonorgestrel">✝️ DIU-LNG</label>
+    <label class="pill"><input type="checkbox" value="Terapia para climatério otimizada na APS">💊 Terapia para climatério</label>
+    <label class="pill"><input type="checkbox" value="Suplementação de ferro">🟤 Ferro</label>
+    <label class="pill"><input type="checkbox" value="Antibiótico conforme protocolo">🦠💊 Antibiótico (conforme protocolo)</label>
+    <label class="pill"><input type="checkbox" value="Análogo de GnRH (quando indicado)">💊 Análogo de GnRH</label>
+    <label class="pill"><input type="checkbox" value="Danazol (quando indicado)">💊 Danazol</label>
+  </div>
+
+  <p class="muted" style="margin:12px 0 6px"><strong>Conduta terapêutica atual</strong> (clique para inserir):</p>
+  <div class="pill-group" id="meds-dose">
+    <!-- Analgésicos/AINEs -->
+    <label class="pill"><input type="checkbox" value="dipirona 500 mg">💊 dipirona 500 mg</label>
+    <label class="pill"><input type="checkbox" value="paracetamol 500 mg">💊 paracetamol 500 mg</label>
+    <label class="pill"><input type="checkbox" value="ibuprofeno 600 mg">💊 ibuprofeno 600 mg</label>
+    <label class="pill"><input type="checkbox" value="ácido tranexâmico 250 mg">💊 ácido tranexâmico 250 mg</label>
+    <label class="pill"><input type="checkbox" value="ácido tranexâmico 500 mg">💊 ácido tranexâmico 500 mg</label>
+    <label class="pill"><input type="checkbox" value="ácido mefenâmico 500 mg">💊 ácido mefenâmico 500 mg</label>
+    <!-- Gineco/Endometriose/SUA -->
+    <label class="pill"><input type="checkbox" value="Levonorgestrel 0,15 mg + Etinilestradiol 0,03 mg 1 CP, VO, 12/12h por 7 dias. Depois 1 CP/dia por 21 dias.">💊 levonorgestrel 0,15 mg + etinilestradiol 0,03 mg</label>
+    <label class="pill"><input type="checkbox" value="Etinilestradiol 0,05 mg + Levonorgestrel 0,25 mg 1 CP, VO, 12/12h por 7 dias. Depois 1 CP/dia por 21 dias.">💊 etinilestradiol 0,05 mg + levonorgestrel 0,25 mg</label>
+    <label class="pill"><input type="checkbox" value="Etinilestradiol 0,02 mg + Desogestrel 0,15 mg 1 CP, VO, 12/12h por 7 dias. Depois 1 CP/dia por 21 dias.">💊 etinilestradiol 0,02 mg + desogestrel 0,15 mg</label>
+    <label class="pill"><input type="checkbox" value="Etinilestradiol 0,03 mg + Desogestrel 0,15 mg 1 CP, VO, 12/12h por 7 dias. Depois 1 CP/dia por 21 dias.">💊 etinilestradiol 0,03 mg + desogestrel 0,15 mg</label>
+    <label class="pill"><input type="checkbox" value="DIU com Levonorgestrel: Inserir com profissional treinado.">⚙️ DIU levonorgestrel</label>
+    <label class="pill"><input type="checkbox" value="ibuprofeno 600 mg">💊 ibuprofeno 600 mg</label>
+    <label class="pill"><input type="checkbox" value="diclofenaco 50 mg">💊 diclofenaco 50 mg</label>
+    <label class="pill"><input type="checkbox" value="ácido mefenâmico 500 mg">💊 ácido mefenâmico 500 mg</label>
+    <label class="pill"><input type="checkbox" value="ácido tranexâmico 500 mg">💊 ácido tranexâmico 500 mg</label>
+    <label class="pill"><input type="checkbox" value="noretisterona 5-10 mg, VO, 4/4h até cessar sangramento. Depois, de 6/6h por 4 dias; de 8/8h por 3 dias; de 12/12h por 2 dias; em seguida, 1x/dia.">💊 noretisterona 5-10 mg</label>
+    <label class="pill"><input type="checkbox" value="acetato de medroxiprogesterona 10-20 mg, VO, 4/4h até cessar sangramento. Depois, de 6/6h por 4 dias; de 8/8h por 3 dias; de 12/12h por 2 dias durante 2 semanas; em seguida, 1x/dia.">💊 acetato de medroxiprogesterona 10-20 mg</label>
+    <label class="pill"><input type="checkbox" value="Goserrelina 3,6 mg SC mensal (quando indicado).">💊 goserrelina 3,6 mg</label>
+    <label class="pill"><input type="checkbox" value="Danazol 200 mg VO a cada 12 horas, por 3–6 meses (quando indicado).">💊 danazol 200 mg</label>
+    <!-- Climatério -->
+    <label class="pill"><input type="checkbox" value="TRH: estradiol transdérmico 50 µg/24h + progesterona micronizada 200 mg VO à noite por 12–14 dias/mês (quando indicado).">💊 estradiol 50 µg + progesterona 200 mg</label>
+    <!-- Ferro -->
+    <label class="pill"><input type="checkbox" value="Sulfato ferroso 200 mg">🟤 sulfato ferroso 200 mg</label>
+  </div>
+  <div class="muted" style="margin-top:6px">Ajuste a posologia conforme protocolo/local e condições clínicas.</div>
+</section>
+
+  <!-- ETAPA 7 -->
+  <section class="card step">
+    <h2><span class="badge-step">7</span> Observações clínicas (opcional) • ⚠️ Nesta caixa de texto é o espaço para remover dados desnecessário do PDF</h2>
+    <textarea id="obs" placeholder="Achados objetivos, tempo de sintomas, expectativa do encaminhamento, nº da teleconsultoria (se houver)."></textarea>
+    <div class="muted">Evite dados sensíveis além do nome (se informado).</div>
+  </section>
+
+  <!-- ETAPA 8 – Seções avançadas -->
+  <section class="card dynamic-section" id="sec-mama">
+    <h2><span class="badge-step">8</span> Mama • Detalhamento</h2>
+    <div class="field-group">
+      <label>Categoria BI-RADS</label>
+      <select id="birads">
+        <option value="">Selecione</option>
+        <option>BI-RADS 1</option><option>BI-RADS 2</option>
+        <option>BI-RADS 3</option><option>BI-RADS 4A</option><option>BI-RADS 4B</option><option>BI-RADS 4C</option><option>BI-RADS 5</option><option>BI-RADS 6</option>
+      </select>
+      <label class="nested">Diagnóstico histopatológico (se houver)</label>
+      <input id="mama-histo" placeholder="Ex: Carcinoma ductal invasor">
+      <div class="row" style="gap:10px;margin-top:8px;flex-wrap:wrap">
+        <div class="switch" data-target="mama-adenopatia" role="switch" aria-checked="false"><div class="track"><div class="thumb"></div></div><span class="label">Adenopatia axilar</span><input type="checkbox" id="mama-adenopatia"></div>
+        <div class="switch" data-target="mama-achadofisico" role="switch" aria-checked="false"><div class="track"><div class="thumb"></div></div><span class="label">Achados físicos altamente suspeitos</span><input type="checkbox" id="mama-achadofisico"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card dynamic-section" id="sec-colo">
+    <h2><span class="badge-step">8</span> Colo do Útero • Detalhamento</h2>
+    <div class="field-group">
+      <label>Citopatológico (CP)</label>
+      <select id="cp"><option value="">CP: selecione</option><option>Normal/Benigno</option><option>ASC-US</option><option>ASC-H</option><option>LSIL</option><option>HSIL</option><option>AGC</option></select>
+      <label class="nested">Biópsia (se realizada)</label>
+      <input id="colo-bx" placeholder="Ex: NIC 2/3, carcinoma microinvasor">
+      <div class="switch" data-target="colo-lesao-visivel" role="switch" aria-checked="false" style="margin-top:8px"><div class="track"><div class="thumb"></div></div><span class="label">Lesão suspeita ao exame especular</span><input type="checkbox" id="colo-lesao-visivel"></div>
+    </div>
+  </section>
+
+  <section class="card dynamic-section" id="sec-infertilidade">
+    <h2><span class="badge-step">8</span> Planejamento Reprodutivo (Infertilidade) • Detalhamento</h2>
+    <div class="field-group">
+      <label>Tempo tentando gestar</label><input id="inf-tempo" placeholder="Ex: 18 meses">
+      <label class="nested">Exames relevantes</label><textarea id="inf-exames" class="nested" placeholder="TSH, Prolactina, HSG, Espermograma, etc."></textarea>
+      <p class="muted" style="margin:8px 0 6px"><strong>Condições que impedem atendimento em ambulatórios regulados pelo CRA/RS (protocolo)</strong> — ative se presente:</p>
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <div class="switch" data-target="inf-ooforect" role="switch" aria-checked="false" title="Ooforectomia bilateral"><div class="track"><div class="thumb"></div></div><span class="label">Ooforectomia bilateral</span><input type="checkbox" id="inf-ooforect"></div>
+        <div class="switch" data-target="inf-sempar" role="switch" aria-checked="false" title="Mulher sem parceiro ou casal homoafetivo"><div class="track"><div class="thumb"></div></div><span class="label">Sem parceiro/casal homoafetivo</span><input type="checkbox" id="inf-sempar"></div>
+        <div class="switch" data-target="inf-soro" role="switch" aria-checked="false" title="HIV/HBsAg/HCV/HTLV I/II"><div class="track"><div class="thumb"></div></div><span class="label">Soropositividade (HIV/HBsAg/HCV/HTLV)</span><input type="checkbox" id="inf-soro"></div>
+        <div class="switch" data-target="inf-cesarea" role="switch" aria-checked="false" title="Três ou mais cesáreas prévias"><div class="track"><div class="thumb"></div></div><span class="label">≥3 cesáreas prévias</span><input type="checkbox" id="inf-cesarea"></div>
+        <div class="switch" data-target="inf-laquea" role="switch" aria-checked="false" title="Laqueadura/vasectomia sem reversão"><div class="track"><div class="thumb"></div></div><span class="label">Laqueadura/vasectomia sem reversão</span><input type="checkbox" id="inf-laquea"></div>
+      </div>
+      <div class="muted">Se qualquer condição acima estiver presente, o sistema indicará <strong>não encaminhar</strong> e orientará seguimento na APS.</div>
+    </div>
+  </section>
+
+  <section class="card dynamic-section" id="sec-dor-mioma">
+    <h2><span class="badge-step">8</span> Endometriose / Miomatose • Detalhamento</h2>
+    <div class="field-group">
+      <label>Dor pélvica crônica</label><textarea id="dpc" placeholder="Duração (>6m), relação com ciclo, refratariedade ≥3m, achados de imagem"></textarea>
+      <div class="row" style="gap:10px;flex-wrap:wrap;margin-top:8px">
+        <div class="switch" data-target="mioma-sua" role="switch" aria-checked="false"><div class="track"><div class="thumb"></div></div><span class="label">SUA refratário ≥3m</span><input type="checkbox" id="mioma-sua"></div>
+        <div class="switch" data-target="mioma-compressivo" role="switch" aria-checked="false"><div class="track"><div class="thumb"></div></div><span class="label">Sintomas compressivos</span><input type="checkbox" id="mioma-compressivo"></div>
+      </div>
+      <textarea id="mioma-tx" class="nested" placeholder="Tratamento já realizado (dose/tempo)" style="margin-top:8px"></textarea>
+    </div>
+  </section>
+
+  <section class="card dynamic-section" id="sec-climaterio">
+    <h2><span class="badge-step">8</span> Climatério • Detalhamento</h2>
+    <div class="field-group"><textarea id="clima" placeholder="Sintomas persistentes, TRH tentada, contraindicações, resposta parcial"></textarea></div>
+  </section>
+
+  <section class="card dynamic-section" id="sec-lesoes">
+    <h2><span class="badge-step">8</span> Lesões Vulvares / Condiloma • Detalhamento (apoio)</h2>
+    <div class="field-group"><textarea id="lesoes" placeholder="Localização, tamanho, características, refratariedade, suspeita de malignidade"></textarea></div>
+  </section>
+
+  <!-- ETAPA 9 -->
+  <section class="card step" id="fim">
+    <h2><span class="badge-step">9</span> Saída • Texto rápido</h2>
+    <div class="outbox">
+      <textarea id="saida" readonly placeholder="Use “Gerar rascunho” ou “FORMATO GERCON”."></textarea>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="counter muted" id="cont">0 / 2000</div>
+        <div class="actions">
+          <button id="build" class="btn" title="Gerar rascunho">⚙️ Gerar rascunho</button>
+          <button id="copy2" class="btn-sec" title="Copiar texto (inferior)">📋 Copiar</button>
+          <button id="clear2" class="btn-orange" title="Limpar e reiniciar (inferior)">Limpar 🧹 resetar</button>
+          <button id="gercon2" class="btn-gercon" title="FORMATO GERCON">
+            <img src="https://raw.githubusercontent.com/receitailustrada/rxi-imagens/a043cf565f03f16245b013c07d27b2a15e1af2eb/logo-gercon.svg" alt="GERCON">
+            FORMATAR
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- FABs -->
+<div class="fab" aria-hidden="false">
+  <button id="btn-legal" class="btn">📑<span id="badge-legal" class="badge-dot" style="display:none">0</span></button>
+  <button id="btn-topo" class="navbtn" title="Ir ao topo"><span>↑</span></button>
+  <button id="btn-fim" class="navbtn" title="Ir ao fim"><span>↓</span></button>
+</div>
+
+<!-- Drawer Legal -->
+<aside id="drawer-legal" class="drawer" aria-hidden="true">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3>📑 Base legal, Portarias & Diretrizes</h3>
+    <button id="legal-close" class="btn-ghost">✖️ Fechar</button>
+  </div>
+  <div class="chips" id="chipsDocs"></div>
+  <div class="row" style="gap:8px;margin-top:10px">
+    <div class="switch" id="sw-inc-legal" role="switch" aria-checked="true"><div class="track"><div class="thumb"></div></div><span class="label">Incluir BASE LEGAL no texto</span><input type="checkbox" id="incLegal" checked></div>
+    <div class="switch" id="sw-legal-mode" role="switch" aria-checked="true"><div class="track"><div class="thumb"></div></div><span class="label">Modo: Sintetizada</span><input type="checkbox" id="legalSynth" checked></div>
+    <button id="legal-apply" class="btn">Aplicar</button>
+  </div>
+</aside>
+
+<footer>
+  <div class="credits">
+    <strong>Créditos:</strong> Painel de Encaminhamento SERMulher RS — 
+    <strong>Daniel Fagundes Audino</strong>, Médico (CRM-RS 48988), ESF X Vila Nova Maria Inês Faccin, Cruz Alta/RS. 
+    Desenvolvimento integral e independente do código, hospedado em <a href="https://www.receitailustrada.com.br" target="_blank">www.receitailustrada.com.br</a>, 
+    com base nos protocolos oficiais (TelessaúdeRS, SES/RS, INCA e demais referências) utilizados como guia técnico. 
+    Finalidade: apoiar profissionais de saúde na elaboração de encaminhamentos claros e qualificados, evitando atrasos no tratamento das pacientes. 
+    Responsável pela implantação local: Secretaria de Planejamento de Cruz Alta — 
+    <strong>DMCBW</strong>, Coordenadora do Programa SERMulher no município. 
+    O sistema gera textos formatados automaticamente para o padrão <strong>GERCON</strong>, facilitando a inserção na plataforma oficial de encaminhamentos.
+  </div>
+</footer>
+
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+</script>
+
+<!-- Tesseract.js (OCR local) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+(function(){
+  const $ = s=>document.querySelector(s); const $$ = s=>Array.from(document.querySelectorAll(s));
+
+  /* Toast */
+  const toast=$('#toast') || (function(){const t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');t.setAttribute('aria-live','polite');t.setAttribute('aria-atomic','true');t.setAttribute('aria-hidden','true');document.body.appendChild(t);return t;})();
+  const showToast=m=>{ toast.textContent=m; toast.setAttribute('aria-hidden','false'); toast.classList.add('show'); clearTimeout(showToast._t); showToast._t=setTimeout(()=>{toast.classList.remove('show'); toast.setAttribute('aria-hidden','true');},1600); };
+
+  /* Datas iniciais */
+  const today=new Date(); const pad=n=>String(n).padStart(2,'0');
+  $('#data').value=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+
+  /* Util: ISO -> dd/mm/aaaa */
+  const parseISO=s=>{ if(!s) return null; const [Y,M,D]=s.split('-').map(v=>parseInt(v,10)); if(!Y||!M||!D) return null; return new Date(Y,M-1,D); };
+  const fmtBR=s=>{ const d=parseISO(s); if(!d) return s||''; const dd=String(d.getDate()).padStart(2,'0'); const mm=String(d.getMonth()+1).padStart(2,'0'); const yy=d.getFullYear(); return `${dd}/${mm}/${yy}`; };
+
+  /* Switch helper */
+  const bindSwitch = sw => {
+    const input=sw.querySelector('input[type="checkbox"]');
+    const toggle=()=>{ sw.classList.toggle('on'); const on=sw.classList.contains('on'); sw.setAttribute('aria-checked',on?'true':'false'); input.checked=on;
+      if(sw.id==='sw-autoroute-dup'){ recomputeRoute(); }
+      if(sw.id==='switch-upper') atualizarRascunho();
+      if(sw.id==='sw-age-note') atualizarRascunho();
+      if(sw.id==='sw-inc-exam') atualizarRascunho();
+    };
+    sw.addEventListener('click',e=>{ if(e.target===input) return; toggle(); });
+    if(input.checked){ sw.classList.add('on'); sw.setAttribute('aria-checked','true'); }
+  };
+  $$('.switch').forEach(bindSwitch);
+  $('#upper').addEventListener('change',()=>{ const sw=$('#switch-upper'); if($('#upper').checked){sw.classList.add('on');sw.setAttribute('aria-checked','true');} else {sw.classList.remove('on');sw.setAttribute('aria-checked','false');} atualizarRascunho(); });
+
+  /* Pílulas genéricas */
+  function initPills(containerSel){
+    $$(containerSel+' .pill').forEach(p=>{
+      p.addEventListener('click',e=>{
+        if(e.target.tagName.toLowerCase()==='input') return;
+        p.classList.toggle('active');
+        const input=p.querySelector('input'); if(input) input.checked=p.classList.contains('active');
+        maybeShowLesoes(); recomputeRoute(); validar(); atualizarRascunho();
+      });
+    });
+  }
+  initPills('#sinais'); initPills('#exames'); initPills('#meds'); initPills('#meds-dose');
+
+  /* Chips do exame físico – alterna inserir/remover + destaque */
+  const chipState = new Map(); // key -> inserted text
+  function toggleChip(chip){
+    const key = chip.dataset.key || chip.textContent.trim();
+    const text = (chip.dataset.text || chip.textContent).trim();
+    const ta = $('#exame-txt');
+    if(chipState.has(key)){
+      // remover
+      const toRemove = chipState.get(key);
+      const re = new RegExp((toRemove+'\\n?').replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g');
+      ta.value = ta.value.replace(re,'').trim();
+      chip.dataset.active = 'false';
+      chipState.delete(key);
+    } else {
+      // inserir (no fim, com \n)
+      ta.value = (ta.value ? ta.value.trim()+"\n" : "") + text;
+      chip.dataset.active = 'true';
+      chipState.set(key, text);
+      const sw=$('#sw-inc-exam'); if(!$('#incExam').checked){ sw.classList.add('on'); sw.setAttribute('aria-checked','true'); $('#incExam').checked=true; }
+    }
+    atualizarRascunho();
+  }
+  $('#exam-normais').addEventListener('click',e=>{ const chip=e.target.closest('.chip'); if(!chip) return; toggleChip(chip); });
+  $('#exam-alterados').addEventListener('click',e=>{ const chip=e.target.closest('.chip'); if(!chip) return; toggleChip(chip); });
+
+  $('#exam-fill-normal').addEventListener('click',()=>{
+    const bloco = [
+      "Geral: bom estado geral, corada, hidratada, anictérica, afebril.",
+      "Sinais vitais estáveis (PA e FC em valores de referência).",
+      "Mamas: simétricas, sem retrações/pele em casca de laranja; sem nódulos palpáveis; sem descarga papilar.",
+      "Axilas: sem linfonodomegalias palpáveis.",
+      "Abdome: plano, flácido, indolor à palpação, sem massas palpáveis.",
+      "Especular: colo rosado, sem lesões visíveis ou sangramento.",
+      "Toque bimanual: útero em volume habitual, móvel, indolor; anexos livres, sem massas."
+    ].join("\n");
+    $('#exame-txt').value = bloco;
+    const sw=$('#sw-inc-exam'); if(!$('#incExam').checked){ sw.classList.add('on'); sw.setAttribute('aria-checked','true'); $('#incExam').checked=true; }
+    atualizarRascunho(); flashDone('#exam-fill-normal');
+  });
+  $('#exam-clear').addEventListener('click',()=>{ $('#exame-txt').value=''; chipState.clear(); $$('#sec-exame .chip').forEach(c=>c.dataset.active='false'); atualizarRascunho(); });
+
+  /* Filtro de grupos */
+  document.querySelector('.group-bar').addEventListener('click',(e)=>{
+    const btn=e.target.closest('.gbtn'); if(!btn) return;
+    $$('.gbtn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+    const g=btn.getAttribute('data-group');
+    $$('#sinais .pill').forEach(p=>{ p.style.display=(g==='all'||p.getAttribute('data-group')===g)?'inline-flex':'none'; });
+  });
+
+  /* Seções dinâmicas (por eixo) */
+  const mapaSecoes={
+    'Mama':'#sec-mama',
+    'Colo do Útero':'#sec-colo',
+    'Planejamento Reprodutivo (Infertilidade)':'#sec-infertilidade',
+    'Endometriose / Miomatose':'#sec-dor-mioma',
+    'Climatério':'#sec-climaterio'
+  };
+  function atualizaSecoes(){
+    const linha=$('#linha').value;
+    $$('.dynamic-section').forEach(s=>s.style.display='none');
+    if(mapaSecoes[linha]){ const el=document.querySelector(mapaSecoes[linha]); if(el) el.style.display='block'; }
+    maybeShowLesoes();
+  }
+  function maybeShowLesoes(){
+    const hasLesao = $$('#sinais .pill.active input[value="Lesão/ulceração vulvar"]').length>0 || $$('#sinais .pill.active input[value="Prurido vulvar persistente"]').length>0;
+    const sec = $('#sec-lesoes'); if(sec) sec.style.display = hasLesao ? 'block' : 'none';
+  }
+  $('#linha').addEventListener('change',()=>{ atualizaSecoes(); recomputeRoute(); validar(); atualizarRascunho(); }); atualizaSecoes();
+
+  /* Util seleção */
+  const selecionados = id => $$(`#${id} .pill.active`).map(el=>({val:(el.querySelector('input')?.value||el.textContent).trim(), grp:el.getAttribute('data-group')||'geral', el}));
+  const valuesOnly = id => selecionados(id).map(x=>x.val);
+  const hasVal = (arr, v)=>arr.includes(v);
+  const anyVal = (arr, vs)=>vs.some(v=>arr.includes(v));
+
+  /* ====== Idade ====== */
+  function ageOn(ref, dob){
+    if(!ref||!dob) return null;
+    let a=ref.getFullYear()-dob.getFullYear();
+    const m = ref.getMonth()-dob.getMonth();
+    if(m<0 || (m===0 && ref.getDate()<dob.getDate())) a--;
+    return a;
+  }
+  function updateAge(){
+    const ref=parseISO($('#data').value)||new Date();
+    const dob=parseISO($('#dob').value);
+    const a=ageOn(ref,dob);
+    $('#idade').value = (a==null||isNaN(a)) ? '—' : `${a} anos`;
+    validar(); atualizarRascunho();
+  }
+  $('#data').addEventListener('change',updateAge);
+  $('#dob').addEventListener('change',updateAge);
+
+  /* ====== Roteador ====== */
+  function roteador(){
+    const rs={dest:'SERMulher RS', prioridade:'Rotina 🟢', risco:null, motivos:[]};
+    const sVals=valuesOnly('sinais'); const exVals=valuesOnly('exames');
+    const linha=$('#linha').value;
+
+    // Mama
+    if(anyVal(sVals,['Descarga papilar sanguinolenta','Pele em casca de laranja ou retração','Inversão recente do mamilo','Adenopatia axilar'])){
+      rs.dest='SERMulher RS'; rs.prioridade='Urgência ambulatorial 🔴'; rs.motivos.push('Sinais mamários de alerta');
+    } else if(hasVal(sVals,'Nódulo mamário palpável')){ rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push('Nódulo palpável'); }
+
+    const birads=$('#birads').value;
+    if(/BI-RADS 5|BI-RADS 6|BI-RADS 4C/.test(birads)){ rs.dest='SERMulher RS'; rs.prioridade='Urgência ambulatorial 🔴'; rs.motivos.push(`BI-RADS ${birads}`); }
+    else if(/BI-RADS 4A|BI-RADS 4B|BI-RADS 3/.test(birads)){ rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push(`BI-RADS ${birads}`); }
+    if(hasVal(exVals,'BI-RADS 4 ou 5')){ rs.dest='SERMulher RS'; rs.prioridade='Urgência ambulatorial 🔴'; rs.motivos.push('Exame BI-RADS 4/5'); }
+
+    // Colo
+    const cp=$('#cp').value;
+    if(hasVal(sVals,'Citologia alterada (ASC-H/AGC/HSIL)')||cp==='HSIL'||cp==='AGC'||$('#colo-lesao-visivel').checked){
+      rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push('Alterações citológicas/lesão');
+    }
+    if(hasVal(sVals,'Sangramento pós-coital persistente')){ rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push('Sangramento pós-coital'); }
+
+    // Gerais
+    if(hasVal(sVals,'Sangramento pós-menopausa')){ rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push('Sangramento pós-menopausa'); }
+    if(anyVal(sVals,['Suspeita de endometriose ou adenomiose','Miomatose com sangramento refratário','Dor pélvica crônica'])){ rs.dest='SERMulher RS'; rs.prioridade='Preferencial 🟡'; rs.motivos.push('Endometriose/mioma/dor crônica'); }
+    if(hasVal(sVals,'Sintomas de climatério persistentes após manejo na APS')){ rs.dest='SERMulher RS'; rs.prioridade='Rotina 🟢'; rs.motivos.push('Climatério persistente'); }
+
+    // Agudo
+    if(hasVal(sVals,'Dor pélvica aguda')){
+      if(anyVal(sVals,['Massa anexial palpável','Aumento do volume abdominal']) || hasVal(exVals,'β-hCG sérico')){
+        rs.dest='Hospital'; rs.risco='AMARELO'; rs.prioridade='Urgência ambulatorial 🔴'; rs.motivos.push('Dor aguda + massa/volume → Hospital');
+      } else { rs.dest='UPA 24h'; rs.risco='AMARELO'; rs.prioridade='Urgência ambulatorial 🔴'; rs.motivos.push('Dor pélvica aguda → UPA'); }
+    }
+
+    if(linha==='Planejamento Reprodutivo (Infertilidade)') rs.motivos.push('Eixo de Planejamento Reprodutivo');
+
+    return rs;
+  }
+
+  function recomputeRoute(){
+    const rs=roteador();
+    $('#route-dest').textContent=rs.dest;
+    const elPrio=$('#route-prio'); const elRisk=$('#route-risk');
+    if(rs.prioridade){ elPrio.style.display='inline-flex'; elPrio.textContent=rs.prioridade; } else elPrio.style.display='none';
+    if(rs.risco){ elRisk.style.display='inline-flex'; elRisk.textContent=`Risco: ${rs.risco}`; } else elRisk.style.display='none';
+    $('#route-why').textContent=rs.motivos.length?('Motivo: '+rs.motivos.join(' • ')):''; 
+
+    if($('#autoroute-dup').checked){ $('#destinoManual').value=rs.dest; $('#prioridade').value=rs.prioridade||$('#prioridade').value; }
+  }
+
+  function flashDone(sel){
+    const b=$(sel); if(!b) return;
+    b.classList.add('btn-done'); setTimeout(()=>b.classList.remove('btn-done'),900);
+  }
+
+  // Botão "Aplicar no texto" (apenas na Etapa 2)
+  (function(){
+    const btn='#apply-route-dup';
+    $(btn).addEventListener('click',()=>{
+      const sw=$('#sw-autoroute-dup'); const cb=$('#autoroute-dup');
+      sw.classList.add('on'); sw.setAttribute('aria-checked','true'); cb.checked=true;
+      recomputeRoute(); showToast('Destino aplicado.'); flashDone(btn);
+    });
+  })();
+
+  /* ====== Base legal ====== */
+  const docs=[['RegulaSUS / TelessaúdeRS','Ginecologia adulto','2023','Fluxos/critérios RS'],
+              ['INCA','Detecção precoce – câncer de mama','2022','Detecção precoce • mama'],
+              ['RegulaSUS / TelessaúdeRS','Encaminhamento – Mastologia','2020','Encaminhamento • Mastologia'],
+              ['INCA','Rastreamento – colo do útero','2019','Rastreamento • colo'],
+              ['RegulaSUS / TelessaúdeRS','Encaminhamento – Infertilidade','2019','Encaminhamento • infertilidade'],
+              ['INCA','Diretrizes – rastreamento do colo','2016','Diretrizes • colo'],
+              ['INCA','Diretrizes – detecção precoce da mama','2015','Diretrizes • mama']];
+  const selDocs=new Set();
+  function renderDocs(){ const wrap=$('#chipsDocs'); wrap.innerHTML=''; docs.forEach(d=>{ const id=`${d[0]} • ${d[1]} (${d[2]})`; const chip=document.createElement('label'); chip.className='chip'; chip.dataset.active=selDocs.has(id)?'true':'false'; chip.title=d[3]; chip.innerHTML=`<span class="lbl">${id}</span>`; chip.addEventListener('click',()=>{ if(selDocs.has(id)) selDocs.delete(id); else selDocs.add(id); renderDocs(); }); wrap.appendChild(chip); }); }
+  renderDocs();
+  const drawer=$('#drawer-legal');
+  $('#btn-legal').addEventListener('click',()=>{ drawer.classList.add('show'); drawer.setAttribute('aria-hidden','false'); });
+  $('#legal-close').addEventListener('click',()=>{ drawer.classList.remove('show'); drawer.setAttribute('aria-hidden','true'); });
+  $('#legal-apply').addEventListener('click',()=>{ updateLegalBadge(); drawer.classList.remove('show'); drawer.setAttribute('aria-hidden','true'); atualizarRascunho(); showToast('Base legal aplicada.'); flashDone('#legal-apply'); });
+  function updateLegalBadge(){ const n=selDocs.size; const b=$('#badge-legal'); if(n>0){ b.style.display='inline-block'; b.textContent=n; } else { b.style.display='none'; } }
+  function buildBaseLegal(){ if(!$('#incLegal').checked) return ''; const a=Array.from(selDocs); if(a.length===0) return ''; if($('#legalSynth').checked){ const out=a.map(t=>{const m=/(.*) • (.*) \((\d{4})\)/.exec(t); return m?`${m[1]} ${m[3]} – ${m[2]}`:t;}); return 'BASE LEGAL/DIRETRIZES: '+out.join('; ')+'.'; } return 'BASE LEGAL/DIRETRIZES: '+a.join(' | ')+'.'; }
+
+  /* ====== Validator ====== */
+  const expectedGroupByLine={'Mama':'mama','Colo do Útero':'utero','Planejamento Reprodutivo (Infertilidade)':'geral','Endometriose / Miomatose':'geral','Climatério':'geral'};
+  const riscoPermitido={'CAPS':['VERDE','AMARELO'],'UPA 24h':['VERDE','AMARELO','VERMELHO'],'Hospital':['AMARELO','VERMELHO'],'SERMulher RS':null};
+  let noReferralMode=false; let hadInconsistency=false;
+
+  function countsByGroup(){
+    const sel=selecionados('sinais'); const c={mama:0,utero:0,geral:0};
+    sel.forEach(x=>{ if(c[x.grp]!=null) c[x.grp]++; });
+    return {c, sel};
+  }
+  function clearHighlights(){ $$('.pill').forEach(p=>p.classList.remove('err')); }
+  function highlightGroup(grp){ $$(`#sinais .pill[data-group="${grp}"]`).forEach(p=>{ if(p.classList.contains('active')) p.classList.add('err'); }); }
+
+  function validar(){
+    clearHighlights();
+    const erros=[]; const fixes=[];
+    const linha=$('#linha').value;
+    const auto=$('#autoroute-dup').checked;
+    const rs=roteador();
+    const destEf = auto ? rs.dest : $('#destinoManual').value;
+
+    // idade
+    const refDate=parseISO($('#data').value)||new Date();
+    const dob=parseISO($('#dob').value);
+    const idade=ageOn(refDate,dob);
+
+    // 1) Linha × sinais
+    const {c}=countsByGroup(); const total=c.mama+c.utero+c.geral;
+    if(total>0){
+      const exp=expectedGroupByLine[linha]||'geral';
+      const dom=Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0];
+      if(exp!=='geral' && dom!==exp){
+        erros.push(`Linha "${linha}" conflita com sinais predominantemente de "${dom==='mama'?'Mama':'Colo do Útero'}".`);
+        fixes.push(()=>{ const newLine = dom==='mama'?'Mama':'Colo do Útero'; $('#linha').value=newLine; atualizaSecoes(); });
+        highlightGroup(dom);
+      }
+    }
+
+    // 2) CAPS inválido
+    if(destEf==='CAPS'){
+      erros.push('Destino "CAPS" incompatível com queixas ginecológicas.');
+      fixes.push(()=>{ $('#destinoManual').value = (rs.dest==='CAPS'?'SERMulher RS':rs.dest); });
+    }
+
+    // 3) UPA/Hospital sem sinal agudo
+    const sVals=valuesOnly('sinais');
+    const temAgudo = sVals.includes('Dor pélvica aguda');
+    if((destEf==='Hospital'||destEf==='UPA 24h') && !temAgudo){
+      erros.push(`Destino "${destEf}" marcado sem sinal agudo selecionado.`);
+      fixes.push(()=>{ $('#destinoManual').value = rs.dest || 'SERMulher RS'; });
+    }
+
+    // 4) Risco por destino
+    if((destEf==='Hospital'||destEf==='UPA 24h'||destEf==='CAPS') && rs.risco){
+      const permit = riscoPermitido[destEf];
+      if(permit && !permit.includes(rs.risco)){
+        erros.push(`Risco "${rs.risco}" é incompatível com "${destEf}".`);
+        fixes.push(()=>{ $('#destinoManual').value = (destEf==='CAPS'?'UPA 24h':'Hospital'); });
+      }
+    }
+
+    // 5) Infertilidade: bloqueios do protocolo
+    let blockInf=false;
+    if(linha==='Planejamento Reprodutivo (Infertilidade)'){
+      const anyBlock = ['inf-ooforect','inf-sempar','inf-soro','inf-cesarea','inf-laquea'].some(id=>$('#'+id).checked);
+      if(anyBlock){ blockInf=true; erros.push('Infertilidade com condição impeditiva (protocolo CRA/RS).'); }
+    }
+
+    // 6) Infertilidade + idade ≥ 40
+    let ageBlock=false;
+    if(linha==='Planejamento Reprodutivo (Infertilidade)' && (idade!=null) && idade>=40){
+      ageBlock=true;
+      erros.push(`Infertilidade com idade ${idade} anos: chance extremamente baixa e risco fetal elevado.`);
+      $('#no-ref').style.display='inline-flex';
+      fixes.push(()=>{ $('#prioridade').value='Rotina 🟢'; });
+      const sw=$('#sw-age-note'); if(!$('#ageNote').checked){ sw.classList.add('on'); sw.setAttribute('aria-checked','true'); $('#ageNote').checked=true; }
+    } else {
+      $('#no-ref').style.display='none';
+    }
+
+    renderAlert(erros, fixes, {ageBlock, blockInf});
+    toggleActions(erros.length===0, {ageBlock, blockInf});
+    hadInconsistency = (erros.length > 0);
+    return {ok:erros.length===0, erros, fixes, idade};
+  }
+
+  function renderAlert(erros, fixes, meta){
+    const al=$('#alert'); const lst=$('#alert-list'); lst.innerHTML='';
+    if(erros.length===0){ al.style.display='none'; return; }
+    erros.forEach(e=>{ const li=document.createElement('li'); li.textContent=e; lst.appendChild(li); });
+    al.style.display='block';
+    $('#fix-auto').onclick = ()=>{ fixes.forEach(f=>f()); recomputeRoute(); const v=validar(); if(v.ok){ showToast('Coerência corrigida.'); } atualizarRascunho(); };
+    $('#dismiss').onclick = ()=>{ al.style.display='none'; toggleActions(false,meta); showToast('Inconsistências ignoradas (atenção).'); };
+    $('#no-ref').onclick = ()=>{
+      noReferralMode=true;
+      $('#destinoManual').value='SERMulher RS';
+      al.style.display='none';
+      showToast('Nota de risco inserida e marcado como NÃO ENCAMINHAR.'); atualizarRascunho();
+      toggleActions(true, meta, {forceNoGercon:true});
+    };
+  }
+
+  function toggleActions(enable, meta={}, opts={}){
+    const btns=['#build','#copy','#copy2'];
+    btns.forEach(id=>{ const b=$(id); if(!b) return; if(enable){ b.classList.remove('disabled'); b.disabled=false; } else { b.classList.add('disabled'); b.disabled=true; } });
+    const gerconBtns=['#gercon','#gercon2'];
+    const blockGercon = (!enable) || noReferralMode || opts.forceNoGercon===true || (meta.ageBlock===true && enable===false) || (meta.blockInf===true && enable===false);
+    gerconBtns.forEach(id=>{ const b=$(id); if(!b) return; if(blockGercon){ b.classList.add('disabled'); b.disabled=true; } else { b.classList.remove('disabled'); b.disabled=false; } });
+  }
+
+  /* ====== Texto / GERCON ====== */
+  function toLatin1Safe(txt){
+    const map={'“':'"','”':'"','„':'"','«':'"','»':'"','‘':"'",'’':"'",'‚':"'",'´':"'",'‐':'-','–':'-','—':'-','•':'-','·':'-','…':'...','→':'->','↔':'<->','×':'x','−':'-'};
+    txt = txt.replace(/[\u2018\u2019\u201A\u00B4]/g,m=>map[m]||"'").replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g,m=>map[m]||'"').replace(/[\u2010\u2011\u2013\u2014\u2022\u00B7\u2026\u2192\u2194\u00D7\u2212]/g,m=>map[m]||'-');
+    try{ txt=txt.replace(/\p{Extended_Pictographic}|\p{Emoji_Presentation}/gu,''); }catch(e){ txt=txt.replace(/[\u{1F300}-\u{1FAFF}]/gu,''); }
+    let out=''; for(const ch of txt){ const c=ch.codePointAt(0); if(ch==='\n'||ch==='\r'||ch==='\t'||(c>=0x20&&c<=0x7E)||(c>=0xA0&&c<=0xFF)) out+=ch; }
+    out=out.replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim(); if($('#upper').checked) out=out.toUpperCase(); return out;
+  }
+  function setOutput(txt){ const t=txt.length>2000?txt.slice(0,2000):txt; $('#saida').value=t; const c=$('#cont'); c.textContent=`${t.length} / 2000`; c.className='counter muted'+(t.length>1900?' danger':''); }
+
+  function buildAgeNote(idade){
+    if(idade==null) return '';
+    if(idade>=40){
+      return `Nota de risco por idade: Paciente com ${idade} anos, desejando gestação. Explicado que a fertilidade é muito reduzida nessa faixa etária, com maior risco de alterações cromossômicas (ex.: síndrome de Down) e de complicações materno-fetais. Orientada sobre aconselhamento reprodutivo e opções na APS.`;
+    }
+    return '';
+  }
+
+  function montarRascunho(){
+    const nome=$('#nome').value.trim();
+    const dataISO=$('#data').value || '';
+    const dataBR=fmtBR(dataISO);
+    const linha=$('#linha').value;
+
+    // idade
+    const refDate=parseISO($('#data').value)||new Date();
+    const dob=parseISO($('#dob').value);
+    const idade=ageOn(refDate,dob);
+    const idadeStr = (idade==null||isNaN(idade)) ? '' : ` | Idade: ${idade} anos`;
+
+    const auto=$('#autoroute-dup').checked; const rs=roteador();
+    const destEf=auto?rs.dest:$('#destinoManual').value;
+    const prioridadeEf=auto?(rs.prioridade||$('#prioridade').value):$('#prioridade').value;
+    const riscoEf=(destEf==='UPA 24h'||destEf==='Hospital'||destEf==='CAPS')?(rs.risco||null):null;
+
+    const s=valuesOnly('sinais'); const e=valuesOnly('exames');
+    const m1=valuesOnly('meds'); const m2=valuesOnly('meds-dose'); const obs=$('#obs').value.trim();
+    const medsOut=[...m1, ...m2];
+
+    const linhas=[];
+    linhas.push(`Encaminhamento – SERMulher RS`);
+    linhas.push(`Data: ${dataBR}${nome?` | Paciente: ${nome}`:''}${idadeStr}`);
+    linhas.push(`Linha de cuidado (eixo oficial): ${linha}`);
+
+    if(noReferralMode){
+      linhas.push(`DESTINO DEFINIDO: NÃO ENCAMINHAR – orientação e aconselhamento na APS (registro em prontuário).`);
+    } else {
+      linhas.push(`DESTINO DEFINIDO: ${destEf}${riscoEf?` • Classificação de risco: ${riscoEf}`:''} • Prioridade: ${prioridadeEf}`);
+    }
+
+    if(s.length) linhas.push(`Sinais/sintomas: ${s.join('; ')}.`);
+    if(e.length) linhas.push(`Exames (realizados/solicitados): ${e.join('; ')}.`);
+
+    // Exame físico (opcional)
+    if($('#incExam').checked){
+      const examTxt = ($('#exame-txt').value||'').trim();
+      if(examTxt){ linhas.push(`Exame físico:\n${examTxt}`); }
+    }
+
+    if(medsOut.length) linhas.push(`Medicamentos/condutas na APS: ${medsOut.join('; ')}.`);
+
+    if(linha==='Mama'){ const b=$('#birads').value, h=$('#mama-histo').value.trim(), ad=$('#mama-adenopatia').checked, af=$('#mama-achadofisico').checked; const det=[]; if(b) det.push(`BI-RADS: ${b}`); if(h) det.push(`Histopatologia: ${h}`); if(ad) det.push('Adenopatia axilar'); if(af) det.push('Achados físicos altamente suspeitos'); if(det.length) linhas.push(det.join(' • ')+'.'); }
+    if(linha==='Colo do Útero'){ const cp=$('#cp').value, bx=$('#colo-bx').value.trim(), ls=$('#colo-lesao-visivel').checked; const det=[]; if(cp) det.push(`CP: ${cp}`); if(bx) det.push(`Biópsia: ${bx}`); if(ls) det.push('Lesão visível ao exame especular'); if(det.length) linhas.push(det.join(' • ')+'.'); }
+    if(linha==='Planejamento Reprodutivo (Infertilidade)'){ const t=$('#inf-tempo').value.trim(), ex=$('#inf-exames').value.trim(); if(t) linhas.push(`Tempo tentando gestar: ${t}.`); if(ex) linhas.push(`Exames relevantes: ${ex}.`); }
+
+    if(linha==='Endometriose / Miomatose'){ const dpc=$('#dpc').value.trim(), sua=$('#mioma-sua').checked, comp=$('#mioma-compressivo').checked, tx=$('#mioma-tx').value.trim(); if(dpc) linhas.push(`Dor pélvica crônica: ${dpc}.`); const arr=[]; if(sua) arr.push('SUA refratário ≥3m'); if(comp) arr.push('Sintomas compressivos'); if(arr.length) linhas.push(`Miomatose: ${arr.join(' • ')}.`); if(tx) linhas.push(`Tratamento já realizado: ${tx}.`); }
+    if(linha==='Climatério'){ const c=$('#clima').value.trim(); if(c) linhas.push(`Climatério – detalhes: ${c}.`); }
+
+    const hasLesao = $('#lesoes').value.trim();
+    if(hasLesao) linhas.push(`Lesões vulvares/condiloma – detalhes: ${$('#lesoes').value.trim()}.`);
+
+    if($('#ageNote').checked || noReferralMode){
+      const nota = buildAgeNote(idade);
+      if(nota) linhas.push(nota);
+    }
+
+    if(hadInconsistency || noReferralMode){
+      linhas.push(`⚡ © 2025 RXI emitiu alerta de "NÃO ENCAMINHAR" (INCONSISTÊNCIAS).`);
+    }
+
+    if(obs) linhas.push(`Observações: ${obs}`);
+
+    const legal=buildBaseLegal(); if(legal) linhas.push(legal);
+
+      if(noReferralMode){ // Se o modo "não encaminhar" está ativo (por clique do usuário)
+      linhas.push(`Sem encaminhamento no momento. Manter aconselhamento e seguimento na APS conforme protocolos.`);
+    } else if (hadInconsistency) { // Se há inconsistências detectadas que geram o alerta de "NÃO ENCAMINHAR"
+      // Não adicionamos a frase "Encaminho", pois o alerta já disse para não encaminhar
+      // Isso resolve a contradição
+    } else { // Caso contrário (sem modo "não encaminhar" e sem inconsistências pendentes)
+      linhas.push(`Encaminho conforme protocolo e fluxo vigente para avaliação especializada.`);
+    }
+
+    // SELO (sempre último)
+    linhas.push(`SELO RXI • QUALIDADE DO ENCAMINHAMENTO`);
+
+    return linhas.join('\n');
+
+    return linhas.join('\n');
+  }
+
+  function atualizarRascunho(){ setOutput(montarRascunho()); }
+
+  // Gate com validação
+  function gate(){ const v=validar(); return v.ok; }
+  $('#build').addEventListener('click',()=>{ if(!gate()) return showToast('Há inconsistências. Corrija ou use as ações sugeridas.'); atualizarRascunho(); showToast('Rascunho atualizado.'); flashDone('#build'); });
+
+  function formatarGercon(){
+    if(noReferralMode) { showToast('Sem encaminhamento: GERCON desabilitado.'); return; }
+    if(!gate()) return showToast('Há inconsistências. Corrija primeiro.');
+    const draft=montarRascunho(); let gerconTxt=toLatin1Safe(draft); if(gerconTxt.length>1900) gerconTxt=gerconTxt.slice(0,1900);
+    setOutput(gerconTxt); showToast('Texto formatado para GERCON.'); flashDone('#gercon'); flashDone('#gercon2');
+  }
+  $('#gercon').addEventListener('click',formatarGercon);
+  $('#gercon2').addEventListener('click',formatarGercon);
+
+  async function copiarSaida(btnSel){
+    if(!gate()) return showToast('Há inconsistências. Corrija primeiro.');
+    const ta=$('#saida'); ta.focus(); ta.select();
+    try{ await navigator.clipboard.writeText(ta.value); showToast('Texto copiado!'); flashDone(btnSel); }
+    catch{
+      try{ document.execCommand('copy'); showToast('Texto copiado!'); flashDone(btnSel); }
+      catch(e){ showToast('Não foi possível copiar automaticamente.'); }
+    }
+  }
+  $('#copy').addEventListener('click',()=>copiarSaida('#copy'));
+  $('#copy2').addEventListener('click',()=>copiarSaida('#copy2'));
+
+  function doReset(){
+    ['sinais','exames','meds','meds-dose'].forEach(id=>{ $$('#'+id+' .pill').forEach(p=>p.classList.remove('active')); $$('#'+id+' input').forEach(i=>i.checked=false); });
+    ['nome','obs','mama-histo','colo-bx','inf-tempo','inf-exames','dpc','mioma-tx','clima','lesoes','dob','exame-txt', 'pdfContentDisplay'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
+    ['mama-adenopatia','mama-achadofisico','colo-lesao-visivel','mioma-sua','mioma-compressivo','upper','ageNote','incExam','inf-ooforect','inf-sempar','inf-soro','inf-cesarea','inf-laquea'].forEach(id=>{ const el=$('#'+id); if(el){ el.checked=false; const sw=el.closest('.switch'); if(sw){ sw.classList.remove('on'); sw.setAttribute('aria-checked','false'); } } });
+    ['birads','cp'].forEach(id=>{ const el=$('#'+id); if(el) el.value=''; });
+    // autoroute permanece ativo por padrão
+    const swAuto=$('#sw-autoroute-dup'); const cbAuto=$('#autoroute-dup'); swAuto.classList.add('on'); swAuto.setAttribute('aria-checked','true'); cbAuto.checked=true;
+
+    noReferralMode=false; hadInconsistency=false; chipState.clear(); $$('#sec-exame .chip').forEach(c=>c.dataset.active='false');
+    $('#idade').value='—';
+    $('#addPdfContentToOutput').disabled = true;
+    setOutput(''); clearHighlights(); $('#alert').style.display='none'; toggleActions(true); recomputeRoute(); showToast('Campos resetados.');
+  }
+  $('#clear').addEventListener('click',()=>{ doReset(); flashDone('#clear'); });
+  $('#clear2').addEventListener('click',()=>{ doReset(); flashDone('#clear2'); });
+
+  // Navegação
+  $('#btn-topo').addEventListener('click',()=>{ document.querySelector('#topo')?.scrollIntoView({behavior:'smooth'}); });
+  $('#btn-fim').addEventListener('click',()=>{ document.querySelector('#fim')?.scrollIntoView({behavior:'smooth'}); });
+
+  // Inputs que influenciam validação/saída
+  ['destinoManual','prioridade','birads','cp','colo-bx','mama-histo','inf-tempo','inf-exames','dpc','mioma-tx','clima','lesoes','colo-lesao-visivel','mama-adenopatia','mama-achadofisico','mioma-sua','mioma-compressivo','dob','data','exame-txt','inf-ooforect','inf-sempar','inf-soro','inf-cesarea','inf-laquea','autoroute-dup']
+    .forEach(id=>{ const el=$('#'+id); if(el){ const ev=(el.type==='checkbox'?'change':'input'); el.addEventListener(ev,()=>{ recomputeRoute(); validar(); atualizarRascunho(); }); } });
+
+  // ====== PDF/Imagem: leitura e marcação ======
+  const pdfFile = $('#pdfFile'),
+        pdfRead = $('#pdfRead'),
+        pdfStatus = $('#pdfStatus'),
+        pdfBadge = $('#pdfBadge'),
+        pdfPagesSpan = $('#pdfPages'),
+        pdfContentDisplay = $('#pdfContentDisplay'),
+        addPdfContentToOutputBtn = $('#addPdfContentToOutput');
+  let lastText = '';
+
+  pdfFile.addEventListener('change', ()=>{
+    const f = pdfFile.files?.[0];
+    if(!f){
+      pdfRead.disabled = true;
+      pdfStatus.textContent = 'Selecione um arquivo para habilitar a leitura.';
+      pdfContentDisplay.value = '';
+      addPdfContentToOutputBtn.disabled = true;
+      return;
+    }
+    pdfRead.disabled = false;
+    pdfRead.textContent = '📄 Ler PDF/Imagem e marcar';
+    pdfStatus.textContent = `Arquivo selecionado: ${f.name} (${Math.round(f.size/1024)} KB).`;
+    pdfBadge.style.display='none'; pdfPagesSpan.textContent='0';
+    pdfContentDisplay.value = '';
+    addPdfContentToOutputBtn.disabled = true;
+  });
+
+  addPdfContentToOutputBtn.addEventListener('click', () => {
+    const textToAdd = pdfContentDisplay.value.trim();
+    const obsTextArea = $('#obs');
+
+    if (textToAdd) {
+      if (obsTextArea.value.trim()) {
+        obsTextArea.value += "\n\n--- Conteúdo do PDF ---\n" + textToAdd;
+      } else {
+        obsTextArea.value = "--- Conteúdo do PDF ---\n" + textToAdd;
+      }
+      atualizarRascunho();
+      showToast('Texto do PDF adicionado às observações!');
+      flashDone('#addPdfContentToOutput');
+    } else {
+      showToast('Não há texto do PDF para adicionar.');
+    }
+  });
+
+  function markPillByText(txt, label){
+    const p = $$('#exames .pill').find(el => (el.querySelector('input')?.value||'').trim()===label);
+    if(p && !p.classList.contains('active')){ p.classList.add('active'); const i=p.querySelector('input'); if(i) i.checked=true; }
+  }
+  function setBiradsFromText(txt){
+    const m = txt.match(/BI[\s-]?RADS[^0-9]*(\d)([A-C])?/i) || txt.match(/Categoria\s*BI[\s-]?RADS[^0-9]*(\d)/i) || txt.match(/Categoria\s*(\d)\b/i);
+    if(m){
+      const num=m[1], sub=(m[2]||'').toUpperCase();
+      const opt=(num==='4'&&sub)?`BI-RADS 4${sub}`:`BI-RADS ${num}`;
+      const sel=$('#birads');
+      if([...sel.options].some(o=>o.value===opt)) sel.value=opt; else sel.value=`BI-RADS ${num}`;
+    }
+  }
+  function parseExamText(txt){
+    if(!txt) return;
+    if(/mamograf/i.test(txt)) markPillByText(txt,'Mamografia');
+    if(/ultra[\s-]?sonografia.*mam/gi.test(txt) || /US.*mam/gi.test(txt)) markPillByText(txt,'Ultrassonografia mamária');
+    if(/resson[aâ]ncia.*mama/i.test(txt)) markPillByText(txt,'Ressonância de mama');
+    if(/citopatol|papanicolaou|colo.*citologia/i.test(txt)) markPillByText(txt,'Citopatológico cervical');
+    if(/colposcop/i.test(txt)) markPillByText(txt,'Colposcopia');
+    if(/bi[oó]psia.*colo/i.test(txt)) markPillByText(txt,'Biópsia de colo uterino');
+    if(/transvaginal|p[ée]lvic[ao]/i.test(txt)) markPillByText(txt,'US transvaginal ou pélvica');
+    if(/prolactina|TSH/i.test(txt)) markPillByText(txt,'Prolactina e TSH');
+    if(/\bCA[-\s]?125\b/i.test(txt)) markPillByText(txt,'CA-125');
+    if(/hemograma|ferritina/i.test(txt)) markPillByText(txt,'Hemograma e ferritina');
+    if(/hcg\b|β[-\s]?hcg/i.test(txt)) markPillByText(txt,'β-hCG sérico');
+
+    setBiradsFromText(txt);
+    const bir=$('#birads').value;
+    if(/BI-RADS 4|BI-RADS 5/.test(bir)) markPillByText(txt,'BI-RADS 4 ou 5');
+
+    atualizaSecoes(); recomputeRoute(); validar(); atualizarRascunho();
+  }
+
+  async function ocrCanvas(canvas){
+    if(!window.Tesseract) throw new Error('OCR indisponível');
+    try{
+      const { data:{ text } } = await Tesseract.recognize(canvas, 'por');
+      return text||'';
+    }catch{
+      const { data:{ text } } = await Tesseract.recognize(canvas, 'eng');
+      return text||'';
+    }
+  }
+
+  async function extractTextFromPDF(arrayBuffer, onProgress){
+    const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+    let full = ''; const pages = Math.min(pdf.numPages, 8);
+    for(let p=1;p<=pages;p++){
+      onProgress && onProgress(p, pages);
+      const page = await pdf.getPage(p);
+      let pageText = '';
+      try{
+        const tc = await page.getTextContent();
+        if(tc?.items?.length) pageText = tc.items.map(i=>i.str).join(' ');
+      }catch{}
+      if(!pageText){
+        const viewport = page.getViewport({scale:1.5});
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({canvasContext:ctx, viewport}).promise;
+        pageText = await ocrCanvas(canvas);
+      }
+      full += (pageText||'') + '\n';
+    }
+    return { text: full, pages };
+  }
+
+  pdfRead.addEventListener('click', async ()=>{
+    const f = pdfFile.files?.[0];
+    if(!f){ showToast('Selecione um arquivo.'); return; }
+
+    pdfRead.disabled = true;
+    pdfRead.textContent = 'Lendo…';
+    pdfBadge.style.display='none'; pdfPagesSpan.textContent='0';
+    pdfStatus.textContent = 'Iniciando leitura…';
+    pdfContentDisplay.value = '';
+    addPdfContentToOutputBtn.disabled = true;
+
+    try{
+      const isLikelyPDF = /\.pdf$/i.test(f.name) || f.type==='application/pdf' || f.type==='application/octet-stream';
+      if(f.type.startsWith('image/')){
+        // OCR direto em imagem
+        pdfStatus.textContent = 'Imagem enviada — realizando OCR…';
+        const img = document.createElement('img');
+        img.onload = async ()=>{
+          const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+          canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img,0,0);
+          const text = await ocrCanvas(canvas);
+          lastText = text;
+          pdfContentDisplay.value = lastText;
+          if (lastText.trim()) addPdfContentToOutputBtn.disabled = false;
+          pdfStatus.textContent = 'Imagem lida (OCR).';
+          pdfRead.textContent='Lido ✓'; pdfRead.classList.add('btn-done');
+          pdfBadge.style.display='inline-flex'; pdfPagesSpan.textContent='1';
+          parseExamText(text); setTimeout(()=>pdfRead.classList.remove('btn-done'),900);
+          pdfRead.disabled=false;
+        };
+        img.onerror = ()=>{ pdfStatus.textContent='Falha ao carregar a imagem.'; pdfRead.disabled=false; };
+        img.src = URL.createObjectURL(f);
+        return;
+      }
+
+      if(isLikelyPDF){
+        const buf = await f.arrayBuffer();
+        const {text: t, pages} = await extractTextFromPDF(buf, (p,tot)=>{
+          pdfStatus.textContent = `Lendo PDF… página ${p}/${tot}`;
+        });
+        lastText = t||'';
+        pdfContentDisplay.value = lastText;
+        if (lastText.trim()) addPdfContentToOutputBtn.disabled = false;
+        pdfStatus.textContent = (t && t.trim()) ? 'PDF lido com sucesso.' : 'PDF lido, porém com pouco texto — possivelmente escaneado.';
+        pdfRead.textContent='Lido ✓'; pdfRead.classList.add('btn-done');
+        pdfBadge.style.display='inline-flex'; pdfPagesSpan.textContent=String(pages);
+        parseExamText(lastText); setTimeout(()=>pdfRead.classList.remove('btn-done'),900);
+        pdfRead.disabled=false;
+        return;
+      }
+
+      // fallback: tentar como imagem via OCR
+      pdfStatus.textContent = 'Formato não reconhecido — tentando OCR como imagem…';
+      const buf = await f.arrayBuffer();
+      const blobURL = URL.createObjectURL(new Blob([buf]));
+      const img = document.createElement('img');
+      img.onload = async ()=>{
+        const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img,0,0);
+        const text = await ocrCanvas(canvas);
+        lastText = text || '';
+        pdfContentDisplay.value = lastText;
+        if (lastText.trim()) addPdfContentToOutputBtn.disabled = false;
+        pdfStatus.textContent = lastText.trim() ? 'OCR concluído (fallback como imagem).' : 'OCR concluído, porém sem texto legível.';
+        pdfRead.textContent='Lido ✓'; pdfRead.classList.add('btn-done');
+        pdfBadge.style.display='inline-flex'; pdfPagesSpan.textContent='1';
+        parseExamText(lastText);
+        setTimeout(()=>pdfRead.classList.remove('btn-done'),900);
+        pdfRead.disabled=false;
+        URL.revokeObjectURL(blobURL);
+      };
+      img.onerror = ()=>{ pdfStatus.textContent='Não foi possível ler este arquivo.'; pdfRead.disabled=false; URL.revokeObjectURL(blobURL); };
+      img.src = blobURL;
+
+    }catch(err){
+      console.error(err);
+      pdfStatus.textContent = 'Erro ao ler arquivo. Tente outro PDF/Imagem.';
+      pdfRead.disabled = false;
+      pdfRead.textContent = '📄 Ler PDF/Imagem e marcar';
+    }
+  });
+
+})();
+</script>
+<script>
+// ==== GUIA RXI ====
+const etapas = [
+  {
+    titulo: "📱 Bem-vindo ao Painel RXI • SERMulher RS",
+    texto: "Desenvolvido para apoiar a APS e a rede de atenção, este sistema padroniza encaminhamentos conforme os protocolos do projeto. Nosso foco: agilizar fluxos, reduzir erros e <strong>qualificar o cuidado às mulheres.</strong> ✨"
+  },
+  {
+    titulo: "🟣 Identidade e Padrão (1/5)",
+    texto: "Alinhado ao <strong>Manual de Identidade Visual do SERMulher RS</strong>. A saída é otimizada para o GERCON (limite de 2000 caracteres) e formatada para ser colada <strong>diretamente no prontuário</strong> da paciente e no GERCON. 📝"
+  },
+  {
+    titulo: "🩺 Linhas de Cuidado (2/5)",
+    texto: "Cobrimos os 5 eixos de atendimento: <strong>Colo do útero • Mama • Infertilidade/Planejamento Reprodutivo • Endometriose/Miomatose • Climatério.</strong> Cada uma traz o conteúdo essencial e condutas baseadas em <strong>diretrizes oficiais</strong> (INCA/MS/SES-RS). ✅"
+  },
+  {
+    titulo: "📱 Funcionalidades (3/5)",
+    texto: "Você decide! O sistema apenas <strong>sinaliza inconsistências</strong> para garantir que sua escolha seja a mais assertiva. 🎯"
+  },
+  {
+    titulo: "🚀 Fortalecendo a Rede (4/5)",
+    texto: "Use o Painel RXI como sua base para <strong>encaminhamentos padronizados</strong>, relatórios clínicos e para criar novos conteúdos, <strong>fortalecendo a Rede SERMulher RS</strong> em cada ação. 💚"
+  },
+  {
+    titulo: "✒️ Créditos (5/5)",
+    texto: "Criação integral do Painel: <strong>Daniel Fagundes Audino</strong> • Médico da ESF X Vila Nova Maria Inês Faccin - Cruz Alta."
+  }
+];
+let etapaAtual = 0;
+function atualizarGuia() {
+  document.getElementById("guia-titulo").innerHTML = etapas[etapaAtual].titulo;
+  document.getElementById("guia-texto").innerHTML = etapas[etapaAtual].texto;
+  document.querySelector(".btn-prev").disabled = etapaAtual === 0;
+  document.querySelector(".btn-next").style.display = etapaAtual === etapas.length-1 ? "none":"inline-block";
+}
+function guiaProximo() { if(etapaAtual < etapas.length-1){ etapaAtual++; atualizarGuia(); } }
+function guiaAnterior() { if(etapaAtual > 0){ etapaAtual--; atualizarGuia(); } }
+function fecharGuia() { document.getElementById("guia-rxi").style.display="none"; }
+atualizarGuia();
+
+// ==== DICIONÁRIO DE MENSAGENS EXPANDIDO ====
+const mensagens = {
+  destino:{curto:{texto:"Destino aplicado.",tipo:"success"},medio:{texto:"✅ Destino definido.",tipo:"success"},completo:{texto:"✅ Destino definido com sucesso.",tipo:"success"}},
+  baseLegal:{curto:{texto:"Base aplicada.",tipo:"success"},medio:{texto:"📚 Base legal inserida.",tipo:"success"},completo:{texto:"📚 Base legal adicionada ao texto final.",tipo:"success"}},
+  rascunho:{curto:{texto:"Rascunho gerado.",tipo:"success"},medio:{texto:"📝 Rascunho atualizado.",tipo:"success"},completo:{texto:"📝 Rascunho atualizado com sucesso.",tipo:"success"}},
+  gercon:{curto:{texto:"Texto pronto.",tipo:"success"},medio:{texto:"🗂️ Texto GERCON gerado.",tipo:"success"},completo:{texto:"🗂️ Texto formatado conforme padrão GERCON.",tipo:"success"}},
+  copia:{curto:{texto:"Texto copiado.",tipo:"success"},medio:{texto:"📋 Copiado.",tipo:"success"},completo:{texto:"📋 Conteúdo copiado para a área de transferência.",tipo:"success"}},
+  copiaErro:{curto:{texto:"Cópia falhou.",tipo:"error"},medio:{texto:"⚠️ Não copiado.",tipo:"error"},completo:{texto:"⚠️ Não foi possível copiar automaticamente.",tipo:"error"}},
+  reset:{curto:{texto:"Reset feito.",tipo:"info"},medio:{texto:"🔄 Campos resetados.",tipo:"info"},completo:{texto:"🔄 Todos os campos foram limpos e reiniciados.",tipo:"info"}},
+  inconsistencia:{curto:{texto:"Inconsistência achada.",tipo:"warning"},medio:{texto:"⚠️ Inconsistências detectadas.",tipo:"warning"},completo:{texto:"⚠️ Foram identificadas inconsistências — revise ou use as ações sugeridas.",tipo:"warning"}},
+  pendencia:{curto:{texto:"Corrigir pendências.",tipo:"warning"},medio:{texto:"🚫 Pendências ativas.",tipo:"warning"},completo:{texto:"🚫 Corrija as pendências antes de prosseguir.",tipo:"warning"}},
+  gerconOff:{curto:{texto:"GERCON off.",tipo:"error"},medio:{texto:"⛔ GERCON desabilitado.",tipo:"error"},completo:{texto:"⛔ Sem encaminhamento disponível: GERCON desabilitado.",tipo:"error"}},
+  arquivoVazio:{curto:{texto:"Sem arquivo.",tipo:"info"},medio:{texto:"📂 Nenhum arquivo.",tipo:"info"},completo:{texto:"📂 Nenhum arquivo selecionado para leitura.",tipo:"info"}},
+  leitura:{curto:{texto:"Lendo...",tipo:"info"},medio:{texto:"⏳ Leitura em andamento.",tipo:"info"},completo:{texto:"⏳ Arquivo em leitura, aguarde o processamento.",tipo:"info"}},
+  ocrIniciado:{curto:{texto:"OCR iniciado.",tipo:"info"},medio:{texto:"🖼️ OCR em andamento.",tipo:"info"},completo:{texto:"🖼️ Imagem enviada — realizando OCR.",tipo:"info"}},
+  ocrOk:{curto:{texto:"OCR pronto.",tipo:"success"},medio:{texto:"✅ OCR concluído.",tipo:"success"},completo:{texto:"✅ Imagem lida com sucesso via OCR.",tipo:"success"}},
+  ocrErro:{curto:{texto:"Falha na imagem.",tipo:"error"},medio:{texto:"❌ Erro na imagem.",tipo:"error"},completo:{texto:"❌ Falha ao carregar a imagem selecionada.",tipo:"error"}},
+  pdfOk:{curto:{texto:"PDF lido.",tipo:"success"},medio:{texto:"📖 PDF processado.",tipo:"success"},completo:{texto:"📖 PDF lido com sucesso.",tipo:"success"}},
+  pdfPouco:{curto:{texto:"PDF vazio.",tipo:"warning"},medio:{texto:"⚠️ Pouco texto.",tipo:"warning"},completo:{texto:"⚠️ PDF lido, mas contém pouco texto (provavelmente escaneado).",tipo:"warning"}},
+  pdfOcrFallback:{curto:{texto:"OCR fallback.",tipo:"info"},medio:{texto:"🔄 Tentando OCR.",tipo:"info"},completo:{texto:"🔄 Formato não reconhecido — tentando OCR como imagem.",tipo:"info"}},
+  ocrSemTexto:{curto:{texto:"OCR sem texto.",tipo:"warning"},medio:{texto:"⚠️ OCR sem resultado.",tipo:"warning"},completo:{texto:"⚠️ OCR concluído, mas sem texto legível.",tipo:"warning"}},
+  erroArquivo:{curto:{texto:"Erro no arquivo.",tipo:"error"},medio:{texto:"❌ Arquivo inválido.",tipo:"error"},completo:{texto:"❌ Não foi possível processar o arquivo selecionado.",tipo:"error"}},
+  erroLeitura:{curto:{texto:"Erro na leitura.",tipo:"error"},medio:{texto:"⚠️ Erro na leitura.",tipo:"error"},completo:{texto:"⚠️ Ocorreu erro ao abrir o arquivo.",tipo:"error"}},
+  pdfAdd:{curto:{texto:"Texto adicionado.",tipo:"success"},medio:{texto:"➕ Texto inserido.",tipo:"success"},completo:{texto:"➕ Texto do PDF incorporado às observações clínicas.",tipo:"success"}},
+  pdfSemTexto:{curto:{texto:"Sem texto.",tipo:"info"},medio:{texto:"ℹ️ Nada a adicionar.",tipo:"info"},completo:{texto:"ℹ️ Não há texto disponível no PDF para adicionar.",tipo:"info"}}
+};
+
+// ==== MOTOR DE TOAST ====
+function mostrarMensagem(tipo, nivel = "medio") {
+  const dado = mensagens[tipo]?.[nivel];
+  if (!dado) return;
+  const toast = document.createElement("div");
+  toast.className = `toast ${dado.tipo}`;
+  toast.textContent = dado.texto;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add("show"), 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+</script>
+
+<script>
+(function(){
+  'use strict';
+  function normalizeSpacing(s){
+    if(!s) return '';
+    return String(s).replace(/\r\n?/g,'\n')
+                    .replace(/[ \t]+/g,' ')
+                    .replace(/\n[ \t]+/g,'\n')
+                    .replace(/\n{3,}/g,'\n\n')
+                    .trim();
+  }
+  function isMarketingOrContactLine(line){
+    const l=(line||'').trim();
+    if(!l) return false;
+    const tests=[
+      /\b(fone|tel|telefone|whats|whatsapp)\b[:\s]?/i,
+      /\(?\b\d{2}\)?\s?\d{4,5}[-.\s]?\d{4}\b/,
+      /\bcep[:\s]*\d{5}-?\d{3}\b/i,
+      /\b(cnpj|c\.?g\.?c|cpf)\b/i,
+      /\b(rua|avenida|av\.|rodovia|estrada|praça|praca|travessa|al\.?)\b/i,
+      /(?:https?:\/\/|www\.)\S+/i,
+      /\b\S+@\S+\.\S+\b/i,
+      /^\s*\d+\s+de\s+\d+\s*$/i,
+      /\bagendamento online\b/i,
+      /\b(HOSPITAL|UNIDADE DE DIAGNÓSTICO|RADMAIS|SANTA\s+MARIA|CRUZ\s+ALTA|IJU[IÍ]|SANTO\s+ÂNGELO|PANAMBI|SANTO\s+AUGUSTO)\b/i
+    ];
+    return tests.some(r=>r.test(l));
+  }
+  function cleanExtractedText(rawText, enabled){
+  const t = String(rawText||'').replace(/
+?/g,'
+');
+  return normalizeSpacing(t);
+}
+
+    return normalizeSpacing(lines.join('\n'));
+  }
+  function $(s){return document.querySelector(s);}
+  function getToggle(){return $('#filterToggle');}
+  function isFilterOn(){const t=getToggle(); return !!(t && t.checked);}
+  if(!window.lastText) window.lastText='';
+  function hookTextareaFiltering(){
+    const ta=$('#pdfContentDisplay');
+    if(!ta||!HTMLTextAreaElement||!HTMLTextAreaElement.prototype) return;
+    if(ta.__rxiPatched) return;
+    const desc=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value');
+    if(!desc||!desc.set||!desc.get) return;
+    const origSet=desc.set, origGet=desc.get;
+    Object.defineProperty(ta,'value',{
+      set(v){
+        window.lastText=String(v||'');
+        const processed=cleanExtractedText(window.lastText,isFilterOn());
+        try{ origSet.call(ta, processed); }catch(e){ ta.textContent=processed; }
+        try{ if(typeof window.parseExamText==='function') window.parseExamText(processed); }catch(e){}
+      },
+      get(){ try{ return origGet.call(ta); }catch(e){ return ta.textContent||''; } }
+    });
+    ta.__rxiPatched=true;
+  }
+  function reapplyFilter(){
+    const ta=$('#pdfContentDisplay'); if(!ta) return;
+    const raw=window.lastText || ta.value || '';
+    ta.value=raw;
+  }
+  function bindToggle(){
+    const t=getToggle(); if(!t||t.__rxiBound) return;
+    t.addEventListener('change', ()=>{ reapplyFilter(); });
+    t.__rxiBound=true;
+  }
+  function domReady(cb){ if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', cb); } else { cb(); } }
+  domReady(()=>{ try{ hookTextareaFiltering(); bindToggle(); }catch(e){} });
+})();
+</script>
+
+<!-- VLibras -->
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script> new window.VLibras.Widget('https://vlibras.gov.br/app'); </script>
+</body>
+</html>
