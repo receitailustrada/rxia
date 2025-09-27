@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RXI • Busca de Protocolos</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f9fc; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --line:#e6eaf2;
+    --brand:#6e86ff; --brand-ink:#2b3a9e; --ok:#2f9e7e; --warn:#a8682a;
+    --ring:0 0 0 3px rgba(110,134,255,.25);
+  }
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,system-ui,Segoe UI,Roboto,Inter,Arial,sans-serif}
+  .wrap{max-width:1000px;margin:24px auto;padding:16px}
+  h1{font-size:22px;margin:0 0 8px}
+  p.desc{margin:0 0 18px;color:var(--muted);font-size:14px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .bar input[type="search"]{
+    flex:1;min-width:220px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;
+    font-size:14px;outline:none
+  }
+  .bar input[type="search"]:focus{box-shadow:var(--ring);border-color:var(--brand)}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;
+    font-size:13px;color:var(--muted);cursor:pointer;user-select:none
+  }
+  .pill[data-active="true"]{border-color:var(--brand);color:var(--brand-ink);box-shadow:var(--ring)}
+  .results{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 1px 10px rgba(13,16,23,.03)
+  }
+  .card h3{margin:0 0 6px;font-size:16px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+  .tag{font-size:11px;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#2b3a9e}
+  .small{font-size:12px;color:var(--muted)}
+  .card a{display:inline-block;margin-top:8px;font-weight:600;text-decoration:none;color:#fff;background:var(--brand);padding:8px 10px;border-radius:10px}
+  mark{background:#fff4b8;padding:0 .15em;border-radius:4px}
+  .count{font-size:12px;color:var(--muted);margin:6px 0 12px}
+  .footer{margin-top:16px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Protocolos – Busca Inteligente</h1>
+    <p class="desc">Digite termos (ex.: <em>implante coclear</em>, <em>AVD</em>, <em>M-CHAT</em>) ou filtre por área. Resultados em tempo real.</p>
+
+    <div class="bar">
+      <input id="q" type="search" placeholder="Buscar por título, tags e conteúdo…" aria-label="Buscar protocolos">
+      <button class="pill" data-area="all" data-active="true">Todas as áreas</button>
+      <button class="pill" data-area="Reabilitação Física">Reabilitação Física</button>
+      <button class="pill" data-area="Reabilitação Auditiva">Reabilitação Auditiva</button>
+      <button class="pill" data-area="Reabilitação Intelectual">Reabilitação Intelectual</button>
+      <button id="limpar" class="pill" title="Limpar">Limpar</button>
+    </div>
+
+    <div id="count" class="count"></div>
+    <div id="results" class="results" role="list"></div>
+
+    <div class="footer small">Dica: hospede <strong>protocolos.json</strong> ao lado deste HTML e ajuste a constante <code>JSON_URL</code> se necessário.</div>
+  </div>
+
+<script>
+  // 👉 Ajuste aqui se o JSON estiver em outro lugar (ex.: URL público do Drive/GitHub)
+  const JSON_URL = "protocolos.json";
+
+  const state = {
+    data: [],
+    area: "all",
+    q: ""
+  };
+
+  const $q = document.getElementById("q");
+  const $results = document.getElementById("results");
+  const $count = document.getElementById("count");
+
+  function norm(s){ return (s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,""); }
+
+  function highlight(text, query){
+    if(!query) return text;
+    try{
+      const esc = query.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+      return text.replace(new RegExp("("+esc+")","gi"), "<mark>$1</mark>");
+    }catch(e){ return text; }
+  }
+
+  function indexRecord(rec){
+    const bag = [
+      rec.title, rec.area, (rec.tags||[]).join(" "),
+      ...(rec.sections||[]).map(s => (s.heading||"")+" "+(s.text||"")),
+      ...(rec.key_points||[])
+    ].join(" ");
+    return norm(bag);
+  }
+
+  function render(){
+    const qn = norm(state.q);
+    const area = state.area;
+
+    const items = state.data
+      .map(rec => ({rec, bag: indexRecord(rec)}))
+      .filter(({rec, bag}) => (area==="all" || rec.area===area) && (!qn || bag.includes(qn)));
+
+    $count.textContent = items.length ? `${items.length} resultado(s)` : "Nenhum resultado";
+
+    $results.innerHTML = items.map(({rec})=>{
+      const contentPreview = ((rec.sections||[])[0]?.text || "").slice(0, 160);
+      const hTitle = highlight(rec.title, state.q);
+      const hPrev = highlight(contentPreview, state.q);
+      const tags = (rec.tags||[]).slice(0,5).map(t=>`<span class="tag">${t}</span>`).join(" ");
+      const link = rec.url || rec.source || "#";
+      return `
+        <article class="card" role="listitem">
+          <h3>${hTitle}</h3>
+          <div class="meta">
+            <span class="tag">${rec.area}</span>
+            <span class="small">Ano: ${rec.year || "-"}</span>
+          </div>
+          <div class="small">${hPrev}${contentPreview.length>=160?"…":""}</div>
+          <div class="meta" style="margin-top:6px">${tags}</div>
+          <a href="${link}" target="_blank" rel="noopener">Abrir PDF</a>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function setArea(area){
+    state.area = area;
+    document.querySelectorAll(".pill[data-area]").forEach(el=>{
+      el.dataset.active = (el.dataset.area === area) || (area==="all" && el.dataset.area==="all");
+    });
+    render();
+  }
+
+  document.querySelectorAll(".pill[data-area]").forEach(el=>{
+    el.addEventListener("click", ()=> setArea(el.dataset.area));
+  });
+
+  document.getElementById("limpar").addEventListener("click", ()=>{
+    $q.value = "";
+    state.q = "";
+    setArea("all");
+    $q.focus();
+  });
+
+  $q.addEventListener("input", (e)=>{ state.q = e.target.value.trim(); render(); });
+
+  async function boot(){
+    try{
+      const res = await fetch(JSON_URL, {cache:"no-store"});
+      const json = await res.json();
+      state.data = json.protocolos || [];
+    }catch(e){
+      // fallback mínimo se o JSON não carregar
+      state.data = [{
+        id:"fallback",
+        title:"Exemplo – Suba o protocolos.json",
+        area:"Reabilitação Física",
+        year:2025,
+        url:"#",
+        tags:["exemplo"], sections:[{text:"Coloque o arquivo protocolos.json na mesma pasta do HTML."}]
+      }];
+    }
+    render();
+  }
+  boot();
+</script>
+</body>
+</html>

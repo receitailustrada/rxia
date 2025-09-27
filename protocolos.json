@@ -1,0 +1,122 @@
+{
+  "version": "1.0.0",
+  "updated": "2025-09-27",
+  "owner": "ESF X Vila Nova Maria Inês Faccin – RXI",
+  "protocolos": [
+    {
+      "id": "rehab-fisica-2021",
+      "title": "Protocolos de Encaminhamento para Reabilitação Física",
+      "area": "Reabilitação Física",
+      "year": 2021,
+      "source": "Reabilitação Física.pdf",
+      "url": "Reabilitação Física.pdf",
+      "tags": ["OPM", "AVD", "amputação", "neurológico", "ortopédico", "obesidade", "oncológico", "reumatológico"],
+      "sections": [
+        {
+          "heading": "Propósito",
+          "text": "Protocolos para otimizar o encaminhamento à Reabilitação Física na RCPcD; conteúdo descritivo mínimo para priorização; exames complementares quando disponíveis."
+        },
+        {
+          "heading": "Critérios Gerais",
+          "text": "Preferência a usuários que precisem de ≥2 áreas de reabilitação e/ou indicação de tecnologias assistivas (OPM). Acesso regulado por município/Estado conforme pactuação."
+        },
+        {
+          "heading": "Protocolos",
+          "text": "1) Amputação; 2) Alterações Neurológicas; 3) Alterações Ortopédicas; 4) Obesidade; 5) Fatores Oncológicos; 6) Patologias Reumatológicas."
+        },
+        {
+          "heading": "Instrumentos",
+          "text": "Quadro de OPM disponíveis no SUS; Índice de AVD (Katz); Marcos do desenvolvimento motor 0–3 anos (para AGD)."
+        }
+      ],
+      "key_points": [
+        "Encaminhar mesmo sem exames se não houver acesso local.",
+        "Descrever quadro, independência nas AVD, terapias prévias e necessidade de OPM."
+      ]
+    },
+
+    {
+      "id": "rehab-auditiva-adulto-2023",
+      "title": "Protocolos de Regulação Ambulatorial – Reabilitação Auditiva (Adulto)",
+      "area": "Reabilitação Auditiva",
+      "year": 2023,
+      "source": "Reabilitação Auditiva Adulto.pdf",
+      "url": "Reabilitação Auditiva Adulto.pdf",
+      "tags": ["hipoacusia", "AASI", "implante coclear", "PEATE", "Weber", "Rinne", "otite média", "colesteatoma"],
+      "sections": [
+        {
+          "heading": "Mudanças",
+          "text": "Inclui teste do sussurro, Weber e Rinne; ampliação das indicações de PEATE; atualização de critérios de encaminhamento; figuras para OMC/colesteatoma."
+        },
+        {
+          "heading": "Urgência",
+          "text": "Perda auditiva aguda com suspeita de condição grave ou sem causa identificável → urgência/emergência."
+        },
+        {
+          "heading": "Encaminhar para Reabilitação Auditiva",
+          "text": "PANS com motivação para AASI; PANS severa/profunda bilateral sem resposta ao AASI (avaliar IC); condutiva/mista com indicação de AASI/BAHA; situações que requerem PEATE."
+        },
+        {
+          "heading": "Conteúdo Mínimo do Encaminhamento",
+          "text": "Sinais/sintomas; uso prévio de aparelho; otoscopia; anexar audiometria e exames (com datas); nº de teleconsultoria se houver."
+        }
+      ],
+      "key_points": [
+        "Aplicar sussurro, Weber e Rinne na APS quando possível.",
+        "Dar preferência a casos candidatos a implante coclear ou com outras deficiências associadas."
+      ]
+    },
+
+    {
+      "id": "rehab-intelectual-2022",
+      "title": "Protocolos de Regulação Ambulatorial – Reabilitação Intelectual",
+      "area": "Reabilitação Intelectual",
+      "year": 2022,
+      "source": "Reabilitação Intelectual.pdf",
+      "url": "Reabilitação Intelectual.pdf",
+      "tags": ["AGD", "deficiência intelectual", "TEA", "M-CHAT-R", "triagens neonatais", "CIF"],
+      "sections": [
+        {
+          "heading": "Propósito",
+          "text": "Orientar o encaminhamento para Reabilitação Intelectual; conteúdo descritivo mínimo; priorização por gravidade e necessidade de múltiplas áreas."
+        },
+        {
+          "heading": "Protocolos",
+          "text": "1) Atraso Global do Desenvolvimento; 2) Deficiência Intelectual; 3) TEA (triagem M-CHAT-R entre 16–30 meses)."
+        },
+        {
+          "heading": "Conteúdo Mínimo",
+          "text": "Sinais/sintomas (idade de início, marcos), antecedentes familiares/gestacionais/perinatais, triagens (pezinho, reflexo vermelho, auditiva), terapias prévias e medicações."
+        }
+      ],
+      "key_points": [
+        "Prioridade: <3 anos com AGD, quadros sindrômicos, necessidade de ≥2 áreas.",
+        "Encaminhar TEA mesmo sem confirmação diagnóstica."
+      ]
+    },
+
+    {
+      "id": "rehab-auditiva-pediatrico",
+      "title": "Reabilitação Auditiva (Pediátrico)",
+      "area": "Reabilitação Auditiva",
+      "year": 2023,
+      "source": "Reabilitação Auditiva Pediátrico.pdf",
+      "url": "Reabilitação Auditiva Pediátrico.pdf",
+      "tags": ["pediatria", "triagem neonatal", "AASI", "implante coclear", "PEATE"],
+      "sections": [],
+      "key_points": []
+    },
+
+    {
+      "id": "rehab-visual",
+      "title": "Reabilitação Visual",
+      "area": "Reabilitação Visual",
+      "year": 2020,
+      "source": "Reabilitação Visual.pdf",
+      "url": "Reabilitação Visual.pdf",
+      "tags": ["baixa visão", "adaptações", "RCPcD"],
+      "sections": [],
+      "key_points": []
+    }
+  ]
+}
