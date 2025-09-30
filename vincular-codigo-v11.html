@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gerador de texto de encaminhamento • RXI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto','Helvetica Neue', Arial, sans-serif;
+    --bg:#f5f5f7; --surface:#fff; --ink:#1f1f1f; --muted:#605e5c; --border:#e1dfdd;
+    --accent:#0078d4;            /* cor dinâmica p/ chips por tipo */
+    --accent-700:#005a9e;
+    --btn:#006FFF;               /* PADRÃO SITE: botões */
+    --btn-700:#0057cc;
+    --ok:#107c10; --warn:#f7630c; --err:#d83b01;
+    --radius:10px; --shadow:0 2px 8px rgba(0,0,0,.06);
+    --tag-font: 0.85rem;
+    --tag-pad-y: 4px;
+    --tag-pad-x: 10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--font); background:var(--bg); color:var(--ink)}
+  header{
+    background:var(--surface); border-bottom:1px solid var(--border); box-shadow:var(--shadow);
+    padding:18px 5vw; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .brand{font-weight:600; font-size:1.15rem; display:flex; align-items:center; gap:10px}
+  .subhead{color:var(--muted); font-size:.9rem}
+  main{
+    padding:28px 5vw; display:grid; grid-template-columns: 6fr 5fr; gap:28px; max-width:1600px; margin:0 auto;
+  }
+  .card{
+    background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow);
+    border-radius:var(--radius); padding:18px; display:flex; flex-direction:column; gap:16px;
+  }
+  .card-header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin:-18px -18px 0; padding:14px 18px; border-bottom:1px solid var(--border);
+    font-weight:600; background:linear-gradient(#fff, #fafafa);
+    border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);
+  }
+  .legend{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:.9rem}
+  .legend .dot{width:10px; height:10px; border-radius:50%}
+  .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)}
+  .stick{position:sticky; top:16px; align-self:start}
+  label{font-size:.92rem; font-weight:600; color:var(--muted)}
+  input[type="text"], input[type="date"], input[type="number"], select, textarea{
+    width:100%; margin-top:6px; padding:10px 12px; font:inherit; font-size:1rem;
+    border:1px solid var(--border); border-radius:8px; background:#fff; transition:border-color .2s, box-shadow .2s;
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(0,120,212,.25);
+  }
+  input[readonly]{background:#f7f7f9; color:#333}
+  .invalid{border-color:var(--err)!important}
+  textarea#output{min-height:420px; resize:vertical; background:#f8f9fa; font-family:Consolas, 'Courier New', ui-monospace, monospace; font-size:.95rem}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  /* Botões padrão site */
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .2s}
+  .btn:disabled{opacity:.6; cursor:not-allowed}
+  .btn-solid{background:var(--btn); color:#fff; border:1px solid var(--btn)}
+  .btn-solid:hover:not(:disabled){background:var(--btn-700); border-color:var(--btn-700)}
+  .btn-outline{background:#fff; color:var(--btn); border:1px solid var(--btn)}
+  .btn-outline:hover:not(:disabled){background:rgba(0,111,255,.08)}
+  .btn-neutral{background:#fff; color:var(--ink); border:1px solid var(--border)}
+  .tools{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  #count{font-size:.85rem; color:var(--muted); margin-left:auto}
+  .snack{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); padding:10px 16px; border-radius:8px; color:#fff; background:var(--btn); box-shadow:var(--shadow); display:none}
+  .snack.show{display:block}
+  /* Accordions */
+  details{border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff}
+  details + details{margin-top:12px}
+  summary{list-style:none; cursor:pointer; padding:14px 16px; display:flex; align-items:center; gap:10px; user-select:none; background:linear-gradient(#fff,#fbfbfb); border-bottom:1px solid var(--border)}
+  summary::-webkit-details-marker{display:none}
+  .sum-left{display:flex; align-items:center; gap:10px; font-weight:600}
+  .badge{display:inline-flex; align-items:center; gap:6px; font-size:.82rem; padding:4px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); background:#fafafa; margin-left:auto}
+  .badge.ok{border-color:rgba(16,124,16,.25); color:#0b5e0b; background:rgba(16,124,16,.07)}
+  .badge.warn{border-color:rgba(247,99,12,.3); color:#8a3f09; background:rgba(247,99,12,.08)}
+  .badge.alert{border-color:rgba(216,59,1,.35); color:#7a2a00; background:rgba(216,59,1,.10)}
+  .pane{padding:14px 16px}
+  /* Chips */
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+  .chip{border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#f5f5f7; cursor:pointer; font-size:.92rem; transition:all .2s}
+  .chip.selected{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .chip.critical.selected{background:#ff7043; border-color:#ff7043}
+  @media (max-width: 1200px){ main{grid-template-columns:1fr} }
+  /* Aplica a todas as tags/chips do projeto */
+  .chips .chip,
+  .chip,
+  .chip-mult-btn {
+    font-size: var(--tag-font);
+    padding: var(--tag-pad-y) var(--tag-pad-x);
+    line-height: 1.2;
+  }
+  @media (max-width: 640px){
+    .chips .chip, .chip, .chip-mult-btn { font-size: 0.8rem; }
+  }
+  /* ---- TEA modal / embed ---- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; align-items: center; justify-content: center; z-index: 9999; }
+  .modal.open { display: flex; }
+  .modal-card { width: min(1100px, 95vw); height: min(88vh, 900px); background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.25); display: flex; flex-direction: column; }
+  .modal-head { padding: 10px 14px; background: #f7f9fc; border-bottom: 1px solid #e6e9ef; display: flex; gap: 10px; align-items: center; }
+  .modal-head strong { flex: 1; }
+  .modal-body { flex: 1; background:#f0f3f9 }
+  .modal-body iframe { width: 100%; height: 100%; border: 0; background:#fff }
+  .badge-rec { display:inline-flex; align-items:center; gap:6px; font-size:.82rem; padding:3px 8px; border-radius:999px; border:1px solid #b8d0ff; color:#174181; background:#e8f0ff; }
+  .badge-crit { border-color: rgba(216,59,1,.35); color:#7a2a00; background:rgba(216,59,1,.12); }
+  .btn-mini { padding:8px 12px; border-radius:8px; font-weight:600; border:1px solid var(--btn); background:var(--btn); color:#fff; }
+  .btn-mini.alt { background:#fff; color:var(--btn); }
+  .note { font-size:.9rem; color:#605e5c; }
+  .pdf-link { margin-top:8px; font-size:.9rem; }
+</style>
+<style>
+/* === RXI v11 — tema flat unificado + alinhamento + largura === */
+.rxi-scope{--bg:#f7f9fc;--card:#fff;--ink:#0f172a;--muted:#667085;--line:#e6eaf2;
+--accent:#2563eb;--accent-press:#1e4fd1;--shadow:0 2px 8px rgba(0,0,0,.06);--radius-card:14px;--radius-el:10px}
+.rxi-scope html,.rxi-scope body{background:var(--bg);color:var(--ink)}
+.rxi-scope main,.rxi-scope .wrap,.rxi-scope #app,.rxi-scope .container{max-width:1240px;margin:0 auto;padding:8px 12px}
+.rxi-scope .row,.rxi-scope .columns,.rxi-scope .two-col,.rxi-scope .grid,.rxi-scope .layout{display:flex;gap:24px;align-items:flex-start}
+.rxi-scope .row>*,.rxi-scope .columns>*,.rxi-scope .two-col>*,.rxi-scope .grid>*,.rxi-scope .layout>*{flex:1 1 0;min-width:0}
+.rxi-scope .card,.rxi-scope .panel,.rxi-scope .box,.rxi-scope .section,.rxi-scope .content-card,.rxi-scope [data-panel]{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow);overflow:visible}
+.rxi-scope input,.rxi-scope select,.rxi-scope textarea{background:#fff;border:1px solid var(--line);border-radius:var(--radius-el);padding:10px 12px;box-shadow:none;font:500 14px/1.35 Montserrat,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.rxi-scope input:focus,.rxi-scope select:focus,.rxi-scope textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.rxi-scope button,.rxi-scope .btn,.rxi-scope [role="button"]{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:var(--radius-el);border:1px solid var(--line);background:#fff;color:var(--ink);font:600 14px/1.2 Montserrat,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.04);cursor:pointer;transition:box-shadow .15s ease}
+.rxi-scope button:hover,.rxi-scope .btn:hover{box-shadow:0 3px 10px rgba(0,0,0,.06)}
+.rxi-scope .btn.primary,.rxi-scope button.primary{background:var(--accent);color:#fff;border-color:transparent}
+.rxi-scope .btn.ghost,.rxi-scope button.ghost{background:#fff;color:var(--accent);border-color:var(--accent);box-shadow:none}
+.rxi-scope .tag,.rxi-scope .pill,.rxi-scope .chip{color:var(--ink);background:var(--card);border:1px solid var(--line);box-shadow:none}
+.rxi-scope .tag.is-selected,.rxi-scope .chip.is-selected,.rxi-scope .pill.is-selected,.rxi-scope .tag--active,.rxi-scope .chip--active,.rxi-scope .pill--active{background:var(--accent);color:#fff;border-color:transparent}
+.rxi-scope #texto-gerado-card,.rxi-scope .output-card,.rxi-scope .preview-card{border:1px solid var(--line);box-shadow:var(--shadow);border-radius:var(--radius-card)}
+/* Accordions */
+.rxi-scope details.rxi-acc{border:1px solid var(--line);border-radius:var(--radius-card);background:#fff;box-shadow:var(--shadow);margin:8px 0}
+.rxi-scope details.rxi-acc>summary{padding:12px 14px;list-style:none;cursor:pointer;font:700 16px/1.3 Montserrat,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;gap:10px}
+.rxi-scope details.rxi-acc[open]>summary{border-bottom:1px solid var(--line)}
+.rxi-scope details.rxi-acc .acc-body{padding:12px}
+.rxi-scope details.rxi-acc summary::-webkit-details-marker{display:none}
+.rxi-scope .acc-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;border:1px solid var(--line);background:#fff;font:700 12px/1 Montserrat}
+/* Evita cortes */
+.rxi-scope *{max-width:100%}
+</style></head>
+<body class="rxi-scope">
+<header>
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2Zm-1 5h2v6h-2zm0 8h2v2h-2z"/></svg>
+    <span>Gerador de textos de encaminhamento GERCON — Qualidade RXI</span>
+  </div>
+  <div class="subhead">Criação do texto de encaminhamento • <strong>Fonte:</strong> telessauders.ufrgs.br/protocolos</div>
+</header>
+
+<main>
+  <!-- COLUNA FORM -->
+  <section class="card">
+    <div class="card-header">
+      <span>Criação do texto de encaminhamento</span>
+      <span class="legend">
+        <span class="dot dot-warn"></span> em branco
+        <span class="dot dot-ok" style="margin-left:10px"></span> ok
+      </span>
+    </div>
+
+    <!-- 1 - Tipo -->
+    <details id="acc-tipo" open>
+      <summary>
+        <div class="sum-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 4H4c-1.1 0-2 .9-2 2v3h20V8c0-1.1-.9-2-2-2h-8l-2-2z"/><path d="M22 9H2v9c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9z"/></svg>
+          <span>1 - Tipo de reabilitação</span>
+        </div>
+        <span id="badge-tipo" class="badge warn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-6h-2v5h2v-5z"/></svg> em branco
+        </span>
+      </summary>
+      <div class="pane">
+        <label for="reabType">Selecione o tipo (obrigatório)</label>
+        <select id="reabType" required>
+          <option value="" selected disabled>Selecione…</option>
+          <option value="sem">Reabilitação sem protocolo</option>
+          <option value="auditiva_ped">Reabilitação Auditiva Pediátrica</option>
+          <option value="auditiva_adt">Reabilitação Auditiva Adulto</option>
+          <option value="fisica">Reabilitação Física</option>
+          <option value="intelectual">Reabilitação Intelectual</option>
+          <option value="visual">Reabilitação Visual</option>
+        </select>
+        <div id="typeDesc" style="color:var(--muted); font-size:.9rem; margin-top:6px;"></div>
+      </div>
+    </details>
+
+    <!-- 2 - Nome/Identificação -->
+    <details id="acc-nome" open>
+      <summary>
+        <div class="sum-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM8 18H4v-2h4v2zm12 0H10v-2h10v2zm0-4H4v-2h16v2zm0-4H4V8h16v2z"/></svg>
+          <span>2 - Nome/Identificação</span>
+        </div>
+        <span id="badge-nome" class="badge warn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-6h-2v5h2v-5z"/></svg> em branco
+        </span>
+      </summary>
+      <div class="pane">
+        <label for="nome">Nome/Identificação</label>
+        <input id="nome" type="text" placeholder="opcional">
+      </div>
+    </details>
+
+    <!-- 3 - Data de nascimento / Idade -->
+    <details id="acc-nasc" open>
+      <summary>
+        <div class="sum-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10h5v5H7z"/><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H5V9h14v9z"/></svg>
+          <span>3 - Data de nascimento e idade (automática)</span>
+        </div>
+        <span id="badge-nasc" class="badge warn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-6h-2v5h2v-5z"/></svg> em branco
+        </span>
+      </summary>
+      <div class="pane">
+        <div class="row">
+          <div>
+            <label for="dob">Data de nascimento</label>
+            <input id="dob" type="date" max="">
+          </div>
+          <div>
+            <label for="idade">Idade (auto)</label>
+            <input id="idade" type="text" readonly placeholder="preencha a data de nascimento">
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- 4+ Campos dinâmicos por tipo -->
+    <div id="dyn-holder"></div>
+
+    <!-- Ferramentas -->
+    <div class="tools" style="margin-top:8px">
+      <button id="gen" class="btn btn-solid" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="m14 4 2 2-10 10-2-2L14 4zm7 7-2-2-3 3 2 2 3-3zM7 2h2v3H7V2zm8 17h2v3h-2v-3zM2 7h3v2H2V7zm17 0h3v2h-3V7zM2 15h3v2H2v-2z"/></svg>
+        Gerar texto
+      </button>
+      <button id="reset" class="btn btn-outline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6V3L8 7l4 4V8c2.757 0 5 2.243 5 5a5 5 0 0 1-8.66 3.536l-1.414 1.414A7 7 0 1 0 12 6z"/></svg>
+        Resetar
+      </button>
+    </div>
+  </section>
+
+  <!-- COLUNA TEXTO (FIXA) -->
+  <section class="card stick">
+    <div class="card-header">
+      <span>Texto gerado</span>
+      <span id="count">0 / 2000</span>
+    </div>
+    <textarea id="output" readonly></textarea>
+    <div class="tools">
+      <button id="copy" class="btn btn-outline" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1z"/><path d="M20 5H8c-1.1 0-2 .9-2 2v14h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h12v14z"/></svg>
+        Copiar
+      </button>
+      <button id="dl" class="btn btn-neutral" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2z"/><path d="M7 9h4V3h2v6h4l-5 5-5-5z"/></svg>
+        Baixar .txt
+      </button>
+    </div>
+    <div id="tea-pdf-slot" class="pdf-link"></div>
+  </section>
+</main>
+
+<div id="snack" class="snack">Copiado!</div>
+
+<!-- Modal TEA -->
+<div id="tea-modal" class="modal" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-head">
+      <strong id="tea-modal-title">Triagem TEA</strong>
+      <button class="btn-mini alt" onclick="closeTeaModal()">Fechar</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="tea-iframe" title="Triagem TEA"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ===== Tipos (com Intelectual vinculado à triagem TEA) ===== */
+  const TIPOS = {
+    sem: { color:"#666666", label:"Reabilitação sem protocolo", campos: [
+      { id:"motivo", t:"select", label:"4 - Motivo do encaminhamento", req:true, min:true, opts:["Avaliação inicial","Reavaliação","Adaptação/OPM","Dúvida diagnóstica"] },
+      { id:"descricao", t:"textarea", label:"5 - Descrição sucinta do quadro atual", req:true, min:true, ph:"Sinais, sintomas, tempo de evolução..." },
+      { id:"observ", t:"textarea", label:"6 - Observações adicionais", req:false, ph:"Contexto clínico, comorbidades, uso de OPM, etc." }
+    ]},
+    auditiva_ped: { color:"#0078d4", label:"Reabilitação Auditiva Pediátrica", campos:[
+      { id:"indicacao", t:"select", label:"4 - Motivo do encaminhamento", req:true, min:true, opts:[
+        "Falha na Triagem Auditiva Neonatal (PEATE triagem)",
+        "Indicadores de risco para perda auditiva (IRDA)",
+        "Suspeita de perda auditiva",
+        "Avaliação para AASI",
+        "Avaliação para implante coclear"
+      ]},
+      { id:"irda", t:"chips", label:"5 - Indicadores de Risco para Deficiência Auditiva (IRDA)", req:false, min:true, opts:[
+        "História familiar de surdez permanente na infância",
+        "UTI-neonatal > 5 dias",
+        "Hiperbilirrubinemia com exsanguineotransfusão",
+        "Uso de aminoglicosídeos > 5 dias",
+        "Uso de gentamicina",
+        "Uso de amicacina",
+        "Uso de estreptomicina",
+        "Uso de tobramicina",
+        "Asfixia / encefalopatia hipóxico-isquêmica",
+        "ECMO (oxigenação por membrana extracorpórea)",
+        "Infecção intraútero TORCH (toxoplasmose/sífilis/rubéola/CMV/herpes)",
+        "Infecção por Zika (gestacional)",
+        "Malformações craniofaciais",
+        "Anormalidades do osso temporal",
+        "Microcefalia congênita",
+        "Hidrocefalia congênita ou adquirida",
+        "Síndromes genéticas associadas à surdez",
+        "Meningite / meningoencefalite",
+        "Encefalite viral (herpes, varicela etc.)",
+        "Trauma craniano (base de crânio / temporal)",
+        "Quimioterapia",
+        "Suspeita familiar de surdez / alteração de fala ou linguagem",
+        "Atraso ou regressão do desenvolvimento"
+      ]},
+      { id:"exames", t:"chips", label:"6 - Exames realizados (anexar no GERCON se possível)", req:false, min:true, opts:["TAN","PEATE/BERA","Audiometria","Otoscopia"]},
+      { id:"obs", t:"textarea", label:"7 - Observações", req:false, ph:"Sinais clínicos, linguagem, marcos do desenvolvimento, histórico perinatal..." }
+    ]},
+    auditiva_adt: { color:"#881798", label:"Reabilitação Auditiva Adulto", campos:[
+      { id:"motivo", t:"select", label:"4 - Motivo do encaminhamento", req:true, min:true, opts:[
+        "Perda auditiva neurossensorial","Indicação de AASI","Avaliação para implante coclear","Zumbido/vertigem associada à hipoacusia","Perda súbita"
+      ]},
+      { id:"sint", t:"chips", label:"5 - Sintomas/Achados", req:false, min:true, opts:["Zumbido","Plenitude","Vertigem","Perda aguda","Otorragia","Otorreia","Sangramento"]},
+      { id:"exames", t:"chips", label:"6 - Exames realizados", req:false, min:true, opts:["Audiometria tonal/vocal","PEATE/BERA","Otoscopia","Weber/Rinne"]},
+      { id:"obs", t:"textarea", label:"7 - Observações", req:false, ph:"Tempo de evolução, lateridade, uso prévio de AASI, comorbidades..." }
+    ]},
+    fisica: { color:"#107c10", label:"Reabilitação Física", campos:[
+      { id:"motivo", t:"select", label:"4 - Motivo", req:true, min:true, opts:["Amputação/def. física","Sequelas de trauma/AVC","Patologia ortopédica","Obesidade com limitação","Quadro agudo"]},
+      { id:"avd", t:"select", label:"5 - Grau de independência (AVD)", req:false, min:true, opts:["Independente","Dependência parcial","Dependência total"]},
+      { id:"opm", t:"select", label:"6 - OPM/Adaptação", req:false, min:false, opts:["Sem OPM","Em uso","Precisa adaptação/reparo"]},
+      { id:"obs", t:"textarea", label:"7 - Observações", req:false, ph:"Dor, limitação funcional, dispositivos, barreiras arquitetônicas..." }
+    ]},
+    intelectual: {
+      color:"#d83b01",
+      label:"Reabilitação Intelectual",
+      campos:[
+        { id:"cond",   t:"select",  label:"4 - Condição principal", req:true,  min:true,
+          opts:["Atraso global do desenvolvimento","Deficiência intelectual","TEA (autismo)"]},
+        { id:"areas",  t:"chips",   label:"5 - Áreas com prejuízo", req:false, min:true,
+          opts:["Linguagem","Motricidade fina","Motricidade grossa","Socialização","Aprendizagem"]},
+        { id:"tea_triagem", t:"group", label:"6 - Triagem TEA (MINI-TEA / M-CHAT)", req:false, min:true },
+        { id:"obs",    t:"textarea",label:"7 - Observações",        req:false, ph:"Escolaridade, intervenções prévias, marcos do DNPM..." }
+      ]
+    },
+    visual: { color:"#e3008c", label:"Reabilitação Visual", campos:[
+      { id:"motivo", t:"select", label:"4 - Motivo", req:true, min:true, opts:["Baixa visão","Cegueira","Estimulação precoce (0–3 a)","Orientação de mobilidade","Perda súbita"]},
+      { id:"acuidade", t:"text", label:"5 - Acuidade visual corrigida (se disponível)", req:false, min:true, ph:"ex.: 20/200 (0,1)"},
+      { id:"recursos", t:"chips", label:"6 - Recursos ópticos/não ópticos", req:false, min:false, opts:["Óculos especiais","Prótese ocular","Lupa","Bengala","Sistema telescópico"]},
+      { id:"obs", t:"textarea", label:"7 - Observações", req:false, ph:"Doenças oculares, evolução, uso de recursos e reabilitação prévia..." }
+    ]}
+  };
+
+  const CRIT_REGEX = /agudo|s[úu]bita|s[úu]bito|sangram|otorragia|otorreia|hemorrag/i;
+
+  /* ===== Regras de incoerência (versão reforçada) ===== */
+  const RULES = {
+    auditiva_ped: [
+      (st) => {
+        const y = getAgeYears(st);
+        if (y >= 18) return "Incoerência: idade adulta (≥18 anos) selecionada em Reabilitação Auditiva Pediátrica; considerar 'Reabilitação Auditiva Adulto'.";
+        return "";
+      },
+      (st) => {
+        const months = ageInMonths(st.dob);
+        const hasFalhaTAN = /falha.*triagem|peate.*triagem/i.test(st.dyn.indicacao||"");
+        if (hasFalhaTAN && months >= 36) return "Incoerência: 'falha na triagem auditiva neonatal' indicada em idade acima do período neonatal/primeira infância.";
+        return "";
+      },
+      (st) => {
+        const years = getAgeYears(st);
+        const ex = (st.dyn.exames||"").toLowerCase();
+        if (ex.includes("tan") && years >= 1) return "Incoerência: exame 'TAN' informado em idade não neonatal.";
+        return "";
+      },
+    ],
+    visual: [
+      (st) => {
+        const y = getAgeYears(st);
+        const sel = (st.dyn.motivo||"").toLowerCase();
+        if(sel.includes("estimulação precoce") && y>3) return "Incoerência: opção 'estimulação precoce (0–3 a)' com idade acima de 3 anos.";
+        return "";
+      }
+    ],
+    intelectual: [
+      (st) => {
+        if((st.dyn.cond||"").toLowerCase().includes("tea") && !(st.dyn.tea_triagem||"").length){
+          return "Inconsistência: condição TEA selecionada sem resumo de triagem (MINI-TEA/M-CHAT).";
+        }
+        return "";
+      },
+      (st) => {
+        const months = ageInMonths(st.dob);
+        const rec = recommendTEA(months);
+        let picked="none";
+        const sel = document.getElementById("tea-tool");
+        if(sel && sel.value) picked = sel.value;
+        else if(/m-?chat/i.test(st.dyn.tea_triagem||"")) picked="mchat";
+        else if(/mini.?tea/i.test(st.dyn.tea_triagem||"")) picked="minitea";
+        if(rec.code==="mchat" && picked!=="mchat") return "Incoerência: idade 16–30 meses sugere M-CHAT, mas outro instrumento foi escolhido.";
+        if(rec.code==="minitea" && picked!=="minitea") return "Incoerência: idade 31–72 meses sugere MINI-TEA, mas outro instrumento foi escolhido.";
+        if(rec.code==="none" && (picked==="mchat" || picked==="minitea")) return "Incoerência: instrumento selecionado fora das faixas etárias usuais.";
+        return "";
+      },
+      (st) => {
+        const years = Math.floor(ageInMonths(st.dob)/12);
+        if(years>=18 && (st.dyn.tea_triagem||"").length){
+          return "Incoerência: resultado de M-CHAT/MINI-TEA usado em adulto. Instrumentos infantis.";
+        }
+        return "";
+      }
+    ],
+    auditiva_adt: [ (_) => "" ],
+    fisica: [ (_) => "" ],
+    sem: [ (_) => "" ]
+  };
+
+  /* ===== Helpers ===== */
+  const qs = sel => document.querySelector(sel);
+  const el = (tag, attrs={}, html='') => { const n=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=> n.setAttribute(k,v)); if(html) n.innerHTML = html; return n; };
+  function darken(hex,pct){ const f=parseInt(hex.slice(1),16),R=f>>16,G=(f>>8)&255,B=f&255; const r=Math.round(R*(1-pct/100)), g=Math.round(G*(1-pct/100)), b=Math.round(B*(1-pct/100)); return "#"+(1<<24 | r<<16 | g<<8 | b).toString(16).slice(1); }
+  function snack(msg,kind){ const s=qs('#snack'); s.textContent=msg||'Pronto!'; s.style.background= kind==='ok'?'var(--btn)': kind==='warn'?'var(--warn)':'var(--btn)'; s.classList.add('show'); setTimeout(()=>s.classList.remove('show'),1400); }
+  function setBadge(id,ok,alert=false){
+    const b = qs('#badge-'+id); if(!b) return;
+    b.classList.remove('ok','warn','alert');
+    if(alert){ b.classList.add('alert'); b.innerHTML = warnIcon()+' alerta'; return; }
+    if(ok){ b.classList.add('ok'); b.innerHTML = okIcon()+' ok'; }
+    else { b.classList.add('warn'); b.innerHTML = warnIcon()+' em branco'; }
+  }
+  function okIcon(){ return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm-1.2 14.3-3.6-3.6 1.4-1.4 2.2 2.2 4.6-4.6 1.4 1.4-6 6z"/></svg>'; }
+  function warnIcon(){ return '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-6h-2v5h2v-5z"/></svg>'; }
+  function shortLabel(label){ return (label||'').replace(/^Reabilitação\s+/i,'').trim(); }
+  function calcIdadeTexto(iso){
+    if(!iso) return '';
+    const d = new Date(iso), now = new Date();
+    if(d > now) return '';
+    let a = now.getFullYear()-d.getFullYear();
+    let m = now.getMonth()-d.getMonth();
+    let dia = now.getDate()-d.getDate();
+    if(dia<0){ m--; }
+    if(m<0){ a--; m+=12; }
+    if(a<=1){ return a>0 ? `${a} ano ${m?m+' m':''}`.trim() : `${m} m`; }
+    return `${a} anos`;
+  }
+  function ageInMonths(iso){
+    if(!iso) return 0;
+    const d=new Date(iso), n=new Date();
+    let m=(n.getFullYear()-d.getFullYear())*12 + (n.getMonth()-d.getMonth());
+    if(n.getDate()<d.getDate()) m--;
+    return Math.max(0,m);
+  }
+  function recommendTEA(months){
+    if(months>=16 && months<=30) return {tool:'M-CHAT', code:'mchat'};
+    if(months>=31 && months<=72) return {tool:'MINI-TEA', code:'minitea'};
+    return {tool:'fora de faixa', code:'none'};
+  }
+  function getAgeYears(st){
+    if(!st.dob) return 0;
+    const d = new Date(st.dob), now = new Date();
+    let a = now.getFullYear()-d.getFullYear();
+    const m = now.getMonth()-d.getMonth();
+    const day = now.getDate()-d.getDate();
+    if(m<0 || (m===0 && day<0)) a--;
+    return Math.max(0,a);
+  }
+
+  /* ===== Estado ===== */
+  const state = { tipo:null, nome:'', dob:'', idadeText:'', dyn:{}, teaPdf:{ dataUrl:'', filename:'' } };
+
+  /* ===== Init ===== */
+  document.addEventListener('DOMContentLoaded', () => {
+    qs('#dob').max = new Date().toISOString().slice(0,10);
+    qs('#reabType').addEventListener('change', onTipo);
+    qs('#nome').addEventListener('input', () => { state.nome = qs('#nome').value.trim(); setBadge('nome', !!state.nome); evaluateReady(); });
+    qs('#dob').addEventListener('change', onDOB);
+
+    qs('#gen').addEventListener('click', generate);
+    qs('#copy').addEventListener('click', () => copy(qs('#output').value));
+    qs('#dl').addEventListener('click', downloadTxt);
+    qs('#reset').addEventListener('click', resetAll);
+
+    // Recebe resultado dos questionários (postMessage)
+    window.addEventListener('message', onTeaMessage);
+
+    updateCount();
+  });
+
+  /* ===== Handlers ===== */
+  function onTipo(){
+    const key = qs('#reabType').value;
+    state.tipo = key || null;
+    setBadge('tipo', !!state.tipo);
+    const desc = TIPOS[key]?.label ? `Reabilitação ${shortLabel(TIPOS[key].label)}` : '';
+    qs('#typeDesc').textContent = desc;
+
+    // cor dinâmica (somente chips)
+    if(TIPOS[key]?.color){
+      document.documentElement.style.setProperty('--accent', TIPOS[key].color);
+      document.documentElement.style.setProperty('--accent-700', darken(TIPOS[key].color, 15));
+    } else {
+      document.documentElement.style.removeProperty('--accent');
+      document.documentElement.style.removeProperty('--accent-700');
+    }
+
+    buildDyn(key);
+    clearOutput();
+    evaluateReady();
+  }
+
+  function onDOB(){
+    state.dob = qs('#dob').value;
+    const txt = calcIdadeTexto(state.dob);
+    state.idadeText = txt;
+    qs('#idade').value = txt || '';
+    setBadge('nasc', !!txt);
+    evaluateReady();
+
+    // Atualiza faixa/aviso do bloco TEA se já estiver montado
+    const coh = document.getElementById('tea-coh');
+    const months = ageInMonths(state.dob);
+    const rec = recommendTEA(months);
+    if(coh){
+      const sel = document.getElementById('tea-tool');
+      let msg='';
+      const pick = (sel && sel.value) ? sel.value : rec.code;
+      if(pick==='mchat' && !(months>=16 && months<=30)) msg="Aviso: M-CHAT selecionado fora da faixa típica (16–30 meses).";
+      if(pick==='minitea' && !(months>=31 && months<=72)) msg="Aviso: MINI-TEA selecionado fora da faixa típica (31–72 meses).";
+      if(rec.code==='none') msg="Aviso: idade fora de faixas usuais de M-CHAT e MINI-TEA.";
+      coh.textContent = msg;
+      coh.className = 'note' + (msg? ' badge-crit' : '');
+    }
+  }
+
+  /* ===== Dinâmicos ===== */
+  function buildDyn(key){
+    const holder = qs('#dyn-holder'); holder.innerHTML=''; state.dyn = {};
+    if(!key || !TIPOS[key]){ renderTeaPdfLinks(); return; }
+
+    TIPOS[key].campos.forEach(field=>{
+      const details = el('details', {open:''});
+      const sum = el('summary', {}, `
+        <div class="sum-left">
+          ${sectionIcon()}
+          <span>${field.label}</span>
+        </div>
+        <span id="badge-${field.id}" class="badge ${field.req?'warn':''}">${warnIcon()} em branco</span>
+      `);
+      const pane = el('div', {class:'pane'});
+      const wrap = el('div', {'data-field': field.id});
+
+      let control;
+      if(field.t==='text'){
+        control = el('input', {type:'text', id: field.id, placeholder: field.ph||''});
+      } else if(field.t==='textarea'){
+        control = el('textarea', {id: field.id, rows:'3', placeholder: field.ph||''});
+      } else if(field.t==='number'){
+        control = el('input', {type:'number', id: field.id, min: field.min??'0', max: field.max??'', placeholder: field.ph||''});
+      } else if(field.t==='select'){
+        control = el('select', {id: field.id});
+        control.appendChild(el('option', {value:''}, 'Selecione…'));
+        field.opts.forEach(o => control.appendChild(el('option', {value:o}, o)));
+      } else if(field.t==='chips'){
+        control = el('div', {class:'chips', id: field.id});
+        field.opts.forEach(o=>{
+          const isCritical = CRIT_REGEX.test(o);
+          const b = el('button', {type:'button', class:'chip'+(isCritical?' critical':''), 'data-val':o}, o);
+          b.addEventListener('click', ()=>{ b.classList.toggle('selected'); collectField(field); });
+          control.appendChild(b);
+        });
+        const outro = el('input',{type:'text',placeholder:'Outro… (Enter adiciona)'});
+        outro.addEventListener('keydown',(e)=>{
+          if(e.key==='Enter'){
+            e.preventDefault();
+            const v = outro.value.trim();
+            if(v){
+              const crit = CRIT_REGEX.test(v);
+              const b = el('button',{type:'button',class:'chip selected'+(crit?' critical':''),'data-val':v},v);
+              b.addEventListener('click',()=>{ b.classList.toggle('selected'); collectField(field);});
+              control.insertBefore(b,outro);
+              outro.value='';
+              collectField(field);
+            }
+          }
+        });
+        control.appendChild(outro);
+      } else if(field.t==='group' && state.tipo==='intelectual'){
+        control = el('div',{id: field.id});
+
+        const months = ageInMonths(state.dob);
+        const rec = recommendTEA(months);
+        const recLine = el('div', {class:'note'}, `
+          <span class="badge-rec">Recomendação automática: ${rec.tool}</span>
+          <div style="margin-top:6px">Faixa etária calculada: ${months} meses.</div>
+        `);
+
+        const actions = el('div', {style:'display:flex; gap:10px; margin:10px 0; flex-wrap:wrap;'});
+        const btnMini = el('button',{type:'button', class:'btn-mini'}, 'Abrir MINI-TEA');
+        const btnMcha = el('button',{type:'button', class:'btn-mini'}, 'Abrir M-CHAT');
+        btnMini.addEventListener('click', ()=> openTeaModal('minitea'));
+        btnMcha.addEventListener('click', ()=> openTeaModal('mchat'));
+
+        const manualWrap = el('div', {style:'display:flex; gap:8px; align-items:center; margin: 2px 0 8px;'});
+        const sel = el('select', {id:'tea-tool'});
+        sel.appendChild(el('option',{value:''}, '(auto)'));
+        sel.appendChild(el('option',{value:'minitea'}, 'MINI-TEA'));
+        sel.appendChild(el('option',{value:'mchat'}, 'M-CHAT'));
+        if(rec.code!=='none') sel.value = rec.code;
+        const lblSel = el('label',{for:'tea-tool', style:'font-weight:600;color:#605e5c'}, 'Instrumento:');
+        manualWrap.appendChild(lblSel); manualWrap.appendChild(sel);
+
+        const ta = el('textarea', {id:'tea-resumo', rows:'4', placeholder:'Resumo curto da triagem (ponto de corte e achados principais).'});
+        ta.addEventListener('input', ()=> { state.dyn[field.id] = ta.value.trim(); setBadge(field.id, !!state.dyn[field.id]); });
+
+        const pdfSlot = el('div', {id:'tea-pdf-inline', class:'pdf-link'});
+        const coh = el('div', {id:'tea-coh', class:'note'});
+
+        function refreshCoh(){
+          const months = ageInMonths(state.dob);
+          const rec = recommendTEA(months);
+          const pick = sel.value || rec.code;
+          let msg='';
+          if(pick==='mchat' && !(months>=16 && months<=30)) msg="Aviso: M-CHAT selecionado fora da faixa típica (16–30 meses).";
+          if(pick==='minitea' && !(months>=31 && months<=72)) msg="Aviso: MINI-TEA selecionado fora da faixa típica (31–72 meses).";
+          if(rec.code==='none') msg="Aviso: idade fora de faixas usuais de M-CHAT e MINI-TEA.";
+          coh.textContent = msg;
+          coh.className = 'note' + (msg? ' badge-crit' : '');
+        }
+        sel.addEventListener('change', refreshCoh); refreshCoh();
+
+        actions.appendChild(btnMini); actions.appendChild(btnMcha);
+        control.appendChild(recLine);
+        control.appendChild(actions);
+        control.appendChild(manualWrap);
+        control.appendChild(ta);
+        control.appendChild(pdfSlot);
+        control.appendChild(coh);
+      }
+
+      const lbl = el('label',{for: field.id}, field.label);
+      wrap.appendChild(lbl);
+      wrap.appendChild(control);
+      pane.appendChild(wrap);
+
+      details.appendChild(sum);
+      details.appendChild(pane);
+      holder.appendChild(details);
+
+      if(field.t!=='chips' && field.t!=='group'){
+        control.addEventListener('input',()=> collectField(field));
+        control.addEventListener('change',()=> collectField(field));
+      }
+    });
+
+    renderTeaPdfLinks();
+  }
+
+  function collectField(field){
+    let val='';
+    const scope = document.querySelector(`[data-field="${field.id}"]`);
+    if(field.t==='chips'){
+      const chips = scope ? Array.from(scope.querySelectorAll('.chip.selected')) : [];
+      val = chips.map(b=>b.getAttribute('data-val')).join(', ');
+    } else if(field.t==='group'){
+      const node = document.getElementById('tea-resumo');
+      val = (node?.value||'').trim();
+    } else {
+      const node = scope ? scope.querySelector('#'+field.id) : null;
+      val = (node?.value||'').trim();
+    }
+    state.dyn[field.id]=val;
+
+    const alert = CRIT_REGEX.test(val);
+    const ok = !!val;
+    setBadge(field.id, ok, alert);
+    evaluateReady();
+  }
+
+  function sectionIcon(){ return '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zM3 11h18v2H3zM3 17h18v2H3z"/></svg>'; }
+
+  /* ===== Habilitação ===== */
+  function evaluateReady(){
+    // Data de nascimento obrigatória para Pediátrica, Intelectual e Visual (usa idade em regras)
+    const needsDOB = ['auditiva_ped','intelectual','visual'].includes(state.tipo || '');
+    const hasDOB = !!state.idadeText;
+    const baseReady = !!state.tipo && (needsDOB ? hasDOB : true);
+    qs('#gen').disabled = !baseReady;
+  }
+
+  /* ===== Checagens ===== */
+  function checkInconsistencies(){
+    const avisos = [];
+    const arr = RULES[state.tipo] || [];
+    arr.forEach(fn => {
+      const msg = fn(state);
+      if(msg) avisos.push(msg);
+    });
+    const critStrings = [];
+    Object.keys(state.dyn).forEach(k=>{
+      const v = state.dyn[k]||'';
+      if(CRIT_REGEX.test(v)) critStrings.push(v);
+    });
+    if(critStrings.length){
+      avisos.push("Sinais de urgência selecionados: " + dedupWords(critStrings).join(', ') + ". Recomenda-se avaliação imediata.");
+    }
+    return avisos;
+  }
+  function checkMinimums(){
+    const tipo = TIPOS[state.tipo]; if(!tipo) return [];
+    const faltas = [];
+    (tipo.campos||[]).forEach(c=>{
+      if(c.min){
+        const v = (state.dyn[c.id]||'').trim();
+        if(!v){ faltas.push(labelSemIndice(c.label)); }
+      }
+    });
+    return faltas;
+  }
+  function labelSemIndice(label){ return (label||'').replace(/^\d+\s*-\s*/,'').trim(); }
+  function dedupWords(list){ const set=new Set(); list.join(',').split(/[.,;]?\s+/).forEach(w=>{const t=w.trim(); if(t) set.add(t);}); return Array.from(set); }
+
+  /* ===== Texto final ===== */
+  function generate(){
+    const tipo = TIPOS[state.tipo];
+    let out = '';
+    out += `Criação do texto de encaminhamento\n`;
+    out += `Fonte: telessauders.ufrgs.br/protocolos\n\n`;
+
+    if(tipo){
+      const tShort = shortLabel(tipo.label);
+      out += `Encaminhamento para Reabilitação ${tShort}.\n\n`;
+      out += `1 - Tipo de reabilitação: ${tShort}.\n`;
+    }
+
+    if(state.nome) out += `2 - Nome/Identificação: ${state.nome}.\n`;
+    if(state.dob){ out += `3 - Data de nascimento: ${formatBR(state.dob)} — Idade: ${state.idadeText}.\n`; }
+
+    (tipo?.campos||[]).forEach(c=>{
+      const v = state.dyn[c.id];
+      if(v) out += `${c.label}: ${v}.\n`;
+    });
+
+    // Indicação de PDF disponível
+    if(state.teaPdf.dataUrl){
+      out += `Relatório completo da triagem TEA em PDF gerado para anexar no GERCON.\n`;
+    }
+
+    const avisos = checkInconsistencies();
+    const minimos = checkMinimums();
+    if(avisos.length){ out += `\nAvisos/Inconsistências: ${avisos.join(' ')}\n`; }
+    if(minimos.length){ out += `Conteúdo mínimo recomendado: ${minimos.join('; ')}.\n`; }
+
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    out += `\nEmitido em: ${hoje}.\n`;
+    out += `texto via receitailustrada.com.br/painel-gercon - Selo RXI de qualidade.`;
+
+    qs('#output').value = out.trim();
+    updateCount();
+    const has = qs('#output').value.length>0;
+    qs('#copy').disabled = !has;
+    qs('#dl').disabled = !has;
+    snack('Texto gerado','ok');
+  }
+
+  function formatBR(iso){ const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+
+  /* ===== Copiar / Download / Reset ===== */
+  function updateCount(){ const n = qs('#output').value.length; qs('#count').textContent = `${n} / 2000`; }
+  function clearOutput(){ qs('#output').value=''; updateCount(); qs('#copy').disabled=true; qs('#dl').disabled=true; }
+  function copy(text){
+    if(!text) return;
+    if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(()=> snack('Copiado!','ok')).catch(()=> fallbackCopy(text)); }
+    else{ fallbackCopy(text); }
+  }
+  function fallbackCopy(text){
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); snack('Copiado!','ok'); }catch(e){ snack('Falhou','warn'); }
+    document.body.removeChild(ta);
+  }
+  function downloadTxt(){
+    const t = qs('#output').value; if(!t) return;
+    const blob = new Blob([t], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='encaminhamento-rxi.txt';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  function resetAll(){
+    state.tipo = null; state.nome=''; state.dob=''; state.idadeText=''; state.dyn={}; state.teaPdf={dataUrl:'',filename:''};
+    qs('#reabType').value=''; qs('#typeDesc').textContent='';
+    setBadge('tipo', false); setBadge('nome', false); setBadge('nasc', false);
+    qs('#nome').value=''; qs('#dob').value=''; qs('#idade').value='';
+    qs('#dyn-holder').innerHTML='';
+    clearOutput();
+    document.documentElement.style.removeProperty('--accent');
+    document.documentElement.style.removeProperty('--accent-700');
+    renderTeaPdfLinks();
+    evaluateReady();
+    snack('Formulário resetado','ok');
+  }
+
+  /* ===== Modal TEA & Mensagens ===== */
+  function openTeaModal(which){
+    const modal=qs('#tea-modal'), ifr=qs('#tea-iframe'), title=qs('#tea-modal-title');
+    const map = { minitea: './mini-tea-teacolhe.html', mchat: './mchat.html' };
+    const url = map[which] || map.minitea;
+    title.textContent = which==='mchat' ? 'M-CHAT – Triagem Precoce' : 'MINI-TEA – Triagem TEAcolhe';
+    ifr.src = url;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+  }
+  function closeTeaModal(){
+    const modal=qs('#tea-modal'), ifr=qs('#tea-iframe');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    ifr.src='about:blank';
+  }
+  function onTeaMessage(ev){
+    if(!ev.data || ev.data.type!=='teaResult') return;
+    const ta = document.getElementById('tea-resumo');
+    if(ta){
+      ta.value = ev.data.shortText || '';
+      state.dyn.tea_triagem = ta.value.trim();
+      setBadge('tea_triagem', !!state.dyn.tea_triagem);
+    }
+    state.teaPdf = { dataUrl: ev.data.pdfDataUrl || '', filename: ev.data.filename || 'triagem-tea.pdf' };
+    renderTeaPdfLinks();
+    closeTeaModal();
+    snack('Triagem importada','ok');
+  }
+  function renderTeaPdfLinks(){
+    const {dataUrl, filename} = state.teaPdf;
+    const html = dataUrl ? `<a href="${dataUrl}" download="${filename}">Baixar PDF da triagem (${filename})</a>` : '';
+    const slotSide = document.getElementById('tea-pdf-slot');
+    if(slotSide) slotSide.innerHTML = html;
+    const slotInline = document.getElementById('tea-pdf-inline');
+    if(slotInline) slotInline.innerHTML = html;
+  }
+</script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>MINI-TEA – Triagem TEAcolhe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-light: #f7f9fc;
+      --shadow-light: rgba(255,255,255,0.85);
+      --shadow-dark: rgba(0,0,0,0.09);
+      --accent: #4a7bd6;
+      --secondary-bg: #f7f9fc;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      background: var(--bg-light);
+      font-family:'Montserrat',sans-serif; padding:30px; color:#333;
+    }
+    .container{
+      max-width:1140px; margin:auto; background: #fff;
+      border-radius:22px; padding:32px;
+      box-shadow: 14px 14px 28px var(--shadow-dark), -14px -14px 28px var(--shadow-light);
+      border:1px solid rgba(255,255,255,0.7);
+    }
+    .cabecalho label{font-weight:700; display:block; margin:0 0 6px 2px;}
+    .cabecalho input{
+      width:100%; padding:12px 14px; border:none; border-radius:14px; margin-bottom:20px;
+      background: #fff;
+      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+      font-size:1rem;
+    }
+    .question{
+      margin-bottom:25px; padding:20px; border-radius:18px;
+      background: #fff;
+      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+    }
+    .question h3{margin-bottom:12px; font-size:0.92rem;}
+    /* Checkbox neomórfico VISÍVEL E FINO */
+    .checkbox-wrapper input[type="checkbox"]{visibility:hidden;display:none;}
+    .checkbox-wrapper *, .checkbox-wrapper::after, .checkbox-wrapper::before{box-sizing:border-box; user-select:none;}
+    .checkbox-wrapper{position:relative; display:block; overflow:hidden; margin-bottom:12px;}
+    .checkbox-wrapper .check{position:absolute; width:50px; height:50px; opacity:0;}
+    .checkbox-wrapper .label{
+      position:relative; cursor:pointer; display:block; padding-left:50px; min-height:38px;
+      line-height:1.45; font-size:0.93rem; color:#2f3b52;
+    }
+    .checkbox-wrapper .label::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: #f7f9fc;
+      box-shadow:
+        4px 4px 10px #dde3ea,
+        -4px -4px 10px #ffffff,
+        0 0 0 2px #006fff inset;
+      border: 1.5px solid #4a7bd6;
+      transition: box-shadow .22s cubic-bezier(.4,2,.3,1), border .22s;
+    }
+    .checkbox-wrapper .label:hover::before {
+      box-shadow:
+        2px 2px 8px #dde3ea,
+        -2px -2px 8px #fff,
+        0 0 0 3px #4a7bd6 inset;
+      border-color: #2a4d99;
+    }
+    .checkbox-wrapper .check:checked + .label::before {
+      background: #e3f0fc;
+      box-shadow:
+        inset 2px 2px 8px #4a7bd62e,
+        inset -2px -2px 8px #ffffff,
+        0 0 0 2.5px #2261be inset;
+      border: 2.2px solid #2261be;
+    }
+    .checkbox-wrapper .label::after{
+      content:""; position:absolute; left:6px; top:calc(50% - 10px);
+      width:18px; height:18px; border-radius:50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%);
+      pointer-events:none; opacity:.9; transition: opacity .25s ease;
+    }
+    .checkbox-wrapper .label svg{
+      position:absolute; left:6px; top:50%; transform:translateY(-50%);
+      width:24px; height:24px; pointer-events:none;
+    }
+    .checkbox-wrapper .path1{
+      stroke: #2261be;
+      stroke-width: 3;
+      fill:none;
+      stroke-linecap:round; stroke-linejoin:round;
+      stroke-dasharray:400; stroke-dashoffset:400; transition:.3s stroke-dashoffset; opacity:0;
+    }
+    .checkbox-wrapper .check:checked + .label svg .path1{
+      stroke-dashoffset:0; opacity:1;
+    }
+    .checkbox-wrapper .check:checked + .label::after{ opacity:.4; }
+    .checkbox-wrapper .check:focus + .label::before{ outline:2px solid rgba(74,123,214,.35); outline-offset:2px; }
+    .checkbox-wrapper .label:active::before{ transform:translateY(-50%) scale(0.98); }
+    .button-group{display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:24px;}
+    .button-group button{
+      display:inline-block; padding:16px 28px; border-radius:12px; font-weight:700; font-size:1.2rem; cursor:pointer;
+      border:none; color:#0b0b0b; background: #fff;
+      border:1px solid rgba(255,255,255,0.65);
+      box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light);
+      transition: box-shadow .25s ease, transform .2s ease, color .2s ease;
+    }
+    .button-group button:hover{
+      color:#555; box-shadow: inset 5px 5px 12px var(--shadow-dark), inset -5px -5px 12px var(--shadow-light);
+    }
+    .button-group button:active{ transform: translateY(1px); }
+    .button-group .resetar{
+      background: #fff; color:#516d91;
+      box-shadow: -4px -2px 16px var(--shadow-light), 4px 2px 16px rgba(95,157,231,0.32);
+    }
+    .button-group .resetar:hover{ box-shadow: inset 3px 3px 8px var(--shadow-dark), inset -3px -3px 8px var(--shadow-light); }
+    #resultado{
+      margin-top:30px; padding:20px; border-radius:18px;
+      background: #fff;
+      box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+      font-weight:700; font-size:0.93rem; white-space:pre-line; text-align:left;
+    }
+    #aviso-copiado{ text-align:center; margin-top:10px; font-weight:700; }
+    #btnFormatarGercon{
+      margin-top:18px;
+      float:right;
+      padding:10px 24px;
+      border-radius:10px;
+      background:#1a70a6;
+      border:1px solid #4a7bd6;
+      font-size:0.9rem;
+      font-weight:700;
+      color:#fff;
+      box-shadow:2px 2px 8px #e5eaf3;
+      cursor:pointer;
+      transition: background .2s, color .2s, box-shadow .2s;
+    }
+    #btnFormatarGercon:hover{
+      background:#d1e4ff;
+      color:#174181;
+      box-shadow:0 0 0 2px #b7d1f5;
+    }
+    #navigation-buttons {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .nav-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-light);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--accent);
+      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+      transition: all 0.25s ease-in-out;
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+    .nav-btn.visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+    }
+    .nav-btn:hover {
+      color: var(--accent);
+      transform: scale(1.1);
+      box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+    }
+    .nav-btn:active {
+      transform: scale(0.95);
+      box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+    }
+    .nav-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    @media (max-width:640px){
+      body { padding: 15px; }
+      .container { padding: 20px; }
+      .alternativas{ gap:10px; }
+      .alternativa-btn{ width:100%; text-align:center; }
+      .identificacao-rxi input{ min-width:unset; }
+      #navigation-buttons { bottom: 15px; right: 15px; }
+      .nav-btn { width: 45px; height: 45px; }
+    }
+ </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MINI-<span style="color:#ffcc33">T</span><span style="color:red">E</span><span style="color:green">A</span> – Triagem <span style="color:#ffcc33">T</span><span style="color:red">E</span><span style="color:green">A</span>colhe</h1>
+     <form id="miniTeaForm">
+      <div class="cabecalho">
+        <label>Nome da criança:</label>
+        <input type="text" id="nome">
+        <label>Entrevistado(a):</label>
+        <input type="text" id="entrevistado">
+        <label>Data:</label>
+        <input type="date" id="data">
+      </div>
+      <!-- QUESTÕES MINI-TEA -->
+      <div class="question">
+        <h3>1. Relações pessoais</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q1-1" class="check" name="q1"><label for="q1-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança evita olhar diretamente nos olhos?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q1-2" class="check" name="q1"><label for="q1-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem grande dificuldade em ter interação com adultos ou pessoas da mesma idade (timidez exagerada)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q1-3" class="check" name="q1"><label for="q1-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Chega a ficar muito zangado ou desesperado com alguma tentativa de interação com adultos ou pessoas da mesma idade?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q1-4" class="check" name="q1"><label for="q1-4" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Mostra-se distante, ausente, como se não percebesse ou não importasse a outra pessoa?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q1-5" class="check" name="q1"><label for="q1-5" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>É muito difícil conseguir a atenção da criança?</label></div>
+      </div>
+      <div class="question">
+        <h3>2. Imitação</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q2-1" class="check" name="q2"><label for="q2-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança tem dificuldade para imitar gestos simples, como bater palmas?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q2-2" class="check" name="q2"><label for="q2-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem dificuldade ou muita demora para imitar sons?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q2-3" class="check" name="q2"><label for="q2-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Só com muito estímulo a criança imita gestos ou sons?</label></div>
+      </div>
+      <div class="question">
+        <h3>3. Resposta emocional</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q3-1" class="check" name="q3"><label for="q3-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança reage de forma inesperada ao que acontece à sua volta (ex: gritar, rir sem motivo aparente)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q3-2" class="check" name="q3"><label for="q3-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Ou costuma ser indiferente a situações em que se esperaria uma reação?</label></div>
+      </div>
+      <div class="question">
+        <h3>4. Movimentos corporais</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q4-1" class="check" name="q4"><label for="q4-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança é muito desajeitada (descoordenada)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q4-2" class="check" name="q4"><label for="q4-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Apresenta movimentos repetitivos?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q4-3" class="check" name="q4"><label for="q4-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem movimentos estranhos com os dedos das mãos ou com o corpo?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q4-4" class="check" name="q4"><label for="q4-4" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Costuma caminhar mais na ponta dos pés?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q4-5" class="check" name="q4"><label for="q4-5" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Ocorre de agredir a si mesma (bater-se, morder-se, etc)?</label></div>
+      </div>
+      <div class="question">
+        <h3>5. Uso de objetos</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q5-1" class="check" name="q5"><label for="q5-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança brinca de forma estranha com objetos, diferente do que seria esperado (ex: sugando, batendo, arrastando, enfileirando)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q5-2" class="check" name="q5"><label for="q5-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Fixa a atenção somente em um aspecto ou parte do objeto ou brinquedo (ex: roda de carrinho)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q5-3" class="check" name="q5"><label for="q5-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem interesse restrito, ou seja, somente em um ou dois objetos?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q5-4" class="check" name="q5"><label for="q5-4" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Mostra pouco interesse em brinquedos e objetos?</label></div>
+      </div>
+      <div class="question">
+        <h3>6. Adaptação à mudança</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q6-1" class="check" name="q6"><label for="q6-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança tem muita dificuldade em aceitar mudar o que está fazendo para passar para outra atividade?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q6-2" class="check" name="q6"><label for="q6-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Fica zangada ou triste por mudanças simples (ex: lugar dos móveis, trajeto para escola)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q6-3" class="check" name="q6"><label for="q6-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Quando ocorrem mudanças bruscas mostra uma reação intensa (é difícil de acalmar)?</label></div>
+      </div>
+      <div class="question">
+        <h3>7. Resposta visual</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q7-1" class="check" name="q7"><label for="q7-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança olha de muito perto, para uma parte só do objeto?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q7-2" class="check" name="q7"><label for="q7-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Apresenta momentos de olhar parado, para o nada, como se estivesse ausente?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q7-3" class="check" name="q7"><label for="q7-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Evita constantemente olhar para objetos apresentados?</label></div>
+      </div>
+      <div class="question">
+        <h3>8. Resposta ao som</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q8-1" class="check" name="q8"><label for="q8-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Parece que a criança às vezes não ouve direito ou não atende quando chamada pelo nome?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q8-2" class="check" name="q8"><label for="q8-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem reações inesperadas (ex: crise de irritabilidade, tapar os ouvidos) quando ouve alguns sons do ambiente?</label></div>
+      </div>
+      <div class="question">
+        <h3>9. Resposta ao paladar, olfato e tato</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q9-1" class="check" name="q9"><label for="q9-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança segue levando à boca objetos, mesmo que outras crianças da sua idade já não façam mais isso?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q9-2" class="check" name="q9"><label for="q9-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Costuma cheirar ou experimentar o gosto de objetos não comestíveis, e até pessoas?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q9-3" class="check" name="q9"><label for="q9-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Gosta de comer só alguns alimentos específicos, recusando-se a experimentar outros?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q9-4" class="check" name="q9"><label for="q9-4" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A reação a um estímulo doloroso é fora do normal – quase não reage ou reage muito mais intensamente que o esperado?</label></div>
+      </div>
+      <div class="question">
+        <h3>10. Medo ou nervosismo</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q10-1" class="check" name="q10"><label for="q10-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Parece que a criança muitas vezes tem medo ou nervosismo exagerado?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q10-2" class="check" name="q10"><label for="q10-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Chega a ter medo de coisas inofensivas?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q10-3" class="check" name="q10"><label for="q10-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Ou parece não ter medo quando seria esperado que tivesse (ex: perto de um cachorro latindo, atravessar a rua)?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q10-4" class="check" name="q10"><label for="q10-4" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Chega a ser difícil acalmar a criança nas crises de medo?</label></div>
+      </div>
+      <div class="question">
+        <h3>11. Comunicação verbal</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q11-1" class="check" name="q11"><label for="q11-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança está atrasada para falar?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q11-2" class="check" name="q11"><label for="q11-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem uma fala estranha, na escolha dos sons ou palavras, nem sempre fácil de entender?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q11-3" class="check" name="q11"><label for="q11-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Fica repetindo muito só coisas que vê na TV (ex: números em inglês)?</label></div>
+      </div>
+      <div class="question">
+        <h3>12. Comunicação não verbal</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q12-1" class="check" name="q12"><label for="q12-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança tem dificuldade em se comunicar por gestos?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q12-2" class="check" name="q12"><label for="q12-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem dificuldade de entender os gestos ou as expressões faciais que fazemos?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q12-3" class="check" name="q12"><label for="q12-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Em vez de pegar algo ao seu alcance, puxa um adulto para pegar o objeto para ela?</label></div>
+      </div>
+      <div class="question">
+        <h3>13. Nível de atividade</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q13-1" class="check" name="q13"><label for="q13-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança tem inquietude maior que outras crianças da idade?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q13-2" class="check" name="q13"><label for="q13-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Chega a não conseguir parar quieta para fazer algo?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q13-3" class="check" name="q13"><label for="q13-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Ou é muito parada, lenta, preguiçosa perto de outras crianças da idade?</label></div>
+      </div>
+      <div class="question">
+        <h3>14. Resposta intelectual</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q14-1" class="check" name="q14"><label for="q14-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>A criança parece ser menos esperta para aprender as coisas em relação às outras crianças?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q14-2" class="check" name="q14"><label for="q14-2" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Tem dificuldade de aprender especificamente só algumas coisas que outras da mesma idade aprendem?</label></div>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q14-3" class="check" name="q14"><label for="q14-3" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Parece ser muito mais esperta em uma coisa específica do que as demais crianças da idade?</label></div>
+      </div>
+      <div class="question">
+        <h3>15. Impressão dos pais/familiares</h3>
+        <div class="checkbox-wrapper"><input type="checkbox" id="q15-1" class="check" name="q15"><label for="q15-1" class="label"><svg viewBox="0 0 24 24"><path class="path1" d="M5 13l4 4L19 7"/></svg>Você acha que sua criança tem algo de diferente do usual ou atrasado em relação ao desenvolvimento, comparado com outras?</label></div>
+      </div>
+      <div class="button-group">
+        <button type="button" onclick="calcularMiniTEA()">📱 Calcular Pontuação</button>
+        <button type="button" onclick="copiarResultado()">📋 Copiar Resultado</button>
+        <button type="button" class="resetar" onclick="resetarFormulario()">🔁 Resetar</button>
+      </div>
+    </form>
+    <div id="resultado"></div>
+    <button type="button" id="btnFormatarGercon">FORMATAR TEXTO PARA GERCON</button>
+    <div id="aviso-copiado"></div>
+  </div>
+  <!-- Botões de navegação flutuantes -->
+  <div id="navigation-buttons">
+      <button id="btn-up" class="nav-btn" title="Voltar ao Topo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path></svg>
+      </button>
+      <button id="btn-down" class="nav-btn" title="Ir para o Fim">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"></path></svg>
+      </button>
+  </div>
+  <script>
+    // Botões flutuantes: topo/baixo
+    document.addEventListener('DOMContentLoaded', function() {
+      // Preencher data
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+      // Navegação flutuante
+      const btnUp = document.getElementById('btn-up');
+      const btnDown = document.getElementById('btn-down');
+      if(btnUp && btnDown) {
+        btnUp.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        btnDown.addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
+        window.addEventListener('scroll', () => {
+          const scrollY = window.scrollY;
+          const totalHeight = document.documentElement.scrollHeight;
+          const viewportHeight = window.innerHeight;
+          btnUp.classList.toggle('visible', scrollY > 300);
+          btnDown.classList.toggle('visible', scrollY + viewportHeight < totalHeight - 100);
+        });
+      }
+    });
+    function calcularMiniTEA() {
+      let total = 0;
+      let respostasSim = [];
+      for (let i = 1; i <= 15; i++) {
+        const checks = document.querySelectorAll(`input[name="q${i}"]`);
+        let itemMarcado = false;
+        checks.forEach(cb => {
+          if (cb.checked) {
+            itemMarcado = true;
+            respostasSim.push(`- ${cb.parentElement.innerText}`);
+          }
+        });
+        if (itemMarcado) total += 1;
+      }
+      const nome = document.getElementById("nome").value;
+      const entrevistado = document.getElementById("entrevistado").value;
+      const dataInput = document.getElementById("data").value;
+      const dataFormatada = dataInput ? dataInput.split('-').reverse().join('/') : 'Não informada';
+      let msg = ` Nome: ${nome}\n Entrevistado(a): ${entrevistado}\n Data: ${dataFormatada}\n\n`;
+      msg += ` Pontuação MINI-TEA: ${total} de 15\n`;
+      msg += (total >= 9)
+        ? " Resultado: Triagem POSITIVA para sinais sugestivos de TEA. Encaminhar para avaliação especializada."
+        : " Resultado: Triagem abaixo do ponto de corte. Monitorar e reavaliar se necessário.";
+      if (respostasSim.length) {
+        msg += `\n\n Itens com resposta 'SIM':\n` + respostasSim.join("\n");
+      }
+      document.getElementById("resultado").innerText = msg;
+      document.getElementById("aviso-copiado").innerText = "";
+    }
+    function copiarResultado() {
+      const texto = document.getElementById("resultado").innerText.trim();
+      const aviso = document.getElementById("aviso-copiado");
+      if (!texto) {
+        aviso.innerText = "Nenhum resultado para copiar.";
+        aviso.style.color = "red";
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto)
+          .then(() => { aviso.innerText = "✔️ Resultado copiado!"; aviso.style.color = "green"; })
+          .catch(() => { fallbackCopy(texto, aviso); });
+      } else {
+        fallbackCopy(texto, aviso);
+      }
+    }
+    function fallbackCopy(texto, aviso) {
+      const textarea = document.createElement("textarea");
+      textarea.value = texto;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        aviso.innerText = "✔️ Resultado copiado!";
+        aviso.style.color = "green";
+      } catch (err) {
+        aviso.innerText = "❌ Não foi possível copiar.";
+        aviso.style.color = "red";
+      }
+      document.body.removeChild(textarea);
+    }
+    function resetarFormulario() {
+      document.getElementById("miniTeaForm").reset();
+      document.getElementById("resultado").innerText = "";
+      document.getElementById("aviso-copiado").innerText = "";
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('data').value = `${yyyy}-${mm}-${dd}`;
+    }
+    // BOTÃO GERCON
+    function formatarGercon(texto) {
+      let semEmoji = texto.replace(/[\u{1F600}-\u{1F6FF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F300}-\u{1F5FF}\u{1F700}-\u{1F77F}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}]/gu, '');
+      let semEspeciais = semEmoji.replace(/[^A-Z0-9 À-ÿ.,;:!?"'\n\r\-()/]/gi, '');
+      let maiusculo = semEspeciais.toUpperCase();
+      maiusculo = maiusculo.replace(/ +/g, ' ');
+      return maiusculo;
+    }
+    document.getElementById('btnFormatarGercon').onclick = function() {
+      var resultado = document.getElementById('resultado');
+      if(resultado && resultado.textContent.trim() !== "") {
+        resultado.textContent = formatarGercon(resultado.textContent);
+      }
+    }
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>RXI • M-CHAT (Triagem TEA)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+/* ====== tokens iguais ao MINI, mas com acento azul ====== */
+:root{
+  --bg:#f6f7fb; --ink:#0f1733; --muted:#667085; --border:rgba(15,23,51,.10);
+  --glass:rgba(255,255,255,.72); --glass-strong:rgba(255,255,255,.88);
+  --frost:blur(12px) saturate(1.05);
+  --brand:#6e86ff; --brand2:#8aa0ff; --ok:#10b981; --danger:#ef4444;
+  --mchat-accent:#7aa7f7; --mchat-soft:rgba(122,167,247,.12);
+  --r:18px; --r2:14px; --fs-body:17px; --fs-title:28px;
+  --shadow: 0 14px 36px rgba(15,23,51,.10), 0 6px 14px rgba(15,23,51,.07);
+  --shadow-inset: inset 8px 8px 20px rgba(15,23,51,.05), inset -8px -8px 22px rgba(255,255,255,.70);
+}
+body.dark{
+  --bg:#111825; --ink:#eef3ff; --muted:#b9c3d7; --border:rgba(255,255,255,.14);
+  --glass:rgba(26,33,51,.78); --glass-strong:rgba(32,40,63,.92);
+  --shadow: 0 12px 34px rgba(0,0,0,.38), 0 4px 12px rgba(0,0,0,.28);
+  --shadow-inset: inset 8px 8px 20px rgba(0,0,0,.35), inset -8px -8px 22px rgba(255,255,255,.06);
+  --mchat-soft:rgba(122,167,247,.22);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; font-family:'Montserrat',system-ui,Arial,sans-serif; color:var(--ink); font-size:var(--fs-body); line-height:1.6; background:var(--bg)}
+/* fundo com fitas */
+.decor{position:fixed; inset:0; pointer-events:none; z-index:0}
+.ribbon{position:absolute; left:50%; translate:-50% 0; width:1400px; height:280px; border-radius:160px;
+  background:linear-gradient(90deg,#d9b6ff,#9b8af3,#7aa7f7,#7be3cc); filter:blur(2px); opacity:.8}
+.ribbon.r1{top:110px; rotate:-6deg} .ribbon.r2{top:210px; rotate:8deg; opacity:.6} .ribbon.r3{top:310px; rotate:-14deg; opacity:.5}
+
+.stage{position:relative; z-index:1; padding:40px 18px 60px; display:flex; justify-content:center}
+.window{max-width:1180px; width:100%; border-radius:calc(var(--r) + 6px); background:var(--glass); border:1px solid var(--border); backdrop-filter:var(--frost); box-shadow:var(--shadow)}
+.header{display:flex; justify-content:space-between; align-items:center; gap:12px; padding:20px}
+.title{font-size:var(--fs-title); font-weight:800}
+.subtitle{color:var(--muted); margin-top:4px; font-size:15px}
+.btn{border:1px solid var(--border); border-radius:14px; padding:10px 14px; font-weight:800; cursor:pointer; background:linear-gradient(180deg,var(--glass-strong),rgba(255,255,255,.55)); color:#1f2937; box-shadow:var(--shadow), var(--shadow-inset)}
+body.dark .btn{ background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.06)); color:#e6ebff }
+.wrap{padding:0 20px 20px}
+.card{border-radius:var(--r2); border:1px solid var(--border); background:linear-gradient(180deg, var(--glass-strong), rgba(255,255,255,.55)); backdrop-filter:var(--frost); box-shadow:var(--shadow), var(--shadow-inset)}
+body.dark .card{background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06))}
+.block{border:1px solid var(--border); border-radius:14px; padding:16px; margin:12px 0; backdrop-filter:var(--frost); box-shadow:var(--shadow-inset)}
+.block h3{margin:0 0 8px; font-size:1.12rem; color:var(--mchat-accent)}
+
+.id-grid{display:grid; grid-template-columns:1fr 160px 160px; gap:12px; margin:8px 0 4px}
+.id-grid label{font-weight:800; font-size:.95rem; display:block; margin-bottom:6px}
+.id-grid input{width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,.86); box-shadow:var(--shadow-inset)}
+body.dark .id-grid input{ background:rgba(255,255,255,.10); color:#eaf1ff }
+
+.q{border:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,.86), var(--mchat-soft)); border-radius:14px; padding:12px; margin:10px 0; box-shadow:var(--shadow-inset)}
+body.dark .q{ background:linear-gradient(180deg, rgba(255,255,255,.10), var(--mchat-soft)) }
+.q .qtext{font-weight:800; margin-bottom:8px}
+.q .alt{display:flex; flex-wrap:wrap; gap:10px}
+
+.btn-inline{padding:9px 16px; border-radius:10px; border:1px solid var(--border); background:#fff; font-weight:800; cursor:pointer}
+body.dark .btn-inline{ background:rgba(255,255,255,.08); color:#eaf1ff }
+.btn-inline.sim.active{border-color:var(--ok); color:var(--ok)}
+.btn-inline.nao.active{border-color:#b23b3b; color:#b23b3b}
+
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0}
+.act{padding:12px 18px; border-radius:12px; border:1px solid var(--border); font-weight:800; cursor:pointer; background:linear-gradient(180deg, var(--glass-strong), rgba(255,255,255,.6))}
+body.dark .act{ background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)); color:#eaf1ff }
+.act.gerar{background:linear-gradient(180deg,var(--brand),var(--brand2)); color:#fff; border-color:transparent}
+
+#saida{width:100%; min-height:280px; resize:vertical; border:1px solid var(--border); border-radius:14px; padding:14px; font-size:1rem; white-space:pre; background:rgba(255,255,255,.86); box-shadow:var(--shadow-inset)}
+body.dark #saida{ background:rgba(255,255,255,.10); color:#eaf1ff }
+.msg{margin-top:8px; font-weight:800}
+.msg.success{color:#10b981} .msg.info{color:#3b82f6} .msg.error{color:#ef4444}
+#charLine{margin-top:6px; font-size:.95rem}
+#charLine .ok{color:#10b981} #charLine .over{color:#ef4444}
+
+.fab{position:fixed; right:18px; bottom:18px; width:56px; height:56px; border-radius:50%; border:1px solid var(--border); background:var(--glass-strong); box-shadow:var(--shadow), var(--shadow-inset); cursor:pointer; display:grid; place-items:center; opacity:0; pointer-events:none; transition:.2s; z-index:3}
+.fab.visible{opacity:1; pointer-events:auto}
+body.dark .fab{ background:rgba(255,255,255,.12); color:#eaf1ff }
+
+/* === Dark "Fluxos" – nítido, sem opacidade/leitoso === */
+body.dark{
+  /* fundo e textos */
+  --bg:#0b1220;
+  --ink:#e6edff;
+  --muted:#9fb0d6;
+  --border:#223153;
+
+  /* superfícies sólidas (substituem o glass no escuro) */
+  --surface:#101a2f;      /* cards / janelas */
+  --surface-2:#0c1529;    /* inputs / caixas */
+
+  /* gradientes de acento (mantém o look neon do Fluxos) */
+  --brand:#7aa2ff;
+  --brand2:#4e6bff;
+
+  /* sombras e “soft tints” das escalas */
+  --shadow:0 12px 34px rgba(0,0,0,.45), 0 4px 12px rgba(0,0,0,.28);
+  --mini-soft:rgba(245,158,11,.18);
+  --mchat-soft:rgba(122,167,247,.18);
+}
+
+/* fundo com glows discretos, igual ao Fluxos */
+body.dark{
+  background:
+    radial-gradient(1100px 620px at 14% -10%, rgba(122,167,247,.12) 0%, transparent 60%),
+    radial-gradient(900px 640px at 110% 0%, rgba(123,227,204,.10) 0%, transparent 55%),
+    radial-gradient(1000px 760px at 50% 120%, rgba(217,182,255,.10) 0%, transparent 60%),
+    var(--bg);
+}
+body.dark .ribbon{ opacity:.28; filter:blur(6px); } /* menos chamativo no dark */
+
+/* 🚫 remove glass/blur no escuro e aplica superfícies sólidas */
+body.dark .window,
+body.dark .card,
+body.dark .block,
+body.dark .q,
+body.dark .btn,
+body.dark .act,
+body.dark #saida,
+body.dark .id-grid input,
+body.dark .fab{
+  background:var(--surface);
+  border-color:#2a3b61;
+  color:var(--ink);
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+  box-shadow:var(--shadow);
+}
+
+/* variações de superfície */
+body.dark .q{
+  background:linear-gradient(180deg, var(--surface), var(--surface-2)), var(--mini-soft);
+}
+body.dark #mchat-container .q{
+  background:linear-gradient(180deg, var(--surface), var(--surface-2)), var(--mchat-soft);
+}
+body.dark .id-grid input,
+body.dark #saida{
+  background:var(--surface-2);
+}
+
+/* botões */
+body.dark .btn,
+body.dark .act{ background:var(--surface-2); }
+body.dark .btn:hover,
+body.dark .act:hover{ transform:translateY(-1px); }
+body.dark .act.gerar,
+body.dark .btn.brand{
+  background:linear-gradient(180deg, var(--brand), var(--brand2));
+  border-color:transparent; color:#fff;
+}
+
+/* pequenos ajustes de contraste */
+body.dark .subtitle{ color:var(--muted); }
+body.dark .q .qtext{ color:var(--ink); }
+body.dark .btn-inline{ background:var(--surface-2); color:var(--ink); border-color:#2a3b61; }
+body.dark .btn-inline.sim.active{ border-color:#10b981; color:#10b981; }
+body.dark .btn-inline.nao.active{ border-color:#d16a6a; color:#d16a6a; }
+body.dark .fab{ background:var(--surface-2); border-color:#2a3b61; color:var(--ink); }
+
+</style>
+</head>
+<body>
+<div class="decor"><div class="ribbon r1"></div><div class="ribbon r2"></div><div class="ribbon r3"></div></div>
+
+<div class="stage">
+  <div class="window">
+    <div class="header">
+      <div>
+        <div class="title">M-CHAT • RXI - Triagem TEAcolhe</div>
+         <div class="subtitle">Orientação: Responda sobre como a criança geralmente é.</div>
+        <div class="subtitle">Se o comportamento for raro (apenas uma ou duas vezes), marque como Não.</div>
+        <div class="subtitle">A expressão original da Escala M-CHAT 'O seu filho' foi substituída pela expressão 'a criança'.</div>
+     </div>
+      <button id="themeBtn" class="btn">🌙 Escuro</button>
+    </div>
+
+    <div class="wrap">
+      <div class="card block">
+        <h3>Identificação</h3>
+        <div class="id-grid">
+          <div><label for="nomeM">Nome</label><input id="nomeM" placeholder="(opcional)"></div>
+          <div><label for="idadeM">Idade</label><input id="idadeM" placeholder="16 a 30 meses"></div>
+          <div><label for="dataM">Data</label><input id="dataM" type="date"></div>
+        </div>
+      </div>
+
+      <div id="mchat-container"></div>
+
+      <div class="actions">
+        <button class="act gerar" onclick="gerarMchat()">📄 Gerar relatório</button>
+        <button class="act" onclick="copiarSaida()">📋 Copiar</button>
+        <button class="act" onclick="resetarMchat()">🔁 Resetar</button>
+      </div>
+
+      <div class="card block">
+        <h3>📝 Texto final para GERCON / TEAcolhe</h3>
+        <textarea id="saida" placeholder="O relatório aparecerá aqui após gerar."></textarea>
+        <div id="charLine">0 caracteres • Limite recomendado GERCON: 2000</div>
+        <div id="msg" class="msg info">Pronto para gerar o relatório.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button id="fabTop" class="fab">⬆</button>
+
+<script>
+/* tema */
+const themeBtn=document.getElementById('themeBtn');
+let dark=localStorage.getItem('darkMode')==='true';
+function applyTheme(){ document.body.classList.toggle('dark',dark); themeBtn.textContent=dark?'☀️ Claro':'🌙 Escuro'; localStorage.setItem('darkMode',dark); }
+themeBtn.addEventListener('click',()=>{ dark=!dark; applyTheme(); });
+applyTheme();
+
+/* datas padrão */
+(function(){const t=new Date(),d=[t.getFullYear(),String(t.getMonth()+1).padStart(2,'0'),String(t.getDate()).padStart(2,'0')].join('-'); const el=document.getElementById('dataM'); if(el&&!el.value) el.value=d;})();
+
+/* M-CHAT */
+const perguntasMCHAT=[
+ "Gosta de se balançar/pular no joelho?","Interesse por outras crianças?","Gosta de subir em coisas?",
+ "Brinca de esconde-esconde/mostrar o rosto?","Brinca de faz-de-conta (telefone/boneca)?",
+ "Aponta com o indicador para PEDIR?","Aponta com o indicador para MOSTRAR/indicar interesse?",
+ "Brinca corretamente com brinquedos pequenos (sem só por na boca/remexer/deixar cair)?",
+ "Traz objetos para MOSTRAR?","Olha nos seus olhos por >1–2s?","Muito sensível a barulhos (tapa ouvidos)?",
+ "Sorri em resposta ao seu sorriso?","Imita você (caretas/gestos)?","Responde quando chamado pelo NOME?",
+ "Segue seu dedo quando você aponta longe?","Já sabe andar?","Olha para o que você está olhando?",
+ "Faz movimentos estranhos com os dedos perto do rosto?","Tenta atrair sua atenção para a atividade dele?",
+ "Já se perguntou se ele é surdo?","Entende o que as pessoas dizem?",
+ "Às vezes fica aéreo/olhando para o nada/anda sem direção?","Olha seu rosto para conferir sua reação diante de algo estranho?"
+];
+const criticos=[2,7,9,13,14,15];
+const falhaSim=[1,11,18,20,22];
+const falhaNao=[2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,19,21,23];
+const respostasM={};
+
+function buildMchatUI(){
+  const root=document.getElementById('mchat-container'); root.innerHTML='';
+  perguntasMCHAT.forEach((texto,i)=>{
+    const idx=i+1; const q=document.createElement('div'); q.className='q';
+    q.innerHTML=`<div class="qtext">${idx}. ${texto} ${criticos.includes(idx)?'<span title="Item crítico" style="color:#22c55e;font-weight:900">★</span>':''}</div>
+      <div class="alt">
+        <button class="btn-inline sim" onclick="selM(${idx},'Sim',this)">Sim</button>
+        <button class="btn-inline nao" onclick="selM(${idx},'Não',this)">Não</button>
+      </div>`;
+    root.appendChild(q);
+  });
+}
+buildMchatUI();
+function selM(n,resp,btn){
+  respostasM[n]=resp; btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+}
+
+function gerarMchat(){
+  const nome=(document.getElementById('nomeM').value||'-').trim();
+  const idade=(document.getElementById('idadeM').value||'-').trim();
+  const dRaw=document.getElementById('dataM').value, data=dRaw?dRaw.split('-').reverse().join('/'):'-';
+
+  let totalFalha=0, critFalha=0, itens=[];
+  for(let i=1;i<=23;i++){
+    const r=respostasM[i]; if(!r) continue;
+    const falha=(falhaSim.includes(i)&&r==='Sim')||(falhaNao.includes(i)&&r==='Não');
+    if(falha){ totalFalha++; if(criticos.includes(i)) critFalha++; itens.push(`${i}:${r}`); }
+  }
+  const sug=(totalFalha>=3)||(critFalha>=2);
+  let out=`ESCALA M-CHAT (RXI)\nNome: ${nome}\nIdade: ${idade}\nData: ${data}\n\nFalhas totais: ${totalFalha}\nFalhas em itens críticos: ${critFalha}\n`;
+  out+=sug?`Resultado: SUSPEITA DE TEA. Indicar avaliação especializada (CAS TEAcolhe) e rede.\n`:`Resultado: Sem sinais sugestivos relevantes. Acompanhar e reavaliar se necessário.\n`;
+  if(itens.length) out+=`\nItens sugestivos (nº:resposta): ${itens.join(', ')}\n`;
+  out+=`\nEncaminhamento (APS):\n• Suspeita inicial/leve → Centro Acolher (SIMUS/IPM)\n• Casos graves/refratários → CAS TEAcolhe (GERCON)\n`;
+  document.getElementById('saida').value=out; updateCount(); msg('Relatório M-CHAT gerado.','success');
+}
+
+function copiarSaida(){
+  const v=document.getElementById('saida').value.trim(); if(!v){msg('Nada para copiar.','error');return;}
+  (navigator.clipboard?.writeText(v)??Promise.reject()).then(()=>msg('📑 Copiado.','success')).catch(()=>{
+    const ta=document.getElementById('saida'); ta.select(); document.execCommand('copy'); msg('📑 Copiado.','success');
+  });
+}
+function resetarMchat(){ for(const k in respostasM) delete respostasM[k]; buildMchatUI(); document.getElementById('saida').value=''; updateCount(); msg('M-CHAT resetado.','success'); }
+function msg(t,cls='info'){ const m=document.getElementById('msg'); m.textContent=t; m.className='msg '+cls; }
+function updateCount(){ const n=document.getElementById('saida').value.length; const el=document.getElementById('charLine'); el.innerHTML = n?`<span class="${n>2000?'over':'ok'}">${n} caracteres</span> • Limite recomendado GERCON: 2000`:`0 caracteres • Limite recomendado GERCON: 2000`; }
+document.getElementById('saida').addEventListener('input', updateCount);
+
+/* fab topo */
+const fabTop=document.getElementById('fabTop'); window.addEventListener('scroll',()=>{ fabTop.classList.toggle('visible', window.scrollY>280); }); fabTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>RXI • Acuidade Visual (Perto 40 cm) + Registro rápido</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f9fc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e6eaf2;
+    --brand:#6e86ff; --brand-2:#8fa0ff; --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
+    --radius:18px; --shadow:0 10px 28px rgba(20,26,51,.08);
+  }
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Montserrat,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{max-width:980px;margin:24px auto;padding:16px}
+  header h1{margin:0;font-size:clamp(20px,3vw,28px);letter-spacing:.2px}
+  header p{margin:6px 0 0;color:var(--muted);font-size:14px}
+  .grid{display:grid;gap:18px;margin-top:18px}
+  @media(min-width:840px){.grid{grid-template-columns: 1.1fr .9fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card .box{padding:18px 18px 16px}
+  .title{font-weight:800;font-size:15px;margin:0 0 10px}
+  .muted{color:var(--muted);font-size:12px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:#f1f5ff;border:1px solid #e0e7ff;padding:8px 10px;border-radius:999px;font-size:12px}
+  button{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:600;cursor:pointer;box-shadow:0 8px 18px rgba(110,134,255,.25);transition:.2s}
+  button.secondary{background:#e9ecff;color:#2b3a67}
+  button.ghost{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+  button.small{padding:8px 10px;border-radius:10px;font-size:12px}
+  button[data-eye].active{background:var(--brand);color:#fff;outline:2px solid var(--brand-2)}
+  .field{display:grid;gap:8px;margin:10px 0}
+  input[type="number"], input[type="text"], select, textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit}
+  textarea{min-height:110px;resize:vertical}
+  .panel{display:grid;gap:10px}
+  .grid-2{display:grid;gap:10px}
+  @media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
+  .jaeger-line{position:relative;display:flex;align-items:baseline;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;user-select:none;cursor:pointer}
+  .jaeger-line:hover{border-color:#cfd8ee;background:#f8faff}
+  .j-tag{min-width:42px;text-align:center;font-weight:700;background:#eef2ff;border-radius:8px;padding:6px 8px}
+  .near-text{line-height:1.5;}
+  .jaeger-line[data-picked]{border-color:var(--brand);box-shadow:0 0 0 3px rgba(110,134,255,.15)}
+  .jaeger-line::after{content:"";position:absolute;right:10px;top:10px;width:10px;height:10px;border-radius:999px;background:transparent}
+  .jaeger-line[data-picked]::after{background:var(--brand)}
+  .pick-badge{margin-left:auto;font-size:11px;color:#334155;background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:3px 8px}
+  .cal-step{display:flex;align-items:center;gap:14px}
+  .cal-box{width:85.6mm;height:53.98mm;border:2px dashed #94a3b8;border-radius:10px;position:relative;flex:0 0 auto}
+  .cal-box .label{position:absolute;inset:auto 0 -22px 0;text-align:center;font-size:12px;color:var(--muted)}
+  .hint{font-size:12px;color:var(--muted)}
+  .badge{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;color:#334155;background:#f8fafc}
+  .divider{height:1px;background:var(--line);margin:8px 0 2px}
+  .k{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .k button{background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  /* Badges OD/OE */
+  .status{display:flex;gap:8px;align-items:center}
+  .status .od{background:#e8fff5;border-color:#bbf7d0}
+  .status .oe{background:#fef3c7;border-color:#fde68a}
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>RXI • Acuidade Visual — Perto (40 cm) + Registro rápido</h1>
+      <p class="muted">Ferramenta digital para <strong>triagem e registro</strong> na APS. Siga a distância padrão de 40 cm e registre a menor linha lida (ex.: J1). Este recurso auxilia o fluxo; utilize as tabelas impressas oficiais quando necessário.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Coluna A: Teste de perto e calibração -->
+      <section class="card">
+        <div class="box">
+          <p class="title">1) Calibração simples</p>
+          <div class="panel">
+            <div class="cal-step">
+              <div class="cal-box" id="calBox"><span class="label">Use <b>Ctrl +</b>/<b>Ctrl -</b> do navegador até este retângulo ter o <b>tamanho de um cartão</b> (85,6 × 54 mm)</span></div>
+              <div class="field" style="min-width:260px">
+                <label class="muted">Tamanho do texto na tela (conforto)</label>
+                <input type="range" id="txtScale" min="90" max="130" step="1" value="100"/>
+                <div class="row"><span class="badge" id="txtScaleVal">100%</span><span class="hint">Não altera a calibração, apenas conforto visual.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="box">
+          <p class="title">2) Leitura para perto — a 40 cm</p>
+          <div class="field">
+            <label class="muted">Selecione o olho em teste (atalhos: O=OD, E=OE, A=AO)</label>
+            <div class="row">
+              <button class="small secondary" data-eye="OD">OD (direito)</button>
+              <button class="small secondary" data-eye="OE">OE (esquerdo)</button>
+              <button class="small ghost" data-eye="AO">AO (ambos)</button>
+              <div class="status" style="margin-left:auto">
+                <span class="badge od" id="odBadge">OD: —</span>
+                <span class="badge oe" id="oeBadge">OE: —</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel" id="jaegerList"><!-- Linhas via JS --></div>
+          <div class="hint">Regra prática: registre a <b>menor linha</b> lida com conforto. Ex.: “OD J3, OE J2”.</div>
+        </div>
+      </section>
+
+      <!-- Coluna B: Registro e atalhos -->
+      <aside class="card">
+        <div class="box">
+          <p class="title">3) Registro rápido (texto pronto)</p>
+          <div class="grid-2">
+            <div class="field">
+              <label class="muted">Paciente usa correção?</label>
+              <select id="corr">
+                <option value="com óculos">com óculos</option>
+                <option value="sem óculos">sem óculos</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="muted">Iluminação</label>
+              <select id="lum">
+                <option>adequada</option>
+                <option>reduzida</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="muted">Resultado (pronto para colar no IPM/GERCON)</label>
+            <textarea id="out" spellcheck="false"></textarea>
+          </div>
+          <div class="row">
+            <button id="copy">Copiar</button>
+            <button class="secondary" id="clear">Limpar</button>
+          </div>
+          <p class="hint">Dica: clique numa linha (J1…J10) para auto-preencher OD/OE. Clique novamente se precisar trocar.</p>
+        </div>
+        <div class="divider"></div>
+        <div class="box">
+          <p class="title">4) Atalhos úteis</p>
+          <div class="k" id="tags">
+            <button type="button">Cooperação adequada</button>
+            <button type="button">Sem queixa visual</button>
+            <button type="button">Queixa para perto</button>
+            <button type="button">Cefaleia associada</button>
+            <button type="button">Reavaliar em 6–12m</button>
+            <button type="button">Encaminhar Optometria/OFT</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="muted" style="margin-top:16px">
+      <small>Boas práticas: realizar leitura para perto a <b>40 cm</b> e anotar a menor linha lida (J‑n). Para distância, realizar a <b>4 m</b> com um olho de cada vez e registrar a menor linha corretamente lida (ex.: 20/40). Este app é um <b>apoio</b> à rotina e <b>não substitui</b> materiais calibrados/validados.</small>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast">Seleção registrada</div>
+
+<script>
+  // ===== Estado básico =====
+  const state = { eye:null, results:{OD:null, OE:null}, txtScale:100 };
+
+  // ===== Tamanho de texto (conforto) =====
+  const txtScale = document.getElementById('txtScale');
+  const txtScaleVal = document.getElementById('txtScaleVal');
+  txtScale.addEventListener('input', e=>{
+    state.txtScale = +e.target.value;
+    txtScaleVal.textContent = state.txtScale+"%";
+    document.querySelectorAll('.near-text').forEach(el=>{
+      const base = +el.dataset.basepx;
+      el.style.fontSize = (base * state.txtScale/100) + 'px';
+    });
+  });
+
+  // ===== Geração das linhas Jaeger (aproximação proporcional para triagem) =====
+  const jaegerSpec = [
+    { tag:'J1',  px:14, txt:'A rápida raposa marrom salta sobre o cão preguiçoso. Leia esta linha confortavelmente.'},
+    { tag:'J2',  px:13, txt:'Texto de amostra para leitura próxima. Ajuste até ficar confortável.'},
+    { tag:'J3',  px:12, txt:'Leitura funcional para perto. Identifique a menor linha que consegue ler.'},
+    { tag:'J4',  px:11, txt:'Triagem em APS. Esta ferramenta auxilia o registro, não substitui tabela validada.'},
+    { tag:'J5',  px:10, txt:'Sente-se com boa postura e luz adequada. Mantenha 40 cm dos olhos.'},
+    { tag:'J6',  px:9,  txt:'Piscar naturalmente ajuda na lubrificação e conforto durante a leitura.'},
+    { tag:'J7',  px:8.5,txt:'Caso sinta fadiga ocular, descanse brevemente antes de continuar.'},
+    { tag:'J8',  px:8,  txt:'Informe quando as letras começarem a embaralhar ou perder definição.'},
+    { tag:'J9',  px:7.5,txt:'Se não conseguir ler, suba uma linha e tente novamente.'},
+    { tag:'J10', px:7,  txt:'Anote a menor linha lida de forma correta. Ex.: OD J3; OE J2.'}
+  ];
+  const list = document.getElementById('jaegerList');
+  jaegerSpec.forEach(row=>{
+    const div = document.createElement('div');
+    div.className = 'jaeger-line';
+    div.dataset.tag = row.tag;
+    const tag = document.createElement('span');
+    tag.className = 'j-tag';
+    tag.textContent = row.tag;
+    const text = document.createElement('div');
+    text.className = 'near-text';
+    text.dataset.basepx = row.px;
+    text.style.fontSize = row.px+'px';
+    text.textContent = row.txt;
+    const pick = document.createElement('span');
+    pick.className = 'pick-badge';
+    pick.textContent = '';
+    div.appendChild(tag); div.appendChild(text); div.appendChild(pick);
+    div.addEventListener('click', ()=> chooseLine(row.tag, div));
+    list.appendChild(div);
+  });
+
+  // ===== Seleção de olho =====
+  const odBadge = document.getElementById('odBadge');
+  const oeBadge = document.getElementById('oeBadge');
+  document.querySelectorAll('[data-eye]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      state.eye = btn.dataset.eye;
+      document.querySelectorAll('[data-eye]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      showToast('Olho selecionado: '+state.eye);
+    });
+  });
+  // atalhos de teclado
+  window.addEventListener('keydown', (e)=>{
+    if(['input','textarea','select'].includes(document.activeElement.tagName.toLowerCase())) return;
+    if(e.key.toLowerCase()==='o') document.querySelector('[data-eye="OD"]').click();
+    if(e.key.toLowerCase()==='e') document.querySelector('[data-eye="OE"]').click();
+    if(e.key.toLowerCase()==='a') document.querySelector('[data-eye="AO"]').click();
+  });
+
+  // ===== Saída pronta para IPM/GERCON =====
+  const out = document.getElementById('out');
+  const corr = document.getElementById('corr');
+  const lum  = document.getElementById('lum');
+  function buildText(){
+    const OD = state.results.OD? state.results.OD : '—';
+    const OE = state.results.OE? state.results.OE : '—';
+    let t = `Acuidade para perto (40 cm) ${corr.value}, iluminação ${lum.value}.
+OD: ${OD}  •  OE: ${OE}.`;
+    return t;
+  }
+  function updateBadges(){
+    odBadge.textContent = 'OD: ' + (state.results.OD || '—');
+    oeBadge.textContent = 'OE: ' + (state.results.OE || '—');
+  }
+  function clearPickedUI(){
+    document.querySelectorAll('.jaeger-line').forEach(el=>{
+      el.removeAttribute('data-picked');
+      el.querySelector('.pick-badge').textContent='';
+    });
+  }
+  function chooseLine(tag, el){
+    if(!state.eye){ showToast('Selecione OD/OE/AO antes.'); return; }
+    // marcação visual
+    clearPickedUI();
+    el.setAttribute('data-picked','');
+    if(state.eye==='AO'){ state.results.OD = tag; state.results.OE = tag; el.querySelector('.pick-badge').textContent = 'Aplicado em AO'; }
+    else {
+      state.results[state.eye] = tag;
+      el.querySelector('.pick-badge').textContent = state.eye+': '+tag;
+    }
+    out.value = buildText();
+    updateBadges();
+    showToast(`${state.eye}: ${tag}`);
+  }
+  corr.addEventListener('change', ()=> out.value = buildText());
+  lum.addEventListener('change',  ()=> out.value = buildText());
+  document.getElementById('copy').addEventListener('click', async()=>{
+    try{ await navigator.clipboard.writeText(out.value); showToast('Copiado'); }catch(e){ showToast('Não foi possível copiar'); }
+  });
+  document.getElementById('clear').addEventListener('click', ()=>{
+    state.results={OD:null,OE:null}; state.eye=null; out.value='';
+    document.querySelectorAll('[data-eye]').forEach(b=>b.classList.remove('active'));
+    clearPickedUI(); updateBadges();
+  });
+
+  // ===== Tags rápidas =====
+  document.querySelectorAll('#tags button').forEach(b=>{
+    b.addEventListener('click',()=>{ out.value = (out.value? out.value+' ': '') + b.textContent + '.'; });
+  });
+
+  // ===== Toast =====
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(()=> toast.classList.remove('show'), 1200);
+  }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Sanitização do texto gerado
+  const out = document.getElementById('out') || document.querySelector('[data-panel="output"] textarea') || document.querySelector('textarea');
+  function sanitizeOutput(txt){
+    if (!txt) return '';
+    let s = String(txt);
+    s = s.replace(/\s*—\s*/g, ' — ').replace(/\s*–\s*/g, ' – ');
+    s = s.replace(/#+\s*erro\b/gi, '').replace(/#{2,}/g, '');
+    s = s.replace(/\s+([,.;:!?])/g, '$1');
+    s = s.replace(/\n{3,}/g, '\n\n');
+    return s.trim();
+  }
+  const genBtn = Array.from(document.querySelectorAll('button,.btn')).find(b => /gerar\s*texto/i.test(b.textContent || ''));
+  if (genBtn && out) genBtn.addEventListener('click', () => setTimeout(() => { out.value = sanitizeOutput(out.value); out.dispatchEvent(new Event('input')); }, 0));
+  if (out) out.addEventListener('blur', () => { const s = sanitizeOutput(out.value); if (s !== out.value){ out.value = s; out.dispatchEvent(new Event('input')); } });
+
+  // Recolher MINI-TEA, M-CHAT e Visão em accordions (fechados por padrão)
+  const patterns = [/MINI-\s*TEA/i, /M-?CHAT/i, /Acuidade\s+Visual|Vis[aã]o/i];
+  function wrapAsAccordion(card, titleText){
+    if (!card || card.closest('details.rxi-acc')) return;
+    const details = document.createElement('details'); details.className='rxi-acc'; details.open=false;
+    const summary = document.createElement('summary');
+    const pill = document.createElement('span'); pill.className='acc-pill'; pill.textContent='+';
+    const title = document.createElement('span'); title.textContent = titleText;
+    summary.appendChild(pill); summary.appendChild(title);
+    const body = document.createElement('div'); body.className='acc-body';
+    const parent = card.parentElement; parent.insertBefore(details, card);
+    details.appendChild(summary); details.appendChild(body); body.appendChild(card);
+    details.addEventListener('toggle', () => { pill.textContent = details.open ? '–' : '+'; });
+  }
+  document.querySelectorAll('h1,h2,h3,h4').forEach(h => {
+    if (patterns.some(re => re.test(h.textContent || ''))) {
+      const card = h.closest('section,article,div');
+      if (card) wrapAsAccordion(card, (h.textContent || 'Ferramenta').trim());
+    }
+  });
+});
+</script>
+</body>
+</html>
+
