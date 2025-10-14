@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Sistema de Prescrição Médica - VERSÃO 2.0.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --radius:12px;
+      --shadow-soft:0 4px 12px rgba(16,24,40,.05);
+      --shadow-strong:0 10px 30px rgba(0,0,0,.15);
+      --ring:0 0 0 3px rgba(91,140,255,.2);
+      --transition-speed:.2s;
+      --font-stack:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,"Helvetica Neue",sans-serif;
+      --font-title:'Montserrat', var(--font-stack);
+    }
+    html[data-theme="light"]{
+      --bg:#F7F9FC; --bg-grad-1:transparent; --bg-grad-2:transparent;
+      --panel:#fff; --panel-2:#fcfdff; --paper:#fff; --paper-inner:#fdfdfd;
+      --ink:#1f2330; --muted:#5b6b8c; --line:#E3EAF6; --line-sub:#CFD7E6;
+      --accent:#5b8cff; --accent-2:#3b6bff; --good:#28c385; --warn:#ffcc66; --danger:#ff6b6b;
+      --chip-bg:#eef3ff; --chip-border:#cfe0ff; --chip-ink:#21304d;
+      --chip-bg-active:#e4ecff; --chip-border-active:#bcd0ff;
+      --field-bg:#fff; --field-border:#CFD7E6; --field-ink:#1f2330;
+      --focus-border:var(--accent); --focus-ring:rgba(91,140,255,.15);
+      --btn-ghost-ink:#5b6b8c; --btn-ghost-bg:transparent; --btn-ghost-b:#CFD7E6;
+      --paper-stroke:#E3EAF6; --text-on-paper:#111; --med-on-paper:#0f172a; --pos-on-paper:#202637; --field-on-paper:#f7f7f7;
+    }
+    html[data-theme="dark"]{
+      --bg:#0f172a; --bg-grad-1:rgba(56,189,248,.12); --bg-grad-2:rgba(34,197,94,.10);
+      --panel:#0b1220; --panel-2:#0d1424; --paper:#0b1220; --paper-inner:#0f172a;
+      --ink:#e5e7eb; --muted:#94a3b8; --line:#1f2937; --line-sub:#20304b;
+      --accent:#38bdf8; --accent-2:#22c55e; --good:#22c55e; --warn:#ffcc66; --danger:#ef4444;
+      --chip-bg:#0b1426; --chip-border:#20304b; --chip-ink:#cbd5e1;
+      --chip-bg-active:#0f1a2e; --chip-border-active:#20304b;
+      --field-bg:#0a1120; --field-border:#1f2a40; --field-ink:#e5e7eb;
+      --focus-border:#2e8cff; --focus-ring:rgba(56,189,248,.08);
+      --btn-ghost-ink:#cbd5e1; --btn-ghost-bg:#101827; --btn-ghost-b:#1f2937;
+      --paper-stroke:#1f2937; --text-on-paper:#e5e7eb; --med-on-paper:#e5e7eb; --pos-on-paper:#cbd5e1; --field-on-paper:#0d1424;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 700px at 80% -10%, var(--bg-grad-1), transparent 60%),
+        radial-gradient(1000px 600px at 0% 0%, var(--bg-grad-2), transparent 50%),
+        var(--bg);
+      font-family:var(--font-stack);
+      color:var(--ink);
+      transition:background var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out;
+      font-size:16px; line-height:1.6;
+    }
+    .app{
+      max-width:1600px; margin:70px auto 16px; padding:0 16px 16px;
+      display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:stretch; min-height:calc(100vh - 120px);
+    }
+    .panel{
+      background:linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-strong);
+      display:flex; flex-direction:column; min-height:0;
+    }
+    .panel-header{
+      padding:10px 12px; border-bottom:1px solid var(--line);
+      display:flex; justify-content:space-between; align-items:center; font-weight:700; font-size:1.2em;
+    }
+    .panel-body{padding:14px; display:grid; gap:12px; overflow-y:auto}
+    .group{
+      display:grid; gap:10px; padding:12px; background:var(--panel-2);
+      border:1px solid var(--line); border-radius:var(--radius);
+    }
+    .group-title{
+      font-weight:700; font-size:1em; color:var(--ink); border-bottom:1px solid var(--line-sub);
+      padding-bottom:6px; margin-bottom:8px;
+    }
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    .row{display:flex; flex-direction:column; gap:4px}
+    label{font-size:.9em; color:var(--muted); display:block}
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%; padding:10px; border:1px solid var(--field-border); border-radius:var(--radius);
+      background:var(--field-bg); color:var(--field-ink); font-size:1em;
+      transition:border-color var(--transition-speed), box-shadow var(--transition-speed), background var(--transition-speed);
+    }
+    input::placeholder, textarea::placeholder{color:var(--muted); opacity:.7}
+    input:focus, select:focus, textarea:focus{border-color:var(--focus-border); box-shadow:var(--focus-ring); outline:none}
+    textarea{min-height:60px; resize:vertical}
+    .btn-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px}
+    .btn{
+      appearance:none; border:none; border-radius:var(--radius); padding:10px 14px;
+      font-weight:700; letter-spacing:.2px; color:#fff;
+      background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow:var(--shadow-soft); cursor:pointer; transition:transform .06s, filter var(--transition-speed), opacity var(--transition-speed);
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; flex-shrink:0;
+    }
+    .btn:hover{filter:brightness(1.06)}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:linear-gradient(180deg, var(--panel-2), var(--panel)); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line-sub)}
+    .btn.good{background:linear-gradient(180deg,#2ad597,#19b57f); box-shadow:0 6px 14px rgba(40,195,133,.35)}
+    .btn.warn{background:linear-gradient(180deg,#ffd479,#ffb857); color:#2a1f00; box-shadow:0 6px 14px rgba(255,184,87,.35)}
+    .btn.danger{background:linear-gradient(180deg,#ff8080,#ff6b6b); box-shadow:0 6px 14px rgba(255,107,107,.35)}
+    .btn.ghost{background:var(--btn-ghost-bg); color:var(--btn-ghost-ink); box-shadow:inset 0 0 0 1px var(--btn-ghost-b)}
+    .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .pill{
+      padding:8px 12px; font-size:.9em; border-radius:999px; background:var(--chip-bg); color:var(--chip-ink);
+      border:1px solid var(--chip-border); cursor:pointer; user-select:none;
+      transition:background var(--transition-speed), transform .06s, box-shadow var(--transition-speed), border-color var(--transition-speed);
+    }
+    .pill:hover{transform:translateY(-1px); background:var(--chip-bg-active); border-color:var(--chip-border-active)}
+    .pill--highlight{box-shadow:0 0 0 2px var(--focus-border), 0 0 12px rgba(91,140,255,.3); border-color:var(--focus-border); font-weight:600}
+    @keyframes pillPulse{0%{box-shadow:0 0 0 0 rgba(91,140,255,.28)}100%{box-shadow:0 0 0 10px rgba(91,140,255,0)}}
+    .pill--pulse{animation:pillPulse 900ms ease-out 1}
+    .theme-toggle{
+      position:fixed; z-index:1000; top:12px; right:12px; display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px; border-radius:var(--radius); cursor:pointer; background:linear-gradient(135deg, var(--accent), var(--accent-2));
+      color:#fff; font-weight:700; letter-spacing:.2px; box-shadow:0 6px 16px rgba(0,0,0,.2); user-select:none; border:none;
+    }
+    .theme-toggle:hover{filter:brightness(1.06)}
+    .theme-toggle .dot{width:10px; height:10px; border-radius:999px; background:#fff; opacity:.9; box-shadow:0 0 0 5px rgba(255,255,255,.15), 0 0 15px rgba(255,255,255,.3)}
+    .paper-wrap{position:relative; top:0; overflow:auto}
+    .paper{
+      width:210mm; min-height:297mm; background:var(--paper); color:var(--text-on-paper);
+      border-radius:var(--radius); border:1px solid var(--paper-stroke); box-shadow:var(--shadow-strong);
+      margin:16px auto; overflow:hidden; display:grid; grid-template-rows:auto 1fr; font-size:12pt; line-height:1.5; position:relative;
+    }
+    .fixed-header, .fixed-footer{
+      position:absolute; left:15mm; right:15mm; width:calc(100% - 30mm); display:flex; justify-content:center; align-items:center; z-index:2;
+    }
+    .fixed-header{ top:10mm; height:30mm }
+    .fixed-footer{ bottom:10mm; height:22mm }
+    .fixed-header img, .fixed-footer img{ max-width:100%; max-height:100%; object-fit:contain; display:block }
+    .content-area{
+      padding:0 12mm;
+      padding-top:calc(10mm + 30mm + 8mm);
+      padding-bottom:calc(10mm + 22mm + 8mm);
+    }
+    .rx-title-group{ margin-bottom:4mm }
+    .rx-title-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:2mm }
+    .doc-badge{
+      display:inline-block; padding:4px 12px; border-radius:999px;
+      background:var(--chip-bg); color:var(--chip-ink); border:1px solid var(--chip-border);
+      font-family:var(--font-title); font-size:12pt; font-weight:700; letter-spacing:.2px;
+      text-align:center;
+    }
+    .rx-info{ display:grid; gap:6px; font-size:11.5pt; margin-bottom:8mm }
+    .rx-info .field{
+      padding:8px 10px; border:1px solid var(--line-sub); border-radius:6px; background:var(--field-on-paper);
+      color:#111; white-space:normal; overflow:visible; text-overflow:clip;
+    }
+    .rx-info .wide{ font-size:12pt; font-weight:600 }
+    .rx-info .row-3col{ display:grid; grid-template-columns: 0.6fr 0.8fr 1.6fr; gap:10px }
+    .rx-info .note{ font-size:11.5pt; font-weight:500 }
+    .rx-route{
+      font-size:11pt; color:var(--muted); border-bottom:1px solid var(--line);
+      padding-bottom:4mm; margin-bottom:4mm;
+    }
+    .rx-list{ display:grid; gap:6mm }
+    .rx-item{
+      position:relative; padding:4mm; border:1px solid var(--line); border-radius:var(--radius);
+      background:var(--paper-inner); page-break-inside:avoid; break-inside:avoid;
+    }
+    .rx-item .med{ font-weight:700; font-size:12pt; color:var(--med-on-paper); margin-bottom:2mm }
+    .rx-item .pos{ font-size:11pt; color:var(--pos-on-paper) }
+    .rx-item .rec{ font-size:10pt; color:var(--muted); margin-top:1mm; font-style:italic }
+    .rx-item .qty{ font-size:10pt; color:var(--muted); margin-top:1mm }
+    .rx-del{
+      position:absolute; top:4px; right:4px; width:26px; height:26px; border-radius:50%;
+      background:rgba(255,107,107,.15); color:#ff4d4d; border:1px solid rgba(255,107,107,.4);
+      cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1;
+      box-shadow:var(--shadow-soft); transition:all var(--transition-speed); z-index:3;
+    }
+    .rx-del:hover{ transform:scale(1.08) }
+    #toast-container{ position:fixed; bottom:20px; right:20px; z-index:10000; display:flex; flex-direction:column-reverse; gap:10px; pointer-events:none }
+    .toast{
+      background-color:rgba(50,50,50,.9); color:white; padding:12px 18px; border-radius:var(--radius); box-shadow:0 4px 15px rgba(0,0,0,.3);
+      opacity:0; transform:translateY(20px); transition:opacity .3s ease-out, transform .3s ease-out; pointer-events:auto; min-width:250px; max-width:350px; font-size:.9em
+    }
+    .toast.show{ opacity:1; transform:translateY(0) }
+    .toast.hide{ opacity:0; transform:translateY(20px) }
+    .toast-success{ background-color:var(--good) }
+    .toast-error{ background-color:var(--danger) }
+    .toast-info{ background-color:var(--accent) }
+    @media print{
+      @page{ size:A4; margin:0 }
+      body{ background:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact }
+      .app, .panel, .theme-toggle, .no-print, #toast-container{ display:none !important }
+      .paper-wrap{ display:block !important; overflow:visible !important }
+      .paper{
+        width:210mm !important; min-height:297mm !important; border:none !important; box-shadow:none !important; border-radius:0 !important;
+        margin:0 !important; background:#fff !important; color:#111 !important; display:block !important; position:relative;
+      }
+      .fixed-header, .fixed-footer{ position:absolute !important }
+      .content-area{ padding-left:12mm; padding-right:12mm }
+      .rx-item{ page-break-inside:avoid !important; break-inside:avoid !important; background:#fff !important; border:1px solid #eee !important }
+      .rx-del{ display:none !important }
+    }
+    @media (max-width:1024px){
+      .app{ grid-template-columns:1fr; min-height:auto }
+      .paper{ transform:scale(.95); transform-origin:top center; margin-top:0 }
+    }
+    @media (max-width:768px){
+      .app{ padding:0 8px 8px }
+      .grid-2,.grid-3{ grid-template-columns:1fr }
+      .panel-header{ font-size:1em }
+      .paper{ width:100%; min-height:auto; transform:none; margin:8px auto }
+      .btn-row{ flex-direction:column }
+    }
+  </style>
+</head>
+<body>
+  <button id="themeBtn" class="theme-toggle" type="button" aria-label="Alternar tema">
+    <span class="dot" aria-hidden="true"></span><span id="themeLabel">Claro</span>
+  </button>
+  <div class="app" id="appRoot">
+    <section class="panel no-print">
+      <div class="panel-header">
+        <div>
+          <div class="title">Gerador de Documento Médico</div>
+          <div class="muted">VERSÃO 2.0.1 — título centralizado, campo Documento, PDF revisado</div>
+        </div>
+        <div class="muted">v2.0.1</div>
+      </div>
+      <div class="panel-body">
+        <div class="info">
+          Este sistema não coleta dados em servidores. Tudo fica no seu navegador (LocalStorage).
+        </div>
+        <div class="group">
+          <div class="group-title">👤 Informações do Paciente</div>
+          <div class="row" style="grid-column:1 / span 2;">
+            <label for="iDocType">Tipo do documento</label>
+            <select id="iDocType">
+              <option selected>AUTOMÁTICO (PADRÃO)</option>
+              <option>RECEITUÁRIO SIMPLES - PRESCRIÇÃO</option>
+              <option>RECEITUÁRIO ANTIMICROBIANO EM DUAS VIAS PRESCRIÇÃO</option>
+              <option>RECEITUÁRIO DE CONTROLE ESPECIAL (C1) PRESCRIÇÃO</option>
+              <option>ATESTADO MÉDICO</option>
+              <option>LAUDO MÉDICO</option>
+              <option>VIA DE ORIENTAÇÃO PARA RECEITUÁRIO CONTROLADO (A/B) PRESCRIÇÃO NÃO VÁLIDA</option>
+            </select>
+            <small style="color:var(--muted)">
+              Padrão: <strong>AUTOMÁTICO</strong>. Ex.: “Levofloxacino” → Antimicrobiano; “Nortriptilina” → C1; demais → Simples.
+            </small>
+          </div>
+          <div class="row" style="grid-column:1 / span 2">
+            <label for="iNome">Nome do(a) paciente</label>
+            <input id="iNome" type="text" placeholder="Ex.: Maria da Silva" list="patientNames">
+            <datalist id="patientNames">
+              <option value="João Silva"></option>
+              <option value="Ana Paula Costa"></option>
+              <option value="Carlos Eduardo Martins"></option>
+            </datalist>
+          </div>
+          <div class="rx-info row-3col" style="margin:0; padding:0; border:none;">
+            <div class="row">
+              <label for="iIdade">Idade</label>
+              <input id="iIdade" type="number" placeholder="34" min="0" style="max-width:120px">
+            </div>
+            <div class="row">
+              <label for="iSexo">Sexo</label>
+              <select id="iSexo">
+                <option value="">Não especificado</option>
+                <option value="M">Masculino ♂️</option>
+                <option value="F">Feminino ♀️</option>
+                <option value="O">Outro ⚧️</option>
+              </select>
+            </div>
+            <div class="row">
+              <label for="iDocNum">Documento (CPF / RG / CNS)</label>
+              <input id="iDocNum" type="text" placeholder="Até 15 caracteres" maxlength="15">
+            </div>
+          </div>
+          <div class="row">
+            <label for="iDx">Diagnóstico/CID (opcional)</label>
+            <input id="iDx" type="text" placeholder="Ex.: Z760 - Prescrição de repetição">
+          </div>
+          <div class="row">
+            <label for="iObs">Observações gerais (opcional)</label>
+            <input id="iObs" type="text" placeholder="Ex.: Alergia conhecida a penicilina.">
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">Itens do documento</div>
+          <div class="row">
+            <label for="iVia">Via de administração principal</label>
+            <select id="iVia">
+              <optgroup label="Vias comuns">
+                <option>Uso interno / via oral</option>
+                <option>Uso externo / via tópica</option>
+                <option>Uso interno / via intramuscular</option>
+                <option>Uso interno / via intravenosa</option>
+              </optgroup>
+              <optgroup label="Outras vias">
+                <option>Uso interno / via sublingual</option>
+                <option>Uso externo / via inalatória</option>
+                <option>Uso externo / via nasal</option>
+                <option>Uso externo / via ocular</option>
+                <option value="Nenhuma">Nenhuma</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="row">
+            <label for="mMed">Medicamento</label>
+            <input id="mMed" list="meds" type="text" placeholder="Ex.: Azitromicina 500 mg">
+            <datalist id="meds">
+              <option value="Azitromicina 500 mg"></option>
+              <option value="Paracetamol 500 mg"></option>
+              <option value="Paracetamol 200 mg/mL"></option>
+              <option value="Dipirona 500 mg/mL"></option>
+              <option value="Amoxicilina 250 mg/5 mL"></option>
+              <option value="Ibuprofeno 100 mg/5 mL"></option>
+              <option value="Loratadina 10 mg"></option>
+              <option value="Metoclopramida 10 mg"></option>
+            </datalist>
+          </div>
+          <div class="row">
+            <label for="mPos">Posologia</label>
+            <input id="mPos" type="text" placeholder="Ex.: Tomar 1 comprimido, via oral, a cada 24 horas, por 5 dias.">
+          </div>
+          <div class="row">
+            <label for="mRec">Recomendações para este item (opcional)</label>
+            <input id="mRec" type="text" placeholder="Ex.: Beber bastante água durante o tratamento.">
+          </div>
+          <div class="pill-row" id="pillRow">
+            <div class="pill">Tomar 1 comprimido, via oral, 1 vez ao dia (no mesmo horário), por 5 dias.</div>
+            <div class="pill">Tomar 2 comprimidos, via oral, em dose única.</div>
+            <div class="pill">1 cp VO 12/12h 7d</div><div class="pill">1 cp VO 24/24h 10d</div>
+            <div class="pill">1 cp VO 6/6h se dor/febre</div><div class="pill">1 cp VO 1x/dia uso cont.</div>
+            <div class="pill">1 cp VO antes de dormir</div><div class="pill">1 cp VO dose única</div><div class="pill">1 cp VO após refeições</div>
+            <div class="pill">1 cp VO manhã e noite</div><div class="pill">5 mL VO 8/8h 7d</div><div class="pill">10 mL VO 12/12h 5d</div>
+            <div class="pill">20 gt VO 6/6h se dor</div><div class="pill">15 mL VO 1x/dia</div><div class="pill">2,5 mL VO 8/8h 10d</div>
+            <div class="pill">Aplicar 2x/dia 7d</div><div class="pill">Aplicar 3x/dia até melhora</div><div class="pill">Pomada à noite</div>
+            <div class="pill">Aplicar 1x/dia após banho</div><div class="pill">1 gt em cada olho 8/8h 5d</div><div class="pill">2 gt no olho afetado 3x/dia</div>
+            <div class="pill">1 amp IM dose única</div><div class="pill">X UI SC 1x/dia</div><div class="pill">1 ampola IM 24/24h 3d</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn good" id="btnAddItem" title="Adicionar Item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" fill="none"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+              <span>adicionar item</span>
+            </button>
+            <button class="btn secondary" id="btnClearMedInputs">✨ Limpar Campos</button>
+            <button class="btn ghost" id="btnExAzitro1">⚡ Azitromicina 1x/dia (5d)</button>
+            <button class="btn ghost" id="btnExAzitro2">⚡ Azitromicina dose única</button>
+          </div>
+          <div class="mini" style="color:var(--muted); font-size:.9em;">Dica: clique nas pílulas para preencher a posologia.</div>
+        </div>
+        <div class="group">
+          <div class="group-title">🗄️ Histórico de Prescrições</div>
+          <div class="row">
+            <label for="savedPrescriptions">Carregar Prescrição Salva</label>
+            <select id="savedPrescriptions">
+              <option value="">-- Selecione uma prescrição --</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btnSavePrescription">💾 Salvar Prescrição Atual</button>
+            <button class="btn danger" id="btnDeleteSelectedPrescription" disabled>❌ Excluir Selecionada</button>
+          </div>
+        </div>
+      </div>
+      <div class="actions no-print" style="padding:14px">
+        <div class="btn-row">
+          <button class="btn" id="btnGeneratePDF">🧾 Gerar PDF</button>
+          <button class="btn warn" id="btnPrintDocument">🖨️ Imprimir</button>
+        </div>
+        <button class="btn danger" id="btnResetAll" style="margin-top:10px">🔁 Novo Documento (Limpar Tudo)</button>
+      </div>
+    </section>
+    <section class="panel paper-wrap">
+      <div id="prescriptionPreviewContainer" class="paper"></div>
+    </section>
+  </div>
+  <div id="toast-container"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-YcsIP8s+RfX8YpIPQmSl9GeLJkK5m4OQeEidEWo6m1k2TnLw8m7vfw0lCRYq5sP5V4BB1f7ySz4r8rCwM4JQmA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const DEFAULT_HEADER_URL = 'https://raw.githubusercontent.com/receitailustrada/rxi-imagens/refs/heads/main/topo-IMG-ESFX-IPM-CA-SUS.png';
+      const DEFAULT_FOOTER_URL = 'https://raw.githubusercontent.com/receitailustrada/rxi-imagens/refs/heads/main/rodape-RXI-DFA-SUS.png';
+      const LS_KEYS = {
+        THEME: 'rxi_theme',
+        PATIENT: 'rxi_patient',
+        PRESCRIPTION_ITEMS: 'rxi_prescription_items',
+        SAVED_PRESCRIPTIONS: 'rxi_saved_prescriptions',
+        DOC_TYPE: 'rxi_doc_type'
+      };
+      const $ = (id) => document.getElementById(id);
+      const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+      const LS = {
+        get: (key, fallback) => {
+          try {
+            return localStorage.getItem(key) ?? fallback;
+          } catch (err) {
+            console.warn('LocalStorage inacessível', err);
+            return fallback;
+          }
+        },
+        set: (key, value) => {
+          try {
+            localStorage.setItem(key, value);
+          } catch (err) {
+            console.warn('Não foi possível salvar em LocalStorage', err);
+          }
+        },
+        del: (key) => {
+          try {
+            localStorage.removeItem(key);
+          } catch (err) {
+            console.warn('Não foi possível remover do LocalStorage', err);
+          }
+        }
+      };
+      const state = {
+        patient: {
+          nome: '', idade: '', sexo: '', docnum: '', dx: '', obs: ''
+        },
+        prescriptionItems: [],
+        savedPrescriptions: [],
+        docType: 'AUTOMÁTICO (PADRÃO)',
+        docTypeManual: false
+      };
+      const raf2 = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      function showToast(message, type = 'info', duration = 3000) {
+        let container = $('toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'toast-container';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        void toast.offsetHeight;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.add('hide');
+          toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+        }, duration);
+      }
+      function applyTheme(theme) {
+        const t = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        const label = $('themeLabel');
+        if (label) {
+          label.textContent = t === 'dark' ? 'Escuro' : 'Claro';
+        }
+        LS.set(LS_KEYS.THEME, t);
+      }
+      $('themeBtn').addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+      applyTheme(LS.get(LS_KEYS.THEME, 'light'));
+      const LIST_Antimicrobiano = [
+        'amoxicilina', 'azitromicina', 'levofloxacino', 'ciprofloxacino', 'claritromicina', 'clindamicina',
+        'sulfametoxazol', 'trimetoprima', 'doxiciclina', 'cefalexina', 'cefadroxila', 'nitrofurantoína',
+        'amoxicilina + clavulanato', 'amoxacilina + clavulanato', 'amox-clav'
+      ];
+      const LIST_C1 = [
+        'clonazepam', 'diazepam', 'bromazepam', 'amitriptilina', 'nortriptilina', 'fluoxetina', 'sertralina',
+        'paroxetina', 'venlafaxina', 'quetiapina', 'risperidona', 'haloperidol', 'clorpromazina',
+        'carbamazepina', 'ácido valpróico', 'acido valproico', 'valproato'
+      ];
+      function classifyDocTypeForMed(name) {
+        const normalized = (name || '').toLowerCase();
+        if (LIST_C1.some((term) => normalized.includes(term))) {
+          return 'RECEITUÁRIO DE CONTROLE ESPECIAL (C1) PRESCRIÇÃO';
+        }
+        if (LIST_Antimicrobiano.some((term) => normalized.includes(term))) {
+          return 'RECEITUÁRIO ANTIMICROBIANO EM DUAS VIAS PRESCRIÇÃO';
+        }
+        return 'RECEITUÁRIO SIMPLES - PRESCRIÇÃO';
+      }
+      function computeAutoDocType(items) {
+        let hasC1 = false;
+        let hasATB = false;
+        for (const item of items) {
+          const classification = classifyDocTypeForMed(item.med);
+          if (classification.includes('(C1)')) {
+            hasC1 = true;
+            break;
+          }
+          if (classification.includes('ANTIMICROBIANO')) {
+            hasATB = true;
+          }
+        }
+        if (hasC1) {
+          return 'RECEITUÁRIO DE CONTROLE ESPECIAL (C1) PRESCRIÇÃO';
+        }
+        if (hasATB) {
+          return 'RECEITUÁRIO ANTIMICROBIANO EM DUAS VIAS PRESCRIÇÃO';
+        }
+        return 'RECEITUÁRIO SIMPLES - PRESCRIÇÃO';
+      }
+      const prescriptionTemplate = () => `
+        <div id="prescription" class="paper">
+          <div class="fixed-header">
+            <img id="rxHeaderImage" alt="Cabeçalho">
+          </div>
+          <div class="fixed-footer">
+            <img id="rxFooterImage" alt="Rodapé / Assinatura">
+          </div>
+          <div class="content-area">
+            <div class="rx-title-group">
+              <div class="rx-title-row">
+                <span class="doc-badge" id="pDocType">RECEITUÁRIO SIMPLES - PRESCRIÇÃO</span>
+              </div>
+              <div class="rx-title-right" id="pDataRx" style="text-align:center; color:var(--muted); font-size:11pt;">Data: --/--/----</div>
+            </div>
+            <div class="rx-info">
+              <div class="field wide" id="pNome">Paciente: —</div>
+              <div class="row-3col">
+                <div class="field" id="pIdade">Idade: —</div>
+                <div class="field" id="pSexo">Sexo: —</div>
+                <div class="field" id="pDocNum">Documento: —</div>
+              </div>
+              <div class="field wide" id="pDx" style="display:none;"></div>
+              <div class="field note" id="pObs" style="display:none;"></div>
+            </div>
+            <div class="rx-route" id="pVia">Via: —</div>
+            <div class="rx-body">
+              <div id="rxList" class="rx-list"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      const DOSE_HINTS = {
+        azitromicina: [/1 vez ao dia.*5 dias/i, /dose única/i],
+        amoxicilina: [/8\/8h.*7d/i],
+        paracetamol: [/6\/6h.*dor/i, /1x\/dia uso cont/i],
+        dipirona: [/6\/6h/i],
+        ibuprofeno: [/8\/8h|12\/12h/i],
+        loratadina: [/1x\/dia/i],
+        metoclopramida: [/8\/8h|6\/6h/i]
+      };
+      const SYMPT_QTY = {
+        paracetamol: 20,
+        dipirona: 20,
+        metoclopramida: 20,
+        loratadina: 20,
+        dexclorfeniramina: 20,
+        'paracetamol + codeína': 36,
+        'codeína + paracetamol': 36
+      };
+      const CONTROLLED = ['clonazepam', 'diazepam', 'bromazepam', 'clorpromazina', 'amitriptilina', 'nortriptilina', 'haloperidol', 'fluoxetina', 'risperidona'];
+      function normalizeMedName(raw) {
+        if (!raw) return '';
+        let s = raw.trim();
+        s = s.replace(/\s+/g, ' ');
+        s = s.replace(/(\d)(?=(mg|mcg|g|mL|ml|UI|U|%|mcg\/dose))/gi, '$1 ');
+        s = s.replace(/(\d)\s?(mg|mcg|g|mL|ml|UI|U|%)/gi, (_, num, unit) => `${num} ${unit.toUpperCase().replace('ML', 'mL')}`);
+        s = s.replace(/\s*\+\s*/g, ' + ');
+        s = s.replace(/\s*\/\s*/g, '/');
+        s = s.replace(/\bui\b/gi, 'UI');
+        s = s.replace(/\bml\b/g, 'mL');
+        return s;
+      }
+      function highlightPillsForMed(name) {
+        const pills = $$('#pillRow .pill');
+        pills.forEach((pill) => pill.classList.remove('pill--highlight', 'pill--pulse'));
+        if (!name) return;
+        const medName = name.toLowerCase();
+        const rulesKey = Object.keys(DOSE_HINTS).find((key) => medName.includes(key));
+        if (!rulesKey) return;
+        const patterns = DOSE_HINTS[rulesKey];
+        pills.forEach((pill) => {
+          if (patterns.some((regex) => regex.test(pill.textContent))) {
+            pill.classList.add('pill--highlight', 'pill--pulse');
+            setTimeout(() => pill.classList.remove('pill--pulse'), 900);
+          }
+        });
+      }
+      function dailyFromPos(pos) {
+        if (!pos) return null;
+        const s = pos.toLowerCase();
+        if (/6\/6h/.test(s)) return 4;
+        if (/8\/8h/.test(s)) return 3;
+        if (/12\/12h/.test(s)) return 2;
+        if (/24\/24h|1x\/dia|uma vez ao dia|1 vez ao dia/.test(s)) return 1;
+        if (/manh(ã|a).+noite/.test(s)) return 2;
+        if (/antes de dormir/.test(s)) return 1;
+        return null;
+      }
+      function daysFromPos(pos) {
+        if (!pos) return null;
+        const match = pos.match(/por\s+(\d+)\s*dias?/i);
+        if (match) return parseInt(match[1], 10);
+        if (/dose única|dose unica/i.test(pos)) return 1;
+        return null;
+      }
+      function isContinuous(pos) {
+        return /uso cont(ínuo|inuo)|contínuo|continuo/i.test(pos || '');
+      }
+      function isControlled(med) {
+        const name = (med || '').toLowerCase();
+        return CONTROLLED.some((term) => name.includes(term));
+      }
+      function quantityHeuristic(med, pos) {
+        const name = (med || '').toLowerCase();
+        for (const key of Object.keys(SYMPT_QTY)) {
+          if (name.includes(key)) {
+            return SYMPT_QTY[key];
+          }
+        }
+        if (isContinuous(pos)) {
+          return (dailyFromPos(pos) ?? 1) * 30;
+        }
+        const days = daysFromPos(pos);
+        if (isControlled(med) && !days) {
+          return (dailyFromPos(pos) ?? 1) * 60;
+        }
+        if (days) {
+          return (dailyFromPos(pos) ?? 1) * days;
+        }
+        return null;
+      }
+      let previewEl = null;
+      function updateInfoBlock(target) {
+        const patient = state.patient;
+        const docBadge = target.querySelector('#pDocType');
+        const effectiveDocType = state.docTypeManual ? state.docType : computeAutoDocType(state.prescriptionItems);
+        docBadge.textContent = effectiveDocType;
+        target.querySelector('#pNome').textContent = `Paciente: ${patient.nome || '—'}`;
+        target.querySelector('#pIdade').textContent = `Idade: ${patient.idade || '—'}`;
+        target.querySelector('#pSexo').textContent = `Sexo: ${patient.sexo || '—'}`;
+        target.querySelector('#pDocNum').textContent = `Documento: ${patient.docnum || '—'}`;
+        const dxEl = target.querySelector('#pDx');
+        if (patient.dx) {
+          dxEl.style.display = '';
+          dxEl.textContent = `Diagnóstico/CID: ${patient.dx}`;
+        } else {
+          dxEl.style.display = 'none';
+        }
+        const obsEl = target.querySelector('#pObs');
+        if (patient.obs) {
+          obsEl.style.display = '';
+          obsEl.textContent = `Observações: ${patient.obs}`;
+        } else {
+          obsEl.style.display = 'none';
+        }
+        target.querySelector('#pDataRx').textContent = `Data: ${new Date().toLocaleDateString('pt-BR')}`;
+        const viaEl = target.querySelector('#pVia');
+        const viaSel = $('iVia').value || 'Nenhuma';
+        if (viaSel === 'Nenhuma') {
+          viaEl.style.display = 'none';
+        } else {
+          viaEl.style.display = '';
+          viaEl.textContent = `Via: ${viaSel}`;
+        }
+      }
+      function renderMedicationList(target) {
+        const list = target.querySelector('#rxList');
+        list.innerHTML = '';
+        if (state.prescriptionItems.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'rx-item';
+          empty.innerHTML = '<div class="med">Nenhum item adicionado.</div><div class="pos">Use os campos acima para adicionar medicamentos.</div>';
+          list.appendChild(empty);
+          return;
+        }
+        state.prescriptionItems.forEach((item, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'rx-item';
+          itemDiv.dataset.index = index;
+          let html = `<div class="med">${item.med}</div>`;
+          if (item.pos) html += `<div class="pos">${item.pos}</div>`;
+          if (item.rec) html += `<div class="rec">Recomendação: ${item.rec}</div>`;
+          if (item.qty) html += `<div class="qty">Quantidade sugerida: ${item.qty} unidades</div>`;
+          html += '<button type="button" class="rx-del" title="Remover item">×</button>';
+          itemDiv.innerHTML = html;
+          list.appendChild(itemDiv);
+        });
+      }
+      function ensurePreview() {
+        if (!previewEl) {
+          const wrap = $('prescriptionPreviewContainer');
+          wrap.innerHTML = prescriptionTemplate();
+          previewEl = wrap.firstElementChild;
+          previewEl.addEventListener('click', (event) => {
+            const btn = event.target.closest('.rx-del');
+            if (!btn) return;
+            const item = btn.closest('.rx-item');
+            const index = Number(item?.dataset.index);
+            if (Number.isInteger(index)) {
+              removeMedicationItem(index);
+            }
+          });
+        }
+        return previewEl;
+      }
+      function renderPreview() {
+        const root = ensurePreview();
+        root.querySelector('#rxHeaderImage').src = DEFAULT_HEADER_URL;
+        root.querySelector('#rxFooterImage').src = DEFAULT_FOOTER_URL;
+        updateInfoBlock(root);
+        renderMedicationList(root);
+      }
+      function persistPatient() {
+        LS.set(LS_KEYS.PATIENT, JSON.stringify(state.patient));
+      }
+      function syncPatientFromInputs() {
+        state.patient = {
+          nome: $('iNome').value.trim(),
+          idade: $('iIdade').value.trim(),
+          sexo: $('iSexo').value,
+          docnum: $('iDocNum').value.trim(),
+          dx: $('iDx').value.trim(),
+          obs: $('iObs').value.trim()
+        };
+        persistPatient();
+        renderPreview();
+      }
+      function syncDocType() {
+        const selected = $('iDocType').value;
+        state.docTypeManual = selected !== 'AUTOMÁTICO (PADRÃO)';
+        state.docType = selected;
+        LS.set(LS_KEYS.DOC_TYPE, state.docType);
+        renderPreview();
+      }
+      function persistItems() {
+        LS.set(LS_KEYS.PRESCRIPTION_ITEMS, JSON.stringify(state.prescriptionItems));
+      }
+      function addMedicationItem() {
+        const medRaw = $('mMed').value;
+        const pos = $('mPos').value.trim();
+        const rec = $('mRec').value.trim();
+        const med = normalizeMedName(medRaw);
+        if (!med) {
+          showToast('O campo "Medicamento" é obrigatório.', 'error');
+          $('mMed').focus();
+          return;
+        }
+        const qty = quantityHeuristic(med, pos);
+        state.prescriptionItems.push({ med, pos, rec, qty });
+        persistItems();
+        if (!state.docTypeManual) {
+          state.docType = computeAutoDocType(state.prescriptionItems);
+          LS.set(LS_KEYS.DOC_TYPE, state.docType);
+          $('iDocType').value = 'AUTOMÁTICO (PADRÃO)';
+        }
+        $('mMed').value = '';
+        $('mPos').value = '';
+        $('mRec').value = '';
+        highlightPillsForMed('');
+        renderPreview();
+        showToast('Item adicionado!', 'success');
+        $('mMed').focus();
+      }
+      function removeMedicationItem(index) {
+        state.prescriptionItems.splice(index, 1);
+        persistItems();
+        if (!state.docTypeManual) {
+          state.docType = computeAutoDocType(state.prescriptionItems);
+          LS.set(LS_KEYS.DOC_TYPE, state.docType);
+          $('iDocType').value = 'AUTOMÁTICO (PADRÃO)';
+        }
+        renderPreview();
+        showToast('Item removido.', 'info');
+      }
+      function buildDocNode() {
+        const container = document.createElement('div');
+        container.innerHTML = prescriptionTemplate();
+        const node = container.firstElementChild;
+        node.querySelector('#rxHeaderImage').src = DEFAULT_HEADER_URL;
+        node.querySelector('#rxFooterImage').src = DEFAULT_FOOTER_URL;
+        updateInfoBlock(node);
+        renderMedicationList(node);
+        return node;
+      }
+      async function generatePDF() {
+        if (!state.prescriptionItems.length && !state.patient.nome) {
+          showToast('Adicione itens antes de gerar o PDF.', 'error');
+          return;
+        }
+        const node = buildDocNode();
+        document.body.appendChild(node);
+        await raf2();
+        try {
+          const safeName = (state.patient.nome || 'documento').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+          const options = {
+            margin: [0, 0, 0, 0],
+            filename: `documento_${safeName}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, logging: false, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+          };
+          await html2pdf().set(options).from(node).save();
+          showToast('PDF gerado com sucesso!', 'success');
+        } catch (error) {
+          console.error(error);
+          showToast('Erro ao gerar PDF.', 'error');
+        } finally {
+          node.remove();
+        }
+      }
+      async function printDocument() {
+        if (!state.prescriptionItems.length && !state.patient.nome) {
+          showToast('Adicione itens antes de imprimir.', 'error');
+          return;
+        }
+        const node = buildDocNode();
+        document.body.appendChild(node);
+        await raf2();
+        const cleanup = () => {
+          node.remove();
+          window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        window.print();
+      }
+      function resetAllData() {
+        if (!confirm('Limpar TODOS os dados e começar um novo documento?')) return;
+        state.patient = { nome: '', idade: '', sexo: '', docnum: '', dx: '', obs: '' };
+        state.prescriptionItems = [];
+        state.savedPrescriptions = [];
+        state.docType = 'AUTOMÁTICO (PADRÃO)';
+        state.docTypeManual = false;
+        Object.values(LS_KEYS).forEach((key) => LS.del(key));
+        $('iDocType').value = 'AUTOMÁTICO (PADRÃO)';
+        $('iNome').value = '';
+        $('iIdade').value = '';
+        $('iSexo').value = '';
+        $('iDocNum').value = '';
+        $('iDx').value = '';
+        $('iObs').value = '';
+        $('mMed').value = '';
+        $('mPos').value = '';
+        $('mRec').value = '';
+        loadSavedPrescriptions();
+        renderPreview();
+        showToast('Todos os dados foram resetados.', 'info');
+      }
+      function updateSavedSelectOptions() {
+        const select = $('savedPrescriptions');
+        select.innerHTML = '<option value="">-- Selecione uma prescrição --</option>';
+        state.savedPrescriptions.forEach((prescription, index) => {
+          const opt = document.createElement('option');
+          opt.value = String(index);
+          const label = `${prescription.name || (prescription.patient?.nome || 'Paciente')} - ${prescription.date || ''}`;
+          opt.textContent = label.trim();
+          select.appendChild(opt);
+        });
+        updateDeleteButtonState();
+      }
+      function persistSavedPrescriptions() {
+        LS.set(LS_KEYS.SAVED_PRESCRIPTIONS, JSON.stringify(state.savedPrescriptions));
+      }
+      function saveCurrentPrescription() {
+        if (!state.patient.nome && state.prescriptionItems.length === 0) {
+          showToast('Não há informações suficientes para salvar.', 'error');
+          return;
+        }
+        const name = prompt('Nome para esta prescrição (ex: "Paciente X - 2025-10-13"):');
+        if (!name) {
+          showToast('Salvamento cancelado.', 'info');
+          return;
+        }
+        const effectiveDocType = state.docTypeManual ? state.docType : computeAutoDocType(state.prescriptionItems);
+        const saved = {
+          name,
+          date: new Date().toLocaleDateString('pt-BR'),
+          patient: { ...state.patient },
+          items: state.prescriptionItems.map((item) => ({ ...item })),
+          docType: effectiveDocType
+        };
+        state.savedPrescriptions.push(saved);
+        persistSavedPrescriptions();
+        updateSavedSelectOptions();
+        showToast('Prescrição salva!', 'success');
+      }
+      function loadSelectedPrescription() {
+        const select = $('savedPrescriptions');
+        if (!select.value) {
+          updateDeleteButtonState();
+          return;
+        }
+        const idx = Number(select.value);
+        const saved = state.savedPrescriptions[idx];
+        if (!saved) {
+          showToast('Prescrição não encontrada.', 'error');
+          return;
+        }
+        state.patient = { ...saved.patient };
+        $('iNome').value = state.patient.nome || '';
+        $('iIdade').value = state.patient.idade || '';
+        $('iSexo').value = state.patient.sexo || '';
+        $('iDocNum').value = state.patient.docnum || '';
+        $('iDx').value = state.patient.dx || '';
+        $('iObs').value = state.patient.obs || '';
+        state.prescriptionItems = saved.items.map((item) => ({ ...item }));
+        state.docTypeManual = false;
+        state.docType = computeAutoDocType(state.prescriptionItems);
+        $('iDocType').value = 'AUTOMÁTICO (PADRÃO)';
+        persistPatient();
+        persistItems();
+        renderPreview();
+        showToast(`Prescrição "${saved.name}" carregada!`, 'success');
+        updateDeleteButtonState();
+      }
+      function deleteSelectedPrescription() {
+        const select = $('savedPrescriptions');
+        if (!select.value) {
+          showToast('Nenhuma prescrição selecionada.', 'info');
+          return;
+        }
+        const idx = Number(select.value);
+        const target = state.savedPrescriptions[idx];
+        if (!target) return;
+        if (!confirm(`Tem certeza que deseja excluir "${target.name}"?`)) return;
+        state.savedPrescriptions.splice(idx, 1);
+        persistSavedPrescriptions();
+        updateSavedSelectOptions();
+        showToast('Prescrição excluída!', 'success');
+      }
+      function updateDeleteButtonState() {
+        const select = $('savedPrescriptions');
+        const btn = $('btnDeleteSelectedPrescription');
+        if (btn) {
+          btn.disabled = !select.value;
+        }
+      }
+      function loadSavedPrescriptions() {
+        const saved = LS.get(LS_KEYS.SAVED_PRESCRIPTIONS, '[]');
+        try {
+          state.savedPrescriptions = JSON.parse(saved) || [];
+        } catch (error) {
+          console.warn('Não foi possível ler as prescrições salvas', error);
+          state.savedPrescriptions = [];
+        }
+        updateSavedSelectOptions();
+      }
+      function loadInitialState() {
+        try {
+          const storedPatient = JSON.parse(LS.get(LS_KEYS.PATIENT, '{}'));
+          if (storedPatient && typeof storedPatient === 'object') {
+            state.patient = { ...state.patient, ...storedPatient };
+          }
+        } catch (error) {
+          console.warn('Falha ao carregar paciente', error);
+        }
+        try {
+          const storedItems = JSON.parse(LS.get(LS_KEYS.PRESCRIPTION_ITEMS, '[]'));
+          if (Array.isArray(storedItems)) {
+            state.prescriptionItems = storedItems;
+          }
+        } catch (error) {
+          console.warn('Falha ao carregar itens', error);
+        }
+        const storedDocType = LS.get(LS_KEYS.DOC_TYPE, 'AUTOMÁTICO (PADRÃO)');
+        state.docTypeManual = storedDocType !== 'AUTOMÁTICO (PADRÃO)';
+        state.docType = state.docTypeManual ? storedDocType : computeAutoDocType(state.prescriptionItems);
+        $('iDocType').value = state.docTypeManual ? state.docType : 'AUTOMÁTICO (PADRÃO)';
+        $('iNome').value = state.patient.nome || '';
+        $('iIdade').value = state.patient.idade || '';
+        $('iSexo').value = state.patient.sexo || '';
+        $('iDocNum').value = state.patient.docnum || '';
+        $('iDx').value = state.patient.dx || '';
+        $('iObs').value = state.patient.obs || '';
+        loadSavedPrescriptions();
+        renderPreview();
+      }
+      $('iDocType').addEventListener('change', syncDocType);
+      $('iNome').addEventListener('input', syncPatientFromInputs);
+      $('iIdade').addEventListener('input', syncPatientFromInputs);
+      $('iSexo').addEventListener('change', syncPatientFromInputs);
+      $('iDocNum').addEventListener('input', syncPatientFromInputs);
+      $('iDx').addEventListener('input', syncPatientFromInputs);
+      $('iObs').addEventListener('input', syncPatientFromInputs);
+      $('iVia').addEventListener('change', renderPreview);
+      $('mMed').addEventListener('input', (event) => highlightPillsForMed(event.target.value));
+      $$('#pillRow .pill').forEach((pill) => {
+        pill.addEventListener('click', () => {
+          $('mPos').value = pill.textContent.trim();
+          showToast('Posologia preenchida!', 'info', 1500);
+        });
+      });
+      $('btnAddItem').addEventListener('click', addMedicationItem);
+      $('btnClearMedInputs').addEventListener('click', () => {
+        $('mMed').value = '';
+        $('mPos').value = '';
+        $('mRec').value = '';
+        highlightPillsForMed('');
+        $('mMed').focus();
+        showToast('Campos de medicamento limpos.', 'info', 1500);
+      });
+      $('btnExAzitro1').addEventListener('click', () => {
+        $('mMed').value = 'Azitromicina 500 mg';
+        $('mPos').value = 'Tomar 1 comprimido, via oral, 1 vez ao dia (no mesmo horário), por 5 dias.';
+        $('mRec').value = 'Finalizar todo o tratamento para evitar resistência.';
+        highlightPillsForMed('Azitromicina');
+        showToast('Azitromicina (1x/dia por 5 dias) carregada.', 'info', 1500);
+      });
+      $('btnExAzitro2').addEventListener('click', () => {
+        $('mMed').value = 'Azitromicina 500 mg';
+        $('mPos').value = 'Tomar 2 comprimidos, via oral, em dose única.';
+        $('mRec').value = '';
+        highlightPillsForMed('Azitromicina');
+        showToast('Azitromicina (dose única) carregada.', 'info', 1500);
+      });
+      $('btnSavePrescription').addEventListener('click', saveCurrentPrescription);
+      $('savedPrescriptions').addEventListener('change', loadSelectedPrescription);
+      $('savedPrescriptions').addEventListener('change', updateDeleteButtonState);
+      $('btnDeleteSelectedPrescription').addEventListener('click', deleteSelectedPrescription);
+      $('btnGeneratePDF').addEventListener('click', generatePDF);
+      $('btnPrintDocument').addEventListener('click', printDocument);
+      $('btnResetAll').addEventListener('click', resetAllData);
+      loadInitialState();
+    });
+  </script>
+</body>
+</html>
