@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RXI • Showcase do Estilo Padrão</title>
+  <!-- Fonts (opcional, mas recomendado para o visual) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Montserrat:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Seu CSS padrão -->
+  <link rel="stylesheet" href="estilo-padrao.css">
+  <style>
+    /* Apenas pequenos estilos locais de demo (não conflitam com o padrão) */
+    .logo { display:flex; align-items:center; gap:.5rem; font-weight:800; }
+    .logo .dot { background: var(--brand); }
+    .demo-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:1rem; }
+    @media (max-width: 860px){ .demo-grid { grid-template-columns: 1fr; } }
+    .placeholder {
+      display:grid; place-items:center; aspect-ratio: 1/1; border:1px dashed var(--border);
+      border-radius: 12px; background: #fff; color: var(--muted);
+      font: 600 .9rem var(--font-sans);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="inner container">
+      <div class="logo">
+        <span class="dot"></span>
+        <span>RXI • Estilo Padrão</span>
+      </div>
+      <div class="flex center">
+        <button id="btnTheme" class="btn btn--outline btn--icon" title="Alternar tema">
+          <span aria-hidden="true">🌓</span>
+        </button>
+        <a class="btn btn--primary" href="#" id="btnOpenModal">Abrir Modal</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container section">
+    <!-- HERO -->
+    <section class="hero mb-4">
+      <div class="titlebar">
+        <div class="title">Showcase RXI • Componentes padrão</div>
+        <div class="date" id="today">__/__/____</div>
+      </div>
+      <p class="subtitle">Cole este HTML no Google Sites e use como base – já vem com tokens, utilitários e componentes.</p>
+      <div class="mt-3 flex wrap">
+        <button class="btn btn--primary">Primário</button>
+        <button class="btn btn--ok">OK</button>
+        <button class="btn btn--info">Info</button>
+        <button class="btn btn--amber">Âmbar</button>
+        <button class="btn btn--warn">Perigo</button>
+        <button class="btn btn--outline">Outline</button>
+        <button class="btn btn--ghost text-brand">Ghost</button>
+        <button class="btn btn--icon btn-copy" id="btnCopy">📋</button>
+      </div>
+      <div class="mt-3 flex wrap">
+        <span class="pill pill--on">ON</span>
+        <span class="pill pill--off">OFF</span>
+        <span class="status"><span class="dot text-ok"></span> Ativo</span>
+        <span class="status"><span class="dot text-warn"></span> Atenção</span>
+      </div>
+    </section>
+
+    <!-- TAGS / BADGES -->
+    <section class="section">
+      <div class="section-title">
+        <h2 class="h2">Tags por categoria</h2>
+        <span class="pill">v1.0</span>
+      </div>
+      <div class="flex wrap">
+        <span class="tag tag--aps">APS</span>
+        <span class="tag tag--urgencia">🚑 Urgência</span>
+        <span class="tag tag--ortopedia">Ortopedia</span>
+        <span class="tag tag--dermato">Dermato</span>
+        <span class="tag tag--pediatria">Pediatria</span>
+        <span class="tag tag--gestacao">Gestação</span>
+        <span class="tag tag--neuro">Neuro</span>
+        <span class="tag tag--cardio">Cardio</span>
+      </div>
+    </section>
+
+    <!-- CARDS / BANNERS -->
+    <section class="grid cols-3">
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Card padrão</div>
+            <div class="card-subtitle">com título e ações</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn--outline btn--icon" title="Editar">✏️</button>
+            <button class="btn btn--outline btn--icon" title="Excluir">🗑️</button>
+          </div>
+        </div>
+        <p>Este é um card com <span class="underline-grad">subtítulo</span>, sombra suave e borda.</p>
+      </article>
+
+      <article class="card neu">
+        <div class="card-title mb-2">Neumórfico</div>
+        <p class="text-muted">Bloco com sombras altas e baixas, ideal para painéis RXI.</p>
+      </article>
+
+      <article class="banner">
+        <span class="emph">Aviso:</span> Esta é uma mensagem de exemplo com borda tracejada.
+      </article>
+    </section>
+
+    <!-- FORMULÁRIOS / SWITCH -->
+    <section class="section">
+      <h2 class="h2 mb-2">Formulário</h2>
+      <div class="form-row">
+        <div class="col-6">
+          <label class="label" for="nome">Nome do paciente</label>
+          <input id="nome" class="input" placeholder="Ex.: Maria da Silva">
+        </div>
+        <div class="col-3">
+          <label class="label" for="nasc">Nascimento</label>
+          <input id="nasc" class="input" type="date">
+        </div>
+        <div class="col-3">
+          <label class="label" for="doc">Documento</label>
+          <input id="doc" class="input" placeholder="RG/CPF">
+        </div>
+        <div class="col-12">
+          <label class="label" for="queixa">Queixa principal</label>
+          <textarea id="queixa" class="textarea" placeholder="Descreva resumidamente..."></textarea>
+          <div class="help">Use frases curtas e objetivas.</div>
+        </div>
+        <div class="col-6 flex center">
+          <label class="label m-0">Imagens ON/OFF</label>
+          <input id="toggleImgs" type="checkbox" hidden>
+          <label class="switch ms-2" for="toggleImgs"></label>
+        </div>
+        <div class="col-6 flex between">
+          <div class="progress w-100 me-2"><div id="bar" class="bar" style="width: 30%"></div></div>
+          <button id="inc" class="btn btn--outline">+10%</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PACIENTE / AVATAR / 3x4 -->
+    <section class="section">
+      <h2 class="h2 mb-2">Paciente & Fotos 3×4</h2>
+      <div class="patient-card card">
+        <img class="avatar" alt="Avatar"
+             src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><rect width='100%' height='100%' fill='white'/><circle cx='80' cy='60' r='34' fill='%23e6e9ef'/><rect x='30' y='95' width='100' height='50' rx='12' fill='%23e6e9ef'/></svg>">
+        <div>
+          <div class="h3">Maria Clara</div>
+          <div class="text-muted small">O+ • Sem alergias • IMC 24</div>
+          <div class="mt-2 flex wrap">
+            <span class="momento momento--A">Antes café</span>
+            <span class="momento momento--D">Após almoço</span>
+            <span class="momento momento--G">Antes dormir</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3 grid cols-4">
+        <div class="frame-3x4">
+          <img alt="3x4"
+               src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='100%' height='100%' fill='white'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='22' fill='%23999'>3x4</text></svg>">
+        </div>
+        <div class="frame-3x4">
+          <img alt="3x4"
+               src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='100%' height='100%' fill='white'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='22' fill='%23999'>3x4</text></svg>">
+        </div>
+        <div class="frame-3x4">
+          <img alt="3x4"
+               src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='100%' height='100%' fill='white'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='22' fill='%23999'>3x4</text></svg>">
+        </div>
+        <div class="frame-3x4">
+          <img alt="3x4"
+               src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' width='300' height='400'><rect width='100%' height='100%' fill='white'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='22' fill='%23999'>3x4</text></svg>">
+        </div>
+      </div>
+    </section>
+
+    <!-- RECEITA ILUSTRADA -->
+    <section class="section">
+      <h2 class="h2 mb-2">Receita Ilustrada (base)</h2>
+      <div class="rx-panel">
+        <div class="rx-row">
+          <div class="rx-thumb">
+            <img alt="Medicamento"
+                 src="data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27140%27 height=%27140%27><rect width=%27100%25%27 height=%27100%25%27 fill=%27white%27/><rect x=%2730%27 y=%2725%27 width=%2780%27 height=%2790%27 rx=%2712%27 fill=%27%23e6e9ef%27/><circle cx=%2790%27 cy=%2760%27 r=%277%27 fill=%27%23d1d5db%27/></svg>">
+          </div>
+          <div>
+            <div class="titlebar">
+              <div class="title">Paracetamol 750 mg</div>
+              <div class="date">Após jantar</div>
+            </div>
+            <p>Tomar 1 comprimido <strong>3×/dia</strong> por 5 dias.</p>
+            <div class="mt-2 guidance">⚠️ Manter fundo branco/transparente nas ilustrações.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCORDION / TABS -->
+    <section class="section">
+      <div class="grid cols-2">
+        <div class="accordion">
+          <div class="item" id="acc1">
+            <div class="head">Orientações Gerais <span>▼</span></div>
+            <div class="content">
+              <p>Hidratação, repouso relativo, sinais de alarme e retorno programado.</p>
+            </div>
+          </div>
+          <div class="item" id="acc2">
+            <div class="head">Sinais de Alerta <span>▼</span></div>
+            <div class="content">
+              <p>Febre persistente, dispneia, dor torácica, rebaixamento do sensório.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="tabs mb-2">
+            <button class="tab is-active" data-tab="t1">Resumo</button>
+            <button class="tab" data-tab="t2">Histórico</button>
+            <button class="tab" data-tab="t3">Conduta</button>
+          </div>
+          <div id="t1" class="card">Paciente em bom estado geral. Sem sinais de gravidade.</div>
+          <div id="t2" class="card hidden">Tabagismo, HAS, dislipidemia.</div>
+          <div id="t3" class="card hidden">Ajuste terapêutico + retorno 7 dias.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE / SAFETY -->
+    <section class="section demo-grid">
+      <div class="timeline card">
+        <div class="item">
+          <div class="small text-muted">08:30</div>
+          Consulta inicial e triagem.
+        </div>
+        <div class="item">
+          <div class="small text-muted">09:10</div>
+          Prescrição e orientações.
+        </div>
+        <div class="item">
+          <div class="small text-muted">09:30</div>
+          Agendamento de retorno.
+        </div>
+      </div>
+
+      <div class="safety">
+        <div>⚠️</div>
+        <div>
+          <strong>Segurança do paciente:</strong> confira alergias e interações antes de concluir a prescrição.
+        </div>
+      </div>
+    </section>
+
+    <!-- PRINT BOX / LINHAS / ASSINATURAS -->
+    <section class="section">
+      <h2 class="h2 mb-2">Área de Impressão</h2>
+      <div class="print-box">
+        <div class="titlebar">
+          <div class="title">Atestado Médico</div>
+          <div class="date">Cruz Alta – <span id="today2">__/__/____</span></div>
+        </div>
+        <p class="prose">Declaro, para os devidos fins, que o(a) paciente acima necessita de repouso por 2 dias.</p>
+        <div class="sig-rows mt-3">
+          <div class="signature-line">Assinatura do(a) Médico(a)</div>
+          <div class="signature-line">Carimbo</div>
+        </div>
+      </div>
+      <hr class="hr">
+      <div class="small text-muted">Use <span class="kbd">Ctrl</span>+<span class="kbd">P</span> para visualizar margens A4 do @media print.</div>
+    </section>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast toast--ok hidden">
+      <span>✔ Operação realizada</span>
+      <button class="btn btn--icon btn--ghost" id="closeToast" title="Fechar">✖</button>
+    </div>
+
+  </main>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-header">
+        <strong>Exemplo de Modal</strong>
+      </div>
+      <div class="modal-body">
+        <p>Este modal respeita o tema claro/escuro e a tipografia padrão.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--outline" id="closeModal">Fechar</button>
+        <button class="btn btn--primary" id="okModal">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>RXI • Padrão unificado de estilos — <span class="small">v1.0</span></div>
+  </footer>
+
+  <script>
+    // ===== Data pt-BR (DD/MM/AAAA)
+    const fmt = new Intl.DateTimeFormat('pt-BR');
+    const todayEl = document.getElementById('today');
+    const today2El = document.getElementById('today2');
+    const now = new Date();
+    if (todayEl) todayEl.textContent = fmt.format(now);
+    if (today2El) today2El.textContent = fmt.format(now);
+
+    // ===== Tema claro/escuro
+    const btnTheme = document.getElementById('btnTheme');
+    btnTheme?.addEventListener('click', () => {
+      const html = document.documentElement;
+      const dark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', dark ? 'light' : 'dark');
+      localStorage.setItem('rxi-theme', dark ? 'light' : 'dark');
+    });
+    // Carregar preferência
+    (function(){
+      const pref = localStorage.getItem('rxi-theme');
+      if (pref) document.documentElement.setAttribute('data-theme', pref);
+    })();
+
+    // ===== Copy button
+    const btnCopy = document.getElementById('btnCopy');
+    btnCopy?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText('Texto de exemplo copiado do RXI.');
+        btnCopy.setAttribute('data-state', 'copied');
+        showToast('Copiado para a área de transferência.');
+        setTimeout(() => btnCopy.removeAttribute('data-state'), 1200);
+      } catch {}
+    });
+
+    // ===== Progress demo
+    const inc = document.getElementById('inc');
+    const bar = document.getElementById('bar');
+    inc?.addEventListener('click', () => {
+      const cur = parseInt(bar.style.width) || 0;
+      const next = Math.min(cur + 10, 100);
+      bar.style.width = next + '%';
+    });
+
+    // ===== Tabs
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('is-active'));
+      t.classList.add('is-active');
+      const target = t.getAttribute('data-tab');
+      document.querySelectorAll('#t1,#t2,#t3').forEach(el => el.classList.add('hidden'));
+      document.getElementById(target)?.classList.remove('hidden');
+    }));
+
+    // ===== Accordion
+    document.querySelectorAll('.accordion .item').forEach(item => {
+      const head = item.querySelector('.head');
+      head.addEventListener('click', () => item.classList.toggle('is-open'));
+    });
+
+    // ===== Modal
+    const modal = document.getElementById('modal');
+    const btnOpenModal = document.getElementById('btnOpenModal');
+    const btnCloseModal = document.getElementById('closeModal');
+    const btnOkModal = document.getElementById('okModal');
+
+    function openModal(){ modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); }
+    function closeModal(){ modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); }
+
+    btnOpenModal?.addEventListener('click', e => { e.preventDefault(); openModal(); });
+    btnCloseModal?.addEventListener('click', closeModal);
+    btnOkModal?.addEventListener('click', () => { showToast('Confirmado ✅'); closeModal(); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // ===== Toast
+    const toast = document.getElementById('toast');
+    const closeToast = document.getElementById('closeToast');
+    closeToast?.addEventListener('click', () => toast.classList.add('hidden'));
+    function showToast(msg){
+      toast.querySelector('span').textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2200);
+    }
+
+    // ===== Demonstração do switch de imagens (apenas visual)
+    const toggleImgs = document.getElementById('toggleImgs');
+    toggleImgs?.addEventListener('change', () => {
+      showToast(toggleImgs.checked ? 'Imagens: ON' : 'Imagens: OFF');
+    });
+  </script>
+</body>
+</html>
