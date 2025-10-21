@@ -1,0 +1,610 @@
+/* ==========================================================================
+   RXI • ESTILO PADRÃO • v1.0
+   - Reset consistente
+   - Tokens (cores, tipografia, espaçamentos, sombras)
+   - Light/Dark via [data-theme="dark"]
+   - Componentes: botões, cards, badges, tags, chips, tooltips, modais, toasts
+   - Forms, tabelas (estilo seguro), grids utilitárias
+   - Helpers (visually-hidden, no-select, clickable, ratio 3x4)
+   - Impressão A4 (margens 12–15 mm), classes .only-print / .hidden-print
+   -------------------------------------------------------------------------- */
+
+/* ===== 1) RESET BÁSICO (inspirado em modern-normalize + ajustes práticos) */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+:where(html) { line-height: 1.4; -webkit-text-size-adjust: 100%; }
+:where(body) { margin: 0; font-family: var(--font-sans); color: var(--ink); background: var(--bg); }
+
+:where(img,svg,video,canvas,audio,iframe,embed,object) { display: block; max-width: 100%; }
+:where(img) { height: auto; }
+
+:where(button,input,select,textarea) { font: inherit; color: inherit; }
+:where(button) { cursor: pointer; background: none; border: 0; }
+:where(a) { color: inherit; text-decoration: none; }
+:where(ul,ol) { padding: 0; margin: 0; list-style: none; }
+:where(h1,h2,h3,h4,h5,h6) { margin: 0 0 .5rem; font-weight: 700; line-height: 1.2; }
+:where(p) { margin: 0 0 .75rem; }
+
+/* ===== 2) TOKENS / DESIGN SYSTEM */
+:root{
+  /* Cores base */
+  --bg:#f6f8fb;
+  --surface:#ffffff;
+  --ink:#0f1733;
+  --muted:#667085;
+  --line:#e6e9ef;
+
+  /* Brand RXI (neutro + destaque) */
+  --brand:#2563eb;       /* primária */
+  --brand-2:#1d4ed8;     /* primária darken */
+  --accent:#6c8bff;      /* secundária */
+  --ok:#12b886;
+  --warn:#ef4444;
+  --info:#3b82f6;
+  --amber:#f59e0b;
+
+  /* Categorias RXI (para tags/badges) */
+  --aps:#4f46e5;               /* Condições/HIST APS */
+  --urgencia:#ef4444;          /* 🚑 Urgência */
+  --ortopedia:#0ea5e9;
+  --dermato:#e11d48;
+  --pediatria:#10b981;
+  --gestacao:#f97316;
+  --neuro:#8b5cf6;
+  --cardio:#dc2626;
+
+  /* Tipografia */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, "Helvetica Neue", sans-serif;
+  --font-title: 'Montserrat', var(--font-sans);
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Ritmo e radius */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Sombras (neumórfico + padrão) */
+  --shadow-soft: 0 6px 18px rgba(15,23,51,.08);
+  --shadow-strong: 0 14px 36px rgba(15,23,51,.16);
+  --neu-light: rgba(255,255,255,.9);
+  --neu-dark: rgba(15,23,51,.12);
+
+  /* Borda / foco */
+  --border:#dfe3eb;
+  --ring: 0 0 0 3px rgba(37,99,235,.25);
+
+  /* Espaçamentos escala (0..6) */
+  --sp-0:0;
+  --sp-1:.25rem;
+  --sp-2:.5rem;
+  --sp-3:.75rem;
+  --sp-4:1rem;
+  --sp-5:1.5rem;
+  --sp-6:2rem;
+
+  /* Tamanhos container */
+  --container: 1100px;
+
+  /* Transições */
+  --fast: .15s ease;
+  --slow: .25s ease;
+}
+
+/* ===== 3) DARK THEME */
+html[data-theme="dark"]{
+  --bg:#0c1222;
+  --surface:#111931;
+  --ink:#e6ebff;
+  --muted:#9aa3b2;
+  --line:#1f2942;
+
+  --brand:#6aa3ff;
+  --brand-2:#4b7de0;
+  --accent:#9fb7ff;
+
+  --shadow-soft: 0 8px 22px rgba(0,0,0,.35);
+  --shadow-strong: 0 20px 50px rgba(0,0,0,.5);
+
+  --neu-light: rgba(255,255,255,.06);
+  --neu-dark: rgba(0,0,0,.45);
+}
+
+/* ===== 4) TIPOGRAFIA UTILITÁRIA */
+.h1 { font: 800 2rem/1.15 var(--font-title); letter-spacing:-.02em; }
+.h2 { font: 700 1.5rem/1.2 var(--font-title); }
+.h3 { font: 700 1.25rem/1.25 var(--font-title); }
+.subtitle { color: var(--muted); font-weight: 500; }
+
+.small { font-size:.875rem }
+.mono { font-family: var(--font-mono); }
+
+/* ===== 5) LAYOUT BÁSICO */
+.container{ width: min(100%, var(--container)); margin-inline:auto; padding-inline: var(--sp-4); }
+.section{ padding-block: clamp(1.25rem, 2vw, 2rem); }
+
+.grid{ display:grid; gap: var(--sp-4); }
+.cols-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.cols-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+.cols-4{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+@media (max-width: 1024px){ .cols-4{ grid-template-columns: repeat(2,1fr);} }
+@media (max-width: 720px){ .cols-3,.cols-2,.cols-4{ grid-template-columns: 1fr; } }
+
+.flex{ display:flex; gap: var(--sp-3); }
+.flex-col{ flex-direction: column; }
+.center{ align-items: center; justify-content: center; }
+.between{ justify-content: space-between; }
+.wrap{ flex-wrap: wrap; }
+
+/* ===== 6) UTILITÁRIOS DE ESPAÇAMENTO */
+.m-0{ margin:0!important } .mt-1{ margin-top:var(--sp-1)!important } .mt-2{ margin-top:var(--sp-2)!important } .mt-3{ margin-top:var(--sp-3)!important } .mt-4{ margin-top:var(--sp-4)!important }
+.mb-1{ margin-bottom:var(--sp-1)!important } .mb-2{ margin-bottom:var(--sp-2)!important } .mb-3{ margin-bottom:var(--sp-3)!important } .mb-4{ margin-bottom:var(--sp-4)!important }
+.ms-2{ margin-left:var(--sp-2)!important } .me-2{ margin-right:var(--sp-2)!important }
+.p-0{ padding:0!important } .p-2{ padding:var(--sp-2)!important } .p-3{ padding:var(--sp-3)!important } .p-4{ padding:var(--sp-4)!important } .p-5{ padding:var(--sp-5)!important }
+
+/* Larguras/Alturas rápidas */
+.w-100{ width:100%!important } .w-50{ width:50%!important } .max-w-sm{ max-width:420px } .max-w-md{ max-width:680px } .max-w-lg{ max-width:980px }
+.h-100{ height:100%!important }
+
+/* ===== 7) CORES UTILITÁRIAS */
+.text-muted{ color:var(--muted)!important }
+.text-brand{ color:var(--brand)!important }
+.text-ok{ color:var(--ok)!important } .text-warn{ color:var(--warn)!important } .text-info{ color:var(--info)!important }
+
+.bg-surface{ background:var(--surface)!important }
+.bg-brand{ background:var(--brand)!important; color:#fff!important }
+.bg-soft{ background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.35)); }
+
+/* ===== 8) BORDAS, RADIUS, SOMBRAS */
+.radius-xs{ border-radius: var(--radius-xs); }
+.radius-sm{ border-radius: var(--radius-sm); }
+.radius-md{ border-radius: var(--radius-md); }
+.radius-lg{ border-radius: var(--radius-lg); }
+.radius-xl{ border-radius: var(--radius-xl); }
+.shadow-soft{ box-shadow: var(--shadow-soft); }
+.shadow-strong{ box-shadow: var(--shadow-strong); }
+.border{ border:1px solid var(--border); }
+
+/* ===== 9) NEUMÓRFICO */
+.neu{
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    6px 6px 14px var(--neu-dark),
+    -6px -6px 14px var(--neu-light);
+}
+.neu-inset{
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow:
+    inset 6px 6px 14px var(--neu-dark),
+    inset -6px -6px 14px var(--neu-light);
+}
+
+/* ===== 10) FORMULÁRIOS */
+.input, .select, .textarea{
+  width:100%;
+  background: var(--surface);
+  color: var(--ink);
+  border:1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding:.65rem .8rem;
+  outline: none;
+  transition: border var(--fast), box-shadow var(--fast), background var(--fast);
+}
+.textarea{ min-height: 120px; resize: vertical; }
+.input:focus, .select:focus, .textarea:focus{
+  border-color: var(--brand);
+  box-shadow: var(--ring);
+}
+.input[readonly]{ opacity:.85; }
+.input.is-invalid, .select.is-invalid, .textarea.is-invalid{
+  border-color: var(--warn);
+  box-shadow: 0 0 0 3px rgba(239,68,68,.2);
+}
+.label{
+  display:block; margin-bottom:.35rem; font-weight:600; color:var(--muted);
+}
+.help{ font-size:.85rem; color:var(--muted); }
+
+/* Toggle ON/OFF */
+.switch{
+  --h: 24px;
+  position: relative; width: 46px; height: var(--h); border-radius: var(--h);
+  background: var(--line); transition: background var(--fast);
+}
+.switch input{ display:none; }
+.switch::after{
+  content:""; position:absolute; inset:3px; width: calc(var(--h) - 6px); height: calc(var(--h) - 6px);
+  border-radius:50%; background: #fff; box-shadow: var(--shadow-soft); transform: translateX(0); transition: transform var(--fast);
+}
+.switch input:checked + .switch{ background: var(--brand); }
+.switch input:checked + .switch::after{ transform: translateX(22px); }
+
+/* ===== 11) BOTÕES */
+.btn{
+  --btn-bg: var(--brand);
+  --btn-fg: #fff;
+  --btn-bd: transparent;
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.65rem .95rem; border-radius: var(--radius-sm);
+  font-weight:600; border:1px solid var(--btn-bd);
+  background: var(--btn-bg); color: var(--btn-fg);
+  box-shadow: 0 6px 14px rgba(37,99,235,.18);
+  transition: transform var(--fast), box-shadow var(--fast), background var(--fast), color var(--fast), border var(--fast);
+}
+.btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(37,99,235,.22); }
+.btn:active{ transform: translateY(0); }
+
+.btn--primary{ --btn-bg: var(--brand); --btn-fg:#fff; }
+.btn--ok{ --btn-bg: var(--ok); }
+.btn--warn{ --btn-bg: var(--warn); }
+.btn--info{ --btn-bg: var(--info); }
+.btn--amber{ --btn-bg: var(--amber); --btn-fg:#111; }
+
+.btn--outline{
+  --btn-bg: transparent; --btn-fg: var(--ink); --btn-bd: var(--border);
+  box-shadow:none;
+}
+.btn--ghost{
+  --btn-bg: transparent; --btn-fg: var(--brand);
+  border-color: transparent; box-shadow:none;
+}
+.btn--icon{ padding:.55rem; aspect-ratio:1/1; }
+
+/* Botão estilo “Copiar” */
+.btn-copy{ position:relative; }
+.btn-copy[data-state="copied"]::after{
+  content:"Copiado!"; position:absolute; top:-32px; right:0;
+  background: var(--ink); color:#fff; padding:.25rem .5rem; font-size:.75rem; border-radius:8px;
+}
+
+/* ===== 12) CARDS */
+.card{
+  background: var(--surface); color: var(--ink);
+  border:1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  padding: clamp(.9rem, 1.5vw, 1.25rem);
+}
+.card--flat{ box-shadow:none; }
+.card-header{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; margin-bottom:.75rem; }
+.card-title{ font: 700 1.1rem/1.2 var(--font-title); }
+.card-subtitle{ color: var(--muted); font-size:.9rem; }
+.card-actions{ display:flex; gap:.5rem; }
+
+/* ===== 13) BADGES, TAGS, CHIPS */
+.badge, .tag, .chip{
+  display:inline-flex; align-items:center; gap:.35rem; line-height:1;
+  border-radius: 999px; font-weight:600; font-size:.8rem; padding:.35rem .6rem;
+  border: 1px solid transparent; user-select:none;
+}
+
+/* Cores por categoria */
+.tag--aps{ background: color-mix(in srgb, var(--aps) 14%, transparent); color: var(--aps); border-color: color-mix(in srgb, var(--aps) 40%, transparent); }
+.tag--urgencia{ background: color-mix(in srgb, var(--urgencia) 14%, transparent); color: var(--urgencia); border-color: color-mix(in srgb, var(--urgencia) 40%, transparent); }
+.tag--ortopedia{ background: color-mix(in srgb, var(--ortopedia) 14%, transparent); color: var(--ortopedia); border-color: color-mix(in srgb, var(--ortopedia) 40%, transparent); }
+.tag--dermato{ background: color-mix(in srgb, var(--dermato) 14%, transparent); color: var(--dermato); border-color: color-mix(in srgb, var(--dermato) 40%, transparent); }
+.tag--pediatria{ background: color-mix(in srgb, var(--pediatria) 14%, transparent); color: var(--pediatria); border-color: color-mix(in srgb, var(--pediatria) 40%, transparent); }
+.tag--gestacao{ background: color-mix(in srgb, var(--gestacao) 14%, transparent); color: var(--gestacao); border-color: color-mix(in srgb, var(--gestacao) 40%, transparent); }
+.tag--neuro{ background: color-mix(in srgb, var(--neuro) 14%, transparent); color: var(--neuro); border-color: color-mix(in srgb, var(--neuro) 40%, transparent); }
+.tag--cardio{ background: color-mix(in srgb, var(--cardio) 14%, transparent); color: var(--cardio); border-color: color-mix(in srgb, var(--cardio) 40%, transparent); }
+
+/* Chip com “x” */
+.chip .x{ font-weight:700; opacity:.8; cursor:pointer; }
+
+/* ===== 14) TABELAS (estilo seguro; usar só quando necessário) */
+.table{
+  width:100%; border-collapse: collapse; font-size:.95rem; background: var(--surface); border-radius: var(--radius-sm); overflow:hidden;
+  border:1px solid var(--border);
+}
+.table th, .table td{ padding:.65rem .75rem; border-bottom:1px solid var(--line); }
+.table thead th{ text-align:left; font-weight:700; color:var(--muted); background: color-mix(in srgb, var(--surface) 80%, var(--bg)); }
+.table tbody tr:hover{ background: color-mix(in srgb, var(--brand) 3%, transparent); }
+
+/* ===== 15) TOOLTIP (CSS puro) */
+.has-tooltip{ position:relative; }
+.has-tooltip .tooltip{
+  position:absolute; inset:auto auto 100% 50%; transform: translate(-50%, -8px);
+  background: var(--ink); color:#fff; padding:.35rem .5rem; border-radius:8px; font-size:.75rem; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity var(--fast), transform var(--fast);
+}
+.has-tooltip:hover .tooltip{ opacity:1; transform: translate(-50%, -12px); }
+
+/* ===== 16) MODAL */
+.modal-backdrop{
+  position:fixed; inset:0; background: rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; padding: var(--sp-4); z-index: 999;
+}
+.modal{ background: var(--surface); color:var(--ink); border-radius: var(--radius-md); max-width: min(680px, 96vw); width:100%; box-shadow: var(--shadow-strong); border:1px solid var(--border); }
+.modal-header, .modal-footer{ padding:1rem 1.25rem; border-bottom:1px solid var(--line); }
+.modal-footer{ border-top:1px solid var(--line); border-bottom:0; display:flex; justify-content:flex-end; gap:.5rem; }
+.modal-body{ padding:1rem 1.25rem; max-height: 70vh; overflow:auto; }
+.modal-backdrop.is-open{ display:flex; }
+
+/* ===== 17) TOAST */
+.toast{
+  position: fixed; right: 12px; bottom: 12px; display:flex; align-items:center; gap:.6rem;
+  background: var(--surface); color: var(--ink); border:1px solid var(--border); border-radius: 12px; padding:.6rem .8rem; box-shadow: var(--shadow-soft); z-index: 1000;
+}
+.toast--ok{ border-color: color-mix(in srgb, var(--ok) 40%, var(--border)); }
+.toast--warn{ border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+
+/* ===== 18) AVATAR + 3×4 + PLACEHOLDERS */
+.avatar{
+  --size: 48px; width: var(--size); height: var(--size);
+  border-radius: 50%; object-fit: cover; border:2px solid var(--surface); box-shadow: var(--shadow-soft);
+}
+.frame-3x4{
+  /* Moldura exata 3x4 (ex.: 300x400, 6x8 cm, etc.) */
+  aspect-ratio: 3 / 4; width: 100%;
+  border-radius: var(--radius-sm); overflow: hidden; border:1px dashed var(--border); background: color-mix(in srgb, var(--surface) 80%, var(--bg));
+}
+.frame-3x4 > img{ width:100%; height:100%; object-fit: cover; }
+
+/* ===== 19) NAVBAR / HEADER SIMPLES */
+.navbar{
+  position:sticky; top:0; z-index: 50;
+  backdrop-filter: saturate(1.2) blur(8px);
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  border-bottom:1px solid var(--line);
+}
+.navbar .inner{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 1rem; }
+
+/* ===== 20) LISTAS, ITENS, LINHAS PONTILHADAS */
+.list{ display:flex; flex-direction:column; gap:.5rem; }
+.list-item{ display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.6rem .75rem; border:1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.dotted{ border-bottom: 2px dotted var(--border); height: 0; }
+
+/* ===== 21) ASSINATURA/RODAPÉ DE DOCUMENTO */
+.signature-line{
+  margin-top: 2rem; border-top:2px dotted var(--border); padding-top:.5rem; text-align:center; color:var(--muted);
+}
+
+/* ===== 22) UTILS DE ACESSIBILIDADE E INTERAÇÃO */
+.visually-hidden{ position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+.no-select{ user-select:none!important; }
+.clickable{ cursor:pointer!important; }
+.kbd{ font-family: var(--font-mono); background: color-mix(in srgb, var(--ink) 8%, transparent); border-radius:8px; padding:.12rem .38rem; }
+
+/* ===== 23) PRINT (A4 com margens 12–15 mm) */
+@page{ size: A4; margin: 14mm; }
+@media print {
+  html{ background:#fff; }
+  body{ color:#000; background:#fff; }
+  .hidden-print{ display:none!important; }
+  .only-print{ display:block!important; }
+  .no-shadow, .card, .neu, .shadow-soft, .shadow-strong{ box-shadow:none!important; }
+  .btn, .switch, .toast, .modal-backdrop{ display:none!important; }
+  a[href]::after{ content:" (" attr(href) ")"; font-size:.8em; color:#444; }
+}
+
+/* ===== 24) PLACEHOLDERS DE COMPONENTES PADRÃO RXI */
+/* Caixa padrão de “prescrição” / “bloco” */
+.block{
+  background: var(--surface);
+  border:1px solid var(--border); border-radius: var(--radius-md);
+  padding: 1rem; box-shadow: var(--shadow-soft);
+}
+.block-title{ font: 700 1rem/1.25 var(--font-title); margin-bottom:.5rem; }
+.block-muted{ color:var(--muted); }
+
+/* ===== 25) ALERTS */
+.alert{
+  border-radius: 12px; padding:.75rem .9rem; border:1px solid var(--border); background: color-mix(in srgb, var(--surface) 85%, var(--bg));
+}
+.alert--ok{ border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); }
+.alert--warn{ border-color: color-mix(in srgb, var(--warn) 45%, var(--border)); }
+.alert--info{ border-color: color-mix(in srgb, var(--info) 45%, var(--border)); }
+
+/* ===== 26) PROGRESS / BARRA */
+.progress{
+  width:100%; height:10px; background: color-mix(in srgb, var(--ink) 6%, transparent); border-radius:999px; overflow:hidden;
+}
+.progress > .bar{ height:100%; width: 0%; background: var(--brand); transition: width .4s ease; }
+
+/* ===== 27) TABS */
+.tabs{ display:flex; gap:.25rem; border-bottom:1px solid var(--line); }
+.tab{
+  padding:.6rem .85rem; border-bottom:2px solid transparent; color:var(--muted); font-weight:600;
+}
+.tab.is-active{ color:var(--ink); border-color: var(--brand); }
+
+/* ===== 28) ACORDEÃO (CSS básico) */
+.accordion .item{ border:1px solid var(--border); border-radius: 12px; overflow:hidden; background: var(--surface); }
+.accordion .head{ padding:.8rem 1rem; font-weight:700; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.accordion .content{ max-height:0; overflow:hidden; transition:max-height var(--slow); padding:0 1rem; }
+.accordion .item.is-open .content{ max-height: 520px; padding: .75rem 1rem 1rem; }
+
+/* ===== 29) BARRAS DE STATUS + ETIQUETAS */
+.status{
+  display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; border-radius: 10px; border:1px solid var(--border); background: var(--surface); font-weight:600; font-size:.85rem;
+}
+.dot{ width:.5rem; height:.5rem; border-radius:50%; background: currentColor; display:inline-block; }
+
+/* ===== 30) RÓTULOS “ON/OFF” EM PILLS */
+.pill{
+  display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .6rem; border-radius:999px; border:1px solid var(--border); background: var(--surface); font-weight:600; font-size:.85rem;
+}
+.pill--on{ color: var(--ok); border-color: color-mix(in srgb, var(--ok) 38%, var(--border)); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+.pill--off{ color: var(--muted); }
+
+/* ===== 31) LINHAS / DIVISORES */
+.hr{ height:1px; background: var(--line); border:0; margin: .75rem 0; }
+
+/* ===== 32) WYSIWYG/PROSA BÁSICA */
+.prose{ color: var(--ink); }
+.prose p{ margin: 0 0 .9rem; }
+.prose h1,.prose h2,.prose h3{ margin-top: 1.1rem; }
+.prose ul{ list-style: disc; padding-left:1.1rem; }
+.prose ol{ list-style: decimal; padding-left:1.1rem; }
+.prose a{ color: var(--brand); text-decoration: underline; }
+
+/* ===== 33) IMAGENS: FUNDOS BRANCOS/TRANSPARENTES */
+.img-white-bg{ background:#fff; }
+.img-transparent{ background: transparent; }
+
+/* ===== 34) LINHAS PONTILHADAS EM INGLÊS (pedido “linha pontilha em ingles”) */
+.dotted-en{ border-bottom: 2px dotted var(--border); }
+
+/* ===== 35) BANNERS / HERO */
+.hero{
+  background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 7%, transparent), transparent);
+  border:1px solid var(--border); border-radius: var(--radius-lg);
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+/* ===== 36) FOOTER */
+.footer{
+  border-top:1px solid var(--line); color: var(--muted);
+  padding:1rem; text-align:center; background: color-mix(in srgb, var(--surface) 85%, var(--bg));
+}
+
+/* ===== 37) CARDS DE ÍCONE (atalhos RXI) */
+.icon-card{
+  display:flex; align-items:center; gap:.9rem; padding:.85rem 1rem;
+  border:1px solid var(--border); border-radius:16px; background: var(--surface);
+  transition: transform var(--fast), box-shadow var(--fast);
+}
+.icon-card:hover{ transform: translateY(-2px); box-shadow: var(--shadow-soft); }
+
+/* ===== 38) PLACEHOLDER DE CARROSSEL (sem JS, apenas base) */
+.carousel{
+  display:grid; grid-auto-flow:column; grid-auto-columns:80%; gap:1rem; overflow:auto; scroll-snap-type:x mandatory; padding-bottom:.5rem;
+}
+.carousel > *{ scroll-snap-align:start; }
+
+/* ===== 39) FORM LAYOUTS RÁPIDOS */
+.form-row{ display:grid; gap:.75rem; grid-template-columns: repeat(12, 1fr); }
+.col-12{ grid-column: span 12; } .col-6{ grid-column: span 6; } .col-4{ grid-column: span 4; } .col-3{ grid-column: span 3; }
+@media (max-width: 860px){
+  .col-6,.col-4,.col-3{ grid-column: span 12; }
+}
+
+/* ===== 40) ÍCONES “estilo RXI” (quando usar SVG inline) */
+.icon{ width:1.1em; height:1.1em; display:inline-block; }
+
+/* ===== 41) LINHAS DE TÍTULO COM DATA NA MESMA LINHA */
+.titlebar{
+  display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+  border-bottom:1px solid var(--line); padding-bottom:.5rem; margin-bottom:.75rem;
+}
+.titlebar .title{ font: 800 1.15rem/1.15 var(--font-title); }
+.titlebar .date{ color: var(--muted); font-weight:600; }
+
+/* ===== 42) QUADROS DE IMPRESSÃO (vias) */
+.page{ page-break-after: always; }
+.page:last-child{ page-break-after: auto; }
+.print-box{ border:1px solid var(--border); border-radius: var(--radius-sm); padding: .8rem; }
+
+/* ===== 43) UTILS DE ESTADO */
+.is-disabled{ opacity:.55; pointer-events:none; }
+.is-loading{ position:relative; }
+.is-loading::after{
+  content:""; position:absolute; inset:0; background: repeating-linear-gradient(45deg, rgba(0,0,0,.04) 0 8px, transparent 8px 16px);
+  border-radius: inherit;
+}
+
+/* ===== 44) TÍTULOS DE SEÇÃO COM PÍLULA */
+.section-title{
+  display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem;
+}
+.section-title .pill{ background: color-mix(in srgb, var(--brand) 8%, transparent); color: var(--brand); border-color: color-mix(in srgb, var(--brand) 40%, transparent); }
+
+/* ===== 45) CAMPOS “CÓDIGO/ID” EM MONO */
+.code-field{ font-family: var(--font-mono); background: color-mix(in srgb, var(--ink) 6%, transparent); padding:.3rem .5rem; border-radius: 8px; }
+
+/* ===== 46) LINHAS DE ASSINATURA DUPLAS (para 2 vias) */
+.sig-rows{ display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 680px){ .sig-rows{ grid-template-columns: 1fr; } }
+
+/* ===== 47) BLOCO DE “ORIENTAÇÕES” */
+.guidance{
+  border:1px dashed var(--border); border-radius: 14px; padding:.85rem 1rem; background: color-mix(in srgb, var(--surface) 88%, var(--bg));
+}
+
+/* ===== 48) TÍTULO COM SUBLINHADO GRADIENTE */
+.underline-grad{
+  position:relative; display:inline-block;
+}
+.underline-grad::after{
+  content:""; position:absolute; left:0; right:0; bottom:-4px; height:6px; border-radius:999px;
+  background: linear-gradient(90deg, var(--brand), var(--accent));
+  opacity:.25;
+}
+
+/* ===== 49) BLOCO DE ALERTA DE SEGURANÇA */
+.safety{
+  display:flex; gap:.65rem; padding:.75rem .9rem; border-radius:12px; border:1px solid color-mix(in srgb, var(--warn) 30%, var(--border));
+  background: color-mix(in srgb, var(--warn) 8%, transparent);
+  color: color-mix(in srgb, var(--warn) 80%, #000);
+}
+
+/* ===== 50) CLASSES DE VISIBILIDADE */
+.hidden{ display:none!important; }
+.only-print{ display:none; }
+.hidden-print{ display:initial; }
+
+/* ===== 51) ALINHAMENTOS/RUPTURAS DE TEXTO */
+.truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.break-words{ overflow-wrap:anywhere; }
+
+/* ===== 52) CAMPOS EM LINHA (ex.: título + data) */
+.inline{ display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+
+/* ===== 53) ETIQUETAS DE HORÁRIO (7 momentos do dia – RXI) */
+.momento{
+  display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .6rem; border-radius:999px; border:1px solid var(--border); font-weight:700; font-size:.85rem;
+}
+.momento--A{ color:#0ea5e9 }    /* antes do café */
+.momento--B{ color:#10b981 }    /* após café */
+.momento--C{ color:#f59e0b }    /* antes almoço */
+.momento--D{ color:#2563eb }    /* após almoço */
+.momento--E{ color:#a855f7 }    /* antes jantar */
+.momento--F{ color:#ef4444 }    /* após jantar */
+.momento--G{ color:#64748b }    /* antes dormir */
+
+/* ===== 54) BLOCO “RECEITA ILUSTRADA” (base visual) */
+.rx-panel{
+  background: var(--surface); border:1px solid var(--border); border-radius: 16px; padding:1rem; box-shadow: var(--shadow-soft);
+}
+.rx-row{ display:grid; gap:.75rem; grid-template-columns: 140px 1fr; align-items:center; }
+.rx-thumb{ aspect-ratio: 1/1; border-radius: 12px; border:1px solid var(--border); overflow:hidden; background:#fff; }
+.rx-thumb img{ width:100%; height:100%; object-fit:cover; }
+@media (max-width: 680px){ .rx-row{ grid-template-columns: 1fr; } }
+
+/* ===== 55) “GLASS” SUAVE (quando não for neuromórfico) */
+.glass{
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(10px) saturate(1.1);
+  border:1px solid var(--line);
+  border-radius: 16px;
+}
+
+/* ===== 56) BANNERS DE AVISO (Ex.: SUS indisponível) */
+.banner{
+  display:flex; gap:.75rem; align-items:center; padding:.75rem 1rem; border-radius: 14px; border:1px dashed var(--border); background: color-mix(in srgb, var(--surface) 90%, var(--bg));
+}
+.banner .emph{ font-weight:800; }
+
+/* ===== 57) PLACEHOLDER DE TIMELINE */
+.timeline{ display:grid; gap:1rem; border-left:2px dashed var(--border); padding-left:1rem; }
+.timeline .item{ position:relative; }
+.timeline .item::before{
+  content:""; position:absolute; left:-1.32rem; top:.4rem; width:.75rem; height:.75rem; border-radius:999px; background: var(--brand);
+}
+
+/* ===== 58) “LINHA ASSINATURA + CARIMBO” */
+.sign-stamp{ display:flex; gap:1rem; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+.stamp{
+  min-width:160px; min-height:80px; border:2px dashed var(--border); border-radius: 12px; display:grid; place-items:center; color:var(--muted);
+}
+
+/* ===== 59) QUADRO DE DADOS DO PACIENTE */
+.patient-card{ display:grid; gap:.6rem; grid-template-columns: 120px 1fr; align-items:center; }
+.patient-card .avatar{ --size:90px; }
+@media (max-width:700px){ .patient-card{ grid-template-columns: 1fr; } }
+
+/* ===== 60) FIM */
+/* -------------------------------------------------------------------------- */
