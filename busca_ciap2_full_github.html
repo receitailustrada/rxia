@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Busca CIAP-2 • GitHub + Sinônimos + Filtros</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fb; --ink:#0f172a; --muted:#667085; --line:#e6e9ef;
+    --brand:#2563eb; --ok:#10b981; --chip:#eef2ff; --chip-on:#dbeafe;
+    --card:#ffffff; --radius:16px; --shadow:0 10px 30px rgba(0,0,0,.06);
+    --badge:#f1f5f9; --warn:#f59e0b;
+  }
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Inter",system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  header{max-width:1100px;margin:32px auto 12px;padding:0 16px}
+  h1{font-size:clamp(22px,3vw,32px);margin:0 0 6px}
+  p.sub{margin:0;color:var(--muted)}
+  .wrap{max-width:1100px;margin:0 auto 60px;padding:0 16px}
+  .search{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .input{flex:1;display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .input input{border:0;outline:0;width:100%;font-size:16px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:600;cursor:pointer}
+  .btn:hover{background:#fafafa}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{padding:8px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line);font-size:13px;cursor:pointer;user-select:none}
+  .chip.on{background:var(--chip-on);border-color:#c7ddff}
+  .meta{display:flex;gap:14px;align-items:center;margin-top:12px;color:var(--muted);font-size:13px;flex-wrap:wrap}
+  .results{margin-top:16px;display:grid;grid-template-columns:1fr;gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:grid;gap:6px}
+  .code{display:inline-flex;gap:8px;align-items:center}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--badge);padding:4px 8px;border-radius:999px;font-size:12px}
+  .title{font-weight:700}
+  .keywords{color:var(--muted);font-size:13px}
+  mark{background:#fff3bf;padding:0 .2em;border-radius:4px}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .small{font-size:12px;color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px dashed var(--line);border-radius:999px;padding:6px 10px;font-size:12px}
+  .footer{margin-top:24px;color:var(--muted);font-size:12px}
+  .hint{color:var(--muted)}
+  .err{color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:12px;padding:10px;margin-top:12px}
+  textarea{width:100%;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px}
+  .sep{height:1px;background:var(--line);margin:8px 0}
+  @media (min-width:900px){ .results{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Busca CIAP-2 • GitHub + Sinônimos + Filtros</h1>
+    <p class="sub">Carrega dados de <code>https://raw.githubusercontent.com/receitailustrada/rxia/63928e1096c7118a6e7b0bf1049597b8842e0181/ciap2_dataset.json</code>. Digite termos leigos ou técnicos; a busca expande sinônimos e sugere códigos CIAP-2.</p>
+  </header>
+  <div class="wrap">
+    <section class="search">
+      <div class="row">
+        <div class="input" title="Pesquise por condição, sintoma, exame, etc.">
+          <input id="q" placeholder="Ex.: pressão alta, dor de cabeça, garganta inflamada, infecção urinária, bronquite..." autofocus>
+        </div>
+        <button class="btn" id="btnClear">Limpar</button>
+        <button class="btn" id="btnCopy">Copiar lista</button>
+      </div>
+
+      <div class="chips" id="chipsCapitulos"></div>
+      <div class="chips" id="chipsGrupos" style="display:none"></div>
+
+      <details style="margin-top:12px">
+        <summary>➕ Sinônimos personalizados (opcional)</summary>
+        <div class="row" style="margin-top:8px">
+          <textarea id="synEditor" rows="6" placeholder='{"pressão alta":"hipertensão","garganta inflamada":"amigdalite"}'></textarea>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="btnApplySyn">Aplicar sinônimos</button>
+          <span class="small">Válido apenas enquanto esta página estiver aberta.</span>
+        </div>
+      </details>
+
+      <div class="meta">
+        <span id="count">—</span>
+        <span>•</span>
+        <span class="hint">Use os chips para filtrar por Capítulo e, se disponível, por Grupo.</span>
+      </div>
+
+      <div id="err" class="err" style="display:none"></div>
+      <div class="results" id="results"></div>
+      <div class="footer">Sem tabelas — pronto para copiar/colar no prontuário. • RXI style leve • Highlight em tempo real.</div>
+    </section>
+  </div>
+
+<script>
+const RAW_URL = "https://raw.githubusercontent.com/receitailustrada/rxia/63928e1096c7118a6e7b0bf1049597b8842e0181/ciap2_dataset.json";
+const deburr = s => s?.toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+const uniq = arr => [...new Set(arr)];
+const contains = (hay, needle) => deburr(hay).includes(deburr(needle));
+const CAPITULOS = ["A","B","D","F","H","K","L","N","P","R","S","T","U","W","X","Y","Z"];
+const activeCap = new Set();
+const activeGrp = new Set();
+
+let CIAP = [];      // dataset carregado
+let GROUPS = [];    // grupos distintos, se existirem
+let hasGroups = false;
+
+let synonymMap = {
+  "pressao alta":"hipertensão","pa alta":"hipertensão",
+  "dor de cabeca":"dor de cabeça","cefaleia":"dor de cabeça","migranea":"enxaqueca",
+  "garganta inflamada":"amigdalite","faringite":"amigdalite","dor de garganta":"amigdalite",
+  "resfriado":"resfriado","gripado":"influenza","gripe":"influenza",
+  "rinite":"rinite","sinusite":"sinusite","asma":"asma","chiado":"asma",
+  "itu":"infecção urinária","infecção urinaria":"infecção urinária","ardor ao urinar":"disúria",
+  "pedra nos rins":"cálculo renal","pedra no rim":"cálculo renal",
+  "lombalgia":"dor lombar","hemorroida":"hemorroida","constipacao":"prisão de ventre",
+  "tireoide":"tireoide","tireóide":"tireoide","hipotireoidismo":"hipotireoidismo","hipertireoidismo":"hipertireoidismo",
+  "diabetes":"diabetes","depressao":"depressão","ansiedade":"ansiedade"
+};
+
+function ensureShape(item){
+  // Garante 'chapter' e 'group' quando faltarem
+  if(!item.chapter && item.code) item.chapter = (item.code || "").toString().trim()[0] || "";
+  if(item.group === undefined || item.group === null) item.group = "—";
+  if(!Array.isArray(item.keywords)) item.keywords = [];
+  return item;
+}
+
+function makeCapChips(){
+  const capEl = document.getElementById('chipsCapitulos');
+  capEl.innerHTML = "";
+  CAPITULOS.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='chip';
+    el.textContent = c;
+    el.onclick=()=>{ if(activeCap.has(c)){activeCap.delete(c); el.classList.remove('on');} else {activeCap.add(c); el.classList.add('on');} run(); };
+    capEl.appendChild(el);
+  });
+}
+
+function makeGrpChips(){
+  const grpWrap = document.getElementById('chipsGrupos');
+  grpWrap.innerHTML = "";
+  if(!hasGroups || !GROUPS.length){
+    grpWrap.style.display = "none";
+    return;
+  }
+  grpWrap.style.display = "flex";
+  GROUPS.forEach(g=>{
+    if(!g) return;
+    const el=document.createElement('div');
+    el.className='chip';
+    el.textContent = g;
+    el.onclick=()=>{ if(activeGrp.has(g)){activeGrp.delete(g); el.classList.remove('on');} else {activeGrp.add(g); el.classList.add('on');} run(); };
+    grpWrap.appendChild(el);
+  });
+}
+
+function applySynonyms(q){
+  if(!q) return q;
+  const tokens = deburr(q).split(' ').filter(Boolean);
+  const mapped = tokens.map(t => synonymMap[t] || t);
+  return uniq(mapped).join(' ');
+}
+
+function score(item, q){
+  let s=0;
+  if(contains(item.title,q)) s+=4;
+  q.split(' ').forEach(t=>{
+    if(!t) return;
+    if(contains(item.title,t)) s+=3;
+    if(item.keywords?.some(k=>contains(k,t))) s+=2;
+    if(contains(item.code,t)) s+=1;
+  });
+  return s;
+}
+
+function highlight(text, q){
+  let out=text;
+  const terms = uniq(deburr(q).split(' ').filter(t=>t.length>1));
+  terms.forEach(t=>{
+    const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    out = out.replace(re,'<mark>$1</mark>');
+  });
+  return out;
+}
+
+function passFilters(item){
+  if(activeCap.size && !activeCap.has(item.chapter)) return false;
+  if(activeGrp.size && !activeGrp.has(item.group)) return false;
+  return true;
+}
+
+const qInput = document.getElementById('q');
+const resEl = document.getElementById('results');
+const countEl = document.getElementById('count');
+const errEl = document.getElementById('err');
+
+function run(){
+  const raw = qInput.value.trim();
+  const expanded = applySynonyms(raw);
+  const list = CIAP
+    .map(x=>({...x, _score: raw? score(x, expanded): 0}))
+    .filter(passFilters)
+    .filter(x=> !raw || x._score>0)
+    .sort((a,b)=> b._score - a._score || a.code.localeCompare(b.code))
+    .slice(0,600);
+
+  resEl.innerHTML='';
+  list.forEach(item=>{
+    const card=document.createElement('div'); card.className='card';
+    const code=document.createElement('div'); code.className='code';
+    code.innerHTML = `<span class="badge">${item.chapter || '—'}</span> <strong>${item.code}</strong> ${item.group && item.group!=='—' ? `<span class="badge">${item.group}</span>` : ''}`;
+    const title=document.createElement('div'); title.className='title';
+    title.innerHTML = raw ? highlight(item.title, expanded) : item.title;
+    const keys=document.createElement('div'); keys.className='keywords';
+    const pills = (item.keywords||[]).slice(0,10).map(k=>`<span class="pill">${k}</span>`).join(' ');
+    keys.innerHTML = pills ? `Relacionadas: ${pills}` : '';
+    const actions=document.createElement('div'); actions.className='row-actions';
+    const btnCopy=document.createElement('button'); btnCopy.className='btn'; btnCopy.textContent='Copiar código + título';
+    btnCopy.onclick=()=>{ navigator.clipboard.writeText(`${item.code} • ${item.title}`); btnCopy.textContent='Copiado!'; setTimeout(()=>btnCopy.textContent='Copiar código + título',1200); };
+    actions.appendChild(btnCopy);
+    card.appendChild(code); card.appendChild(title); if(pills) card.appendChild(keys); card.appendChild(actions);
+    resEl.appendChild(card);
+  });
+  countEl.textContent = `${list.length} resultado${list.length===1?'':'s'}`;
+}
+
+document.getElementById('btnClear').onclick=()=>{ qInput.value=''; run(); };
+document.getElementById('btnCopy').onclick=()=>{
+  const rows=[...document.querySelectorAll('.card .title')].map(x=>x.textContent.trim());
+  if(!rows.length){ alert('Nada para copiar.'); return; }
+  navigator.clipboard.writeText(rows.join('\n'));
+  const b=document.getElementById('btnCopy'); b.textContent='Copiado!'; setTimeout(()=>b.textContent='Copiar lista',1200);
+};
+
+document.getElementById('btnApplySyn').onclick=()=>{
+  try{
+    const obj = JSON.parse(document.getElementById('synEditor').value || '{}');
+    Object.keys(obj).forEach(k=>{ synonymMap[deburr(k)] = deburr(obj[k]); });
+    alert('Sinônimos aplicados!'); run();
+  }catch(e){
+    alert('JSON inválido. Exemplo: {"pressão alta":"hipertensão","garganta inflamada":"amigdalite"}');
+  }
+};
+
+async function load(){
+  makeCapChips();
+  try{
+    const r = await fetch(RAW_URL, {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    // normaliza itens
+    CIAP = (Array.isArray(data) ? data : []).map(ensureShape);
+    // detectar grupos
+    const set = new Set();
+    CIAP.forEach(x=>{ if(x.group && x.group !== '—') set.add(x.group); });
+    GROUPS = [...set].sort();
+    hasGroups = GROUPS.length > 0;
+    makeGrpChips();
+  }catch(e){
+    errEl.style.display='block';
+    errEl.textContent = 'Falha ao carregar o dataset do GitHub: ' + e.message + '\nTente abrir diretamente: ' + RAW_URL;
+    CIAP = [];
+    hasGroups = false;
+    makeGrpChips();
+  }
+  qInput.addEventListener('input', run);
+  run();
+}
+
+load();
+</script>
+</body>
+</html>
