@@ -1,30 +1,36 @@
-# 💊 Ecossistema RXIA - Repositório de Imagens (rxia)
+RXIA — Receita Ilustrada Assistente (RAG com solicitações)
+RXIA é um widget de busca com escopo fechado aos documentos oficiais do projeto (diretrizes INCA, TelessaúdeRS e laudos selecionados).
+Ele é publicado no GitHub Pages e pode ser incorporado ao Google Sites .
 
-![Status](https://img.shields.io/badge/Status-Ativo-success)
-![Design](https://img.shields.io/badge/Design-Material_UI-blue)
-![Uso](https://img.shields.io/badge/Uso-Clínico%20%2F%20APS-00A651)
+⚠️ Aviso : O RXIA responde apenas com base nos documentos apresentados no índice ( rxi_index.json).
+Não substitui avaliação clínica. Sempre verifique os dados/versão da fonte.
 
-Bem-vindo ao repositório oficial de ativos visuais do **Ecossistema RXIA (Receita Ilustrada)**. Este repositório centraliza todas as ilustrações, ícones e renderizações 3D utilizados nas plataformas de saúde digital e prescrições médicas visuais.
+✅ Como usar (resumo)
+URL raiz:https://receitailustrada.github.io/rxia/
+Widget direto:https://receitailustrada.github.io/rxia/rxi_widget.html
+No Google Sites : Insira → Incorporar → URL e cole a URL do widget.
 
-## 🎯 Objetivo
-Fornecer uma base sólida e padronizada de recursos visuais para modernizar a Atenção Primária à Saúde (APS). Através de elementos visuais claros (como cápsulas, indicações anatômicas de dor e exercícios), o projeto RXI busca aumentar a adesão ao tratamento, facilitando a compreensão do paciente e desburocratizando a comunicação clínica.
+📁 Estrutura dos arquivos
+index.html→redirecionamento para o widget (URL curta).
+rxi_widget.html→ interface de busca (roda 100% sem navegador).
+rxi_index.json→ índice com trechos (pedaços) e citações (título, páginas, ano, texto).
+Os arquivos acima devem ficar na raiz do repositório.
 
-## 📂 Estrutura e Padrão de Nomenclatura
-Os arquivos estão exportados no formato `.png` com fundo transparente, garantindo uma integração perfeita com interfaces web limpas e geradores automáticos de prescrição.
+♻️ Atualizar o índice ( rxi_index.json)
+Gere um novo rxi_index.jsoncom seus PDFs (INCA, TelessaúdeRS, etc.).
+No GitHub: Adicionar arquivo → Carregar arquivos e substituir o arquivo na raiz.
+Para evitar cache do navegador, o rxi_widget.htmljá busca com sufixo ?v=20250906.
+Quando atualizar o índice novamente no futuro, edite o rxi_widget.htmle troque o sufixo para ?v=NOVO_NUMERO.
+🛡️ Escopo e segurança
+Sem internet/externo: o widget não consulta a web ; busca apenas no rxi_index.json.
+Cada resultado vem com citação : título + páginas.
+Exames reais (PDFs/laudos) não devem conter dados sensíveis. Se existirem, anonimize antes de indexar.
+🧩 Incorporar em outras páginas
+Basta hospedar rxi_widget.htmle rxi_index.jsonreunir em qualquer servidor estático (ou outro repositório de páginas).
 
-As imagens estão organizadas intuitivamente para facilitar a chamada via código:
-- **Medicamentos e Posologia:** `1capsula-azul.png`, `1capsula-marrom.png`, `1comp-white.png`, `01-1cp-dor-febre.png`
-- **Anatomia e Focos de Dor:** `001-dor-pe.png`, `001-dor-quadril.png`, `001-joelho-articular.png`
-- **Recomendações Não-Farmacológicas:** `01-bicicleta001.png`, `01-eliptico.png`, `01-tenisconfort.png`
-
-## 🎨 Identidade Visual e Integração
-Os ativos foram projetados com foco em alta usabilidade e design institucional:
-* **Backgrounds:** Feitos para sobrepor perfeitamente fundos em estilo *dot grid* ou brancos.
-* **Tipografia Complementar:** Em sistemas web e impressos, recomenda-se o uso da fonte **Montserrat** (pesos 400 a 700) acompanhando estas imagens.
-* **Cores Institucionais:** Os ícones conversam diretamente com as variáveis CSS de paletas de saúde (ex: `#0070BA`, `#00A651`).
-
-## ⚙️ Notas de Desenvolvimento
-Ao integrar este repositório com sistemas geradores de PDF ou dashboards clínicos locais, lembre-se de referenciar o caminho correto das imagens. Para protótipos focados em velocidade e privacidade, essas imagens podem ser carregadas de forma estática, complementando estratégias de armazenamento via `LocalStorage`.
-
----
-*Ecossistema RXIA - Ferramentas digitais para gestão clínica e saúde humanizada.*
+📝 Licenças
+Código deste repositório: MIT (ver LICENSE).
+Conteúdo das diretrizes/laudos: respeite as licenças originais (ex.: INCA — CC BY‑NC‑SA).
+📮 Contato
+Receita Ilustrada — RXI (Cruz Alta/RS)
+Atualizado em: 06/09/2025
