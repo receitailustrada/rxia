@@ -1,36 +1,38 @@
-RXIA — Receita Ilustrada Assistente (RAG com solicitações)
-RXIA é um widget de busca com escopo fechado aos documentos oficiais do projeto (diretrizes INCA, TelessaúdeRS e laudos selecionados).
-Ele é publicado no GitHub Pages e pode ser incorporado ao Google Sites .
+# 🩺 RXIA — Receita Ilustrada Assistente (RAG)
 
-⚠️ Aviso : O RXIA responde apenas com base nos documentos apresentados no índice ( rxi_index.json).
-Não substitui avaliação clínica. Sempre verifique os dados/versão da fonte.
+![Status](https://img.shields.io/badge/Status-Ativo-success)
+![Arquitetura](https://img.shields.io/badge/Arquitetura-Serverless-blue)
+![Uso](https://img.shields.io/badge/Uso-Clínico%20%2F%20APS-00A651)
 
-✅ Como usar (resumo)
-URL raiz:https://receitailustrada.github.io/rxia/
-Widget direto:https://receitailustrada.github.io/rxia/rxi_widget.html
-No Google Sites : Insira → Incorporar → URL e cole a URL do widget.
+O **RXIA (Receita Ilustrada Assistente)** é um widget de busca com escopo estritamente fechado aos documentos oficiais do projeto (como diretrizes do INCA, protocolos do TelessaúdeRS e laudos selecionados). Publicado via GitHub Pages, ele foi desenhado para ser incorporado facilmente ao Google Sites e outras plataformas institucionais.
 
-📁 Estrutura dos arquivos
-index.html→redirecionamento para o widget (URL curta).
-rxi_widget.html→ interface de busca (roda 100% sem navegador).
-rxi_index.json→ índice com trechos (pedaços) e citações (título, páginas, ano, texto).
-Os arquivos acima devem ficar na raiz do repositório.
+> **⚠️ AVISO CLÍNICO IMPORTANTE:** O RXIA responde *apenas* com base nos documentos apresentados no seu índice local (`rxi_index.json`). Ele **não substitui** a avaliação clínica. Sempre verifique os dados e a versão da fonte citada.
 
-♻️ Atualizar o índice ( rxi_index.json)
-Gere um novo rxi_index.jsoncom seus PDFs (INCA, TelessaúdeRS, etc.).
-No GitHub: Adicionar arquivo → Carregar arquivos e substituir o arquivo na raiz.
-Para evitar cache do navegador, o rxi_widget.htmljá busca com sufixo ?v=20250906.
-Quando atualizar o índice novamente no futuro, edite o rxi_widget.htmle troque o sufixo para ?v=NOVO_NUMERO.
-🛡️ Escopo e segurança
-Sem internet/externo: o widget não consulta a web ; busca apenas no rxi_index.json.
-Cada resultado vem com citação : título + páginas.
-Exames reais (PDFs/laudos) não devem conter dados sensíveis. Se existirem, anonimize antes de indexar.
-🧩 Incorporar em outras páginas
-Basta hospedar rxi_widget.htmle rxi_index.jsonreunir em qualquer servidor estático (ou outro repositório de páginas).
+## 🚀 Como Usar e Incorporar
+* **URL Raiz:** [https://receitailustrada.github.io/rxia/](https://receitailustrada.github.io/rxia/)
+* **Widget Direto:** [https://receitailustrada.github.io/rxia/rxi_widget.html](https://receitailustrada.github.io/rxia/rxi_widget.html)
+* **Integração no Google Sites:** Vá no menu `Insira` → `Incorporar` → `URL` e cole a URL do widget direto.
 
-📝 Licenças
-Código deste repositório: MIT (ver LICENSE).
-Conteúdo das diretrizes/laudos: respeite as licenças originais (ex.: INCA — CC BY‑NC‑SA).
-📮 Contato
-Receita Ilustrada — RXI (Cruz Alta/RS)
-Atualizado em: 06/09/2025
+## 📂 Estrutura dos Arquivos
+Para garantir o funcionamento em qualquer servidor estático, os seguintes arquivos devem permanecer na raiz do repositório:
+- `index.html` → Realiza o redirecionamento para a interface do widget (URL curta).
+- `rxi_widget.html` → A interface de busca em si (roda 100% no navegador do usuário).
+- `rxi_index.json` → O índice de base de dados contendo os trechos (pedaços) e citações (título, páginas, ano, texto).
+
+## ♻️ Como Atualizar o Índice
+1. Gere um novo arquivo `rxi_index.json` incorporando seus novos PDFs (INCA, TelessaúdeRS, etc.).
+2. No GitHub: Vá em **Adicionar arquivo** → **Carregar arquivos** e substitua o `.json` na raiz.
+3. **Controle de Cache:** O `rxi_widget.html` busca o arquivo com um sufixo de versão (ex: `?v=20250906`). Ao atualizar o índice no futuro, edite o `rxi_widget.html` e troque esse sufixo para `?v=NOVO_NUMERO` (ex: a data da atualização) para forçar o recarregamento.
+
+## 🛡️ Escopo, Segurança e Privacidade
+* **Operação Offline/Isolada:** O widget **não consulta a web externa** para formular respostas. A busca ocorre estritamente dentro do conteúdo fornecido no `rxi_index.json`.
+* **Rastreabilidade:** Cada resultado exibido acompanha uma citação direta indicando o título do documento e a página de origem.
+* **Privacidade de Dados:** Exames reais (PDFs/laudos) usados como base **não devem conter dados sensíveis**. Certifique-se de realizar a anonimização rigorosa (removendo nomes, CPFs, etc.) antes da indexação.
+
+## 📝 Licenças
+* **Código deste repositório:** Licença MIT (ver arquivo `LICENSE`).
+* **Conteúdo das diretrizes/laudos:** Respeite as licenças originais dos criadores (ex.: Documentos do INCA frequentemente utilizam CC BY-NC-SA).
+
+---
+*Ecossistema RXI - Ferramentas digitais para gestão clínica e saúde humanizada.*  
+*📍 Cruz Alta / RS*
